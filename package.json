@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "generate:pets": "node scripts/generate-placeholder-pets.mjs",
+    "validate:pets": "vitest run src/main/packageRegistry.test.ts",
     "build": "npm run typecheck && electron-vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
