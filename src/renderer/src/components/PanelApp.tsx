@@ -257,6 +257,8 @@ function HatchView({
 }: {
   onInstalled: () => void;
 }): React.JSX.Element {
+  const [previewVersion, setPreviewVersion] = useState(0);
+  const [previewVisible, setPreviewVisible] = useState(false);
   const [form, setForm] = useState<HatchDraftInput>({
     name: "",
     description: "",
@@ -278,85 +280,128 @@ function HatchView({
     setMessage(result.issues.map((issue) => issue.message).join(" "));
   };
 
+  const regeneratePreview = (): void => {
+    setPreviewVersion((currentVersion) => currentVersion + 1);
+    setPreviewVisible(true);
+    setMessage(undefined);
+  };
+
+  const rejectPreview = (): void => {
+    setPreviewVisible(false);
+    setMessage("Draft rejected.");
+  };
+
+  const previewUrl = createLocalHatchPreview(form, previewVersion);
+
   return (
     <div className="panel-view hatch-view">
       <header className="view-header">
         <div>
           <h1>Hatch</h1>
-          <p>Local drafts install immediately; imagegen replacement stays approval-gated.</p>
+          <p>Create a custom pet draft, preview it, then approve installation.</p>
         </div>
       </header>
 
-      <form className="hatch-form" onSubmit={(event) => event.preventDefault()}>
-        <label>
-          Name
-          <input
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            maxLength={40}
-          />
-        </label>
-        <label>
-          Species or concept
-          <input
-            value={form.species}
-            onChange={(event) => setForm({ ...form, species: event.target.value })}
-          />
-        </label>
-        <label>
-          Personality
-          <input
-            value={form.personality}
-            onChange={(event) =>
-              setForm({ ...form, personality: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Description
-          <textarea
-            value={form.description}
-            onChange={(event) =>
-              setForm({ ...form, description: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Accessory
-          <input
-            value={form.accessory}
-            onChange={(event) =>
-              setForm({ ...form, accessory: event.target.value })
-            }
-          />
-        </label>
-        <label>
-          Theme
-          <input
-            value={form.theme}
-            onChange={(event) => setForm({ ...form, theme: event.target.value })}
-          />
-        </label>
-        <div className="color-row" aria-label="Preferred colors">
-          {form.preferredColors.map((color, index) => (
+      <div className="hatch-layout">
+        <form className="hatch-form" onSubmit={(event) => event.preventDefault()}>
+          <label>
+            Name
             <input
-              key={`${index}-${color}`}
-              type="color"
-              value={color}
-              onChange={(event) => {
-                const nextColors = [...form.preferredColors];
-                nextColors[index] = event.target.value;
-                setForm({ ...form, preferredColors: nextColors });
-              }}
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              maxLength={40}
             />
-          ))}
-        </div>
-        <button className="primary-button" type="button" onClick={() => void createDraft()}>
-          <WandSparkles size={18} />
-          Install Draft
-        </button>
-        {message !== undefined ? <p className="form-message">{message}</p> : null}
-      </form>
+          </label>
+          <label>
+            Species or concept
+            <input
+              value={form.species}
+              onChange={(event) =>
+                setForm({ ...form, species: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            Personality
+            <input
+              value={form.personality}
+              onChange={(event) =>
+                setForm({ ...form, personality: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            Description
+            <textarea
+              value={form.description}
+              onChange={(event) =>
+                setForm({ ...form, description: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            Accessory
+            <input
+              value={form.accessory}
+              onChange={(event) =>
+                setForm({ ...form, accessory: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            Theme
+            <input
+              value={form.theme}
+              onChange={(event) => setForm({ ...form, theme: event.target.value })}
+            />
+          </label>
+          <div className="color-row" aria-label="Preferred colors">
+            {form.preferredColors.map((color, index) => (
+              <input
+                key={`${index}-${color}`}
+                type="color"
+                value={color}
+                onChange={(event) => {
+                  const nextColors = [...form.preferredColors];
+                  nextColors[index] = event.target.value;
+                  setForm({ ...form, preferredColors: nextColors });
+                }}
+              />
+            ))}
+          </div>
+          <div className="hatch-actions">
+            <button className="command-button" type="button" onClick={regeneratePreview}>
+              <WandSparkles size={18} />
+              Preview
+            </button>
+            <button className="command-button" type="button" onClick={regeneratePreview}>
+              <Sparkles size={18} />
+              Regenerate
+            </button>
+            <button className="command-button" type="button" onClick={rejectPreview}>
+              Reject
+            </button>
+            <button
+              className="primary-button"
+              type="button"
+              disabled={!previewVisible}
+              onClick={() => void createDraft()}
+            >
+              <WandSparkles size={18} />
+              Approve
+            </button>
+          </div>
+          {message !== undefined ? <p className="form-message">{message}</p> : null}
+        </form>
+
+        <aside className="hatch-preview" aria-label="Hatch preview">
+          {previewVisible ? (
+            <img src={previewUrl} alt="Custom pet preview" />
+          ) : (
+            <div className="empty-preview" />
+          )}
+        </aside>
+      </div>
     </div>
   );
 }
@@ -509,5 +554,30 @@ function statRows(stats: PetStats): Array<{ id: keyof PetStats; label: string; v
     { id: "affection", label: "Affection", value: stats.affection },
     { id: "discipline", label: "Discipline", value: stats.discipline },
     { id: "weight", label: "Weight", value: Math.min(100, stats.weight) }
+  ];
+}
+
+function createLocalHatchPreview(form: HatchDraftInput, version: number): string {
+  const palette = normalizePreviewPalette(form.preferredColors, version);
+  const [primary, secondary, outline, highlight] = palette;
+  const accessory = form.accessory
+    ? `<path d="M132 52 L158 30 L150 64 Z" fill="${highlight}" stroke="${outline}" stroke-width="6"/>`
+    : "";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192"><g transform="translate(0 4)"><path d="M44 112 C42 70 72 48 100 60 C126 44 156 72 150 116 C144 156 116 162 98 150 C76 164 48 152 44 112 Z" fill="${primary}" stroke="${outline}" stroke-width="8" stroke-linejoin="round"/><ellipse cx="98" cy="114" rx="36" ry="24" fill="${secondary}" opacity="0.32"/><circle cx="78" cy="86" r="7" fill="${outline}"/><circle cx="118" cy="86" r="7" fill="${outline}"/><path d="M78 116 Q98 134 118 116" fill="none" stroke="${outline}" stroke-width="7" stroke-linecap="round"/><circle cx="58" cy="105" r="7" fill="${secondary}" opacity="0.55"/><circle cx="138" cy="105" r="7" fill="${secondary}" opacity="0.55"/>${accessory}</g></svg>`;
+  return `data:image/svg+xml;base64,${window.btoa(svg)}`;
+}
+
+function normalizePreviewPalette(colors: string[], version: number): string[] {
+  const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
+  const rotatedColors =
+    validColors.length > 1
+      ? validColors.map((_, index) => validColors[(index + version) % validColors.length])
+      : validColors;
+  const palette = rotatedColors.length >= 2 ? rotatedColors : ["#9bdbd4", "#4ecdc4"];
+  return [
+    palette[0] ?? "#9bdbd4",
+    palette[1] ?? "#4ecdc4",
+    "#243447",
+    palette[2] ?? "#fff4d6"
   ];
 }
