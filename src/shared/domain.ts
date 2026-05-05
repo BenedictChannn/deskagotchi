@@ -234,7 +234,15 @@ export const DeskagotchiSaveSchema = z.object({
     quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/),
     notificationsEnabled: z.boolean(),
     notificationCooldownMinutes: z.number().int().min(5).max(1440),
-    clickThroughWhenIdle: z.boolean()
+    clickThroughWhenIdle: z.boolean(),
+    petWindowBounds: z
+      .object({
+        x: z.number(),
+        y: z.number(),
+        width: z.number().int().min(96).max(512),
+        height: z.number().int().min(96).max(512)
+      })
+      .optional()
   })
 });
 

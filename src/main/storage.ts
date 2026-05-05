@@ -66,7 +66,13 @@ export function createDefaultSave(
       quietHoursEnd: "08:00",
       notificationsEnabled: true,
       notificationCooldownMinutes: 90,
-      clickThroughWhenIdle: false
+      clickThroughWhenIdle: false,
+      petWindowBounds: {
+        x: 80,
+        y: 80,
+        width: 180,
+        height: 180
+      }
     }
   };
 }
