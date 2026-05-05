@@ -61,6 +61,12 @@ Regenerate placeholder built-in pet assets:
 npm.cmd run generate:pets
 ```
 
+Regenerate the Windows app icon:
+
+```powershell
+npm.cmd run generate:icon
+```
+
 ## Build
 
 ```powershell
