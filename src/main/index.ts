@@ -33,7 +33,7 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
-const PET_WINDOW_DEFAULT_SIZE = 180;
+const PET_WINDOW_DEFAULT_SIZE = 240;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
 
@@ -48,7 +48,9 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on("second-instance", () => {
+    resetPetWindow();
     showPetWindow();
+    createPanelWindow(PanelView.Status);
   });
 
   app.whenReady().then(async () => {
@@ -61,6 +63,9 @@ if (!app.requestSingleInstanceLock()) {
     registerIpcHandlers();
     createPetWindow();
     createTray();
+    if (!app.isPackaged) {
+      createPanelWindow(PanelView.Status);
+    }
     startSimulationTimer();
     powerMonitor.on("resume", () => void tickSimulation());
     powerMonitor.on("unlock-screen", () => void tickSimulation());
@@ -89,11 +94,12 @@ function createPetWindow(): void {
   const snapshotPromise = runtime.getSnapshot();
   snapshotPromise
     .then((snapshot) => {
-      const savedBounds = snapshot.save.settings.petWindowBounds;
+      const savedBounds = app.isPackaged
+        ? snapshot.save.settings.petWindowBounds
+        : undefined;
       const bounds = ensureVisibleBounds(
         savedBounds ?? {
-          x: 80,
-          y: 80,
+          ...defaultPetWindowBounds(),
           width: PET_WINDOW_DEFAULT_SIZE,
           height: PET_WINDOW_DEFAULT_SIZE
         }
@@ -129,6 +135,10 @@ function createPetWindow(): void {
       });
       petWindow.on("moved", () => void persistPetWindowBounds());
       petWindow.on("resize", () => void persistPetWindowBounds());
+      petWindow.webContents.on("did-finish-load", () => {
+        petWindow?.show();
+        petWindow?.moveTop();
+      });
       petWindow.loadURL(createRendererUrl("overlay"));
     })
     .catch((error) => {
@@ -321,9 +331,7 @@ function showPetWindow(): void {
 }
 
 function resetPetWindow(): void {
-  const display = screen.getPrimaryDisplay();
-  const x = display.workArea.x + display.workArea.width - PET_WINDOW_DEFAULT_SIZE - 32;
-  const y = display.workArea.y + display.workArea.height - PET_WINDOW_DEFAULT_SIZE - 32;
+  const { x, y } = defaultPetWindowBounds();
   petWindow?.setBounds({
     x,
     y,
@@ -331,6 +339,15 @@ function resetPetWindow(): void {
     height: PET_WINDOW_DEFAULT_SIZE
   });
   petWindow?.show();
+  petWindow?.moveTop();
+}
+
+function defaultPetWindowBounds(): { x: number; y: number } {
+  const display = screen.getPrimaryDisplay();
+  return {
+    x: display.workArea.x + display.workArea.width - PET_WINDOW_DEFAULT_SIZE - 40,
+    y: display.workArea.y + display.workArea.height - PET_WINDOW_DEFAULT_SIZE - 40
+  };
 }
 
 async function persistPetWindowBounds(): Promise<void> {
@@ -389,8 +406,4 @@ app.on("will-quit", () => {
   if (simulationTimer !== undefined) {
     clearInterval(simulationTimer);
   }
-});
-
-app.whenReady().then(() => {
-  console.log("Deskagotchi scaffold ready.");
 });
