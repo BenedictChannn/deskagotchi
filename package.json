@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "electron-vite dev",
+    "generate:icon": "node scripts/generate-app-icon.mjs",
     "generate:pets": "node scripts/generate-placeholder-pets.mjs",
     "validate:pets": "vitest run src/main/packageRegistry.test.ts",
     "build": "npm run typecheck && electron-vite build",
@@ -55,6 +56,7 @@
       }
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis"
       ]
