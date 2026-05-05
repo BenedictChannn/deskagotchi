@@ -13,6 +13,17 @@ import {
 const SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"></svg>`;
 
 describe("package registry", () => {
+  it("loads the committed built-in pet resources", async () => {
+    const resourcesRoot = path.resolve(process.cwd(), "resources", "pets");
+    const result = await loadPetPackagesFromDirectory(
+      resourcesRoot,
+      PetSource.BuiltIn
+    );
+
+    expect(result.packages.length).toBeGreaterThanOrEqual(4);
+    expect(result.issues).toEqual([]);
+  });
+
   it("loads a valid package directory", async () => {
     const tempDir = await mkdtempPackage("valid");
     const packageRoot = path.join(tempDir, "deskcat");

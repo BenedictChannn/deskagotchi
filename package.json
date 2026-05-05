@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "electron-vite dev",
+    "generate:pets": "node scripts/generate-placeholder-pets.mjs",
     "build": "npm run typecheck && electron-vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

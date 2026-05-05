@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "packageId": "deskcat",
+  "packageVersion": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "name": "Deskcat",
+  "description": "A tiny original cat-like desk companion with bright keyboard-patrol energy.",
+  "source": "built-in",
+  "species": "Cat-like desk companion",
+  "personality": "Curious, alert, and fond of small desk rituals.",
+  "createdAt": "2026-05-05T00:00:00.000Z",
+  "assetVersion": "0.1.0",
+  "assets": {
+    "spritesheet": "spritesheet.svg",
+    "preview": "preview.svg",
+    "icon": "icon.svg"
+  },
+  "animations": [
+    {
+      "id": "idle",
+      "row": 0,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true
+    },
+    {
+      "id": "happy",
+      "row": 1,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sad",
+      "row": 2,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "hungry",
+      "row": 3,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "eating",
+      "row": 4,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "playing",
+      "row": 5,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sleeping",
+      "row": 6,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 2,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sick",
+      "row": 7,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "cleaning",
+      "row": 8,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "walking",
+      "row": 9,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 8,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "attention",
+      "row": 10,
+      "frames": 4,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    }
+  ],
+  "growthStages": [
+    {
+      "id": "egg",
+      "stage": "egg",
+      "label": "Egg",
+      "minAgeHours": 0,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "baby",
+      "stage": "baby",
+      "label": "Baby Deskcat",
+      "minAgeHours": 2,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "child-calm",
+      "stage": "child",
+      "label": "Calm Child",
+      "minAgeHours": 8,
+      "careScoreMin": 0,
+      "careScoreMax": 59,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "child-bright",
+      "stage": "child",
+      "label": "Bright Child",
+      "minAgeHours": 8,
+      "careScoreMin": 60,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "teen-shy",
+      "stage": "teen",
+      "label": "Shy Teen",
+      "minAgeHours": 30,
+      "careScoreMin": 0,
+      "careScoreMax": 49,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "teen-spry",
+      "stage": "teen",
+      "label": "Spry Teen",
+      "minAgeHours": 30,
+      "careScoreMin": 50,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult-cozy",
+      "stage": "adult",
+      "label": "Cozy Adult",
+      "minAgeHours": 72,
+      "careScoreMin": 0,
+      "careScoreMax": 39,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult-pal",
+      "stage": "adult",
+      "label": "Desk Pal",
+      "minAgeHours": 72,
+      "careScoreMin": 40,
+      "careScoreMax": 74,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult-star",
+      "stage": "adult",
+      "label": "Star Deskcat",
+      "minAgeHours": 72,
+      "careScoreMin": 75,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    }
+  ],
+  "preferredFoods": [
+    "fish biscuit",
+    "warm rice"
+  ],
+  "dislikedFoods": [
+    "burnt toast"
+  ],
+  "favoritePlayStyle": "chase",
+  "careModifiers": {
+    "hungerDecayMultiplier": 1,
+    "happinessDecayMultiplier": 1,
+    "energyDecayMultiplier": 1,
+    "cleanlinessDecayMultiplier": 1,
+    "affectionGainMultiplier": 1.15
+  },
+  "colorPalette": [
+    "#f7b267",
+    "#f79d65",
+    "#2f243a",
+    "#fefae0"
+  ],
+  "author": "Deskagotchi",
+  "license": "Original Deskagotchi placeholder asset",
+  "capabilities": [
+    "mvp-animation",
+    "growth-v1",
+    "placeholder-art"
+  ],
+  "validationStatus": "passed",
+  "assetHash": "deskcat-placeholder-v1",
+  "generation": {
+    "mode": "local-placeholder"
+  }
+}
