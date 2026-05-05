@@ -112,6 +112,18 @@ function StatusView({
   snapshot: DeskagotchiSnapshot;
   onAction: (actionType: CareActionType) => Promise<void>;
 }): React.JSX.Element {
+  const [miniGameTaps, setMiniGameTaps] = useState(0);
+
+  const tapMiniGame = async (): Promise<void> => {
+    const nextTaps = miniGameTaps + 1;
+    if (nextTaps >= 5) {
+      setMiniGameTaps(0);
+      await onAction(CareActionType.Play);
+      return;
+    }
+    setMiniGameTaps(nextTaps);
+  };
+
   return (
     <div className="status-layout">
       <section className="status-pet">
@@ -184,6 +196,24 @@ function StatusView({
             <dd>{Math.round(snapshot.activeState.offlineDebtHours)}h</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="mini-game" aria-label="Play mini-game">
+        <div>
+          <h2>Play</h2>
+          <p>Rhythm taps build happiness and affection.</p>
+        </div>
+        <button
+          className="mini-game-target"
+          type="button"
+          onClick={() => void tapMiniGame()}
+          style={{
+            "--target-offset": `${(miniGameTaps * 19) % 78}%`
+          } as React.CSSProperties}
+        >
+          <span />
+        </button>
+        <strong>{miniGameTaps}/5</strong>
       </section>
     </div>
   );

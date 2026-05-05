@@ -316,6 +316,57 @@ meter {
   justify-items: start;
 }
 
+.mini-game {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px 44px;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(37, 49, 61, 0.14);
+}
+
+.mini-game h2,
+.mini-game p {
+  margin: 0;
+}
+
+.mini-game h2 {
+  margin-bottom: 4px;
+  font-size: 17px;
+}
+
+.mini-game p {
+  color: #66727f;
+  line-height: 1.4;
+}
+
+.mini-game strong {
+  color: #17212c;
+  font-weight: 850;
+}
+
+.mini-game-target {
+  position: relative;
+  height: 38px;
+  border: 1px solid rgba(37, 49, 61, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent 0 39%, rgba(42, 157, 143, 0.22) 39% 61%, transparent 61% 100%),
+    #fffaf2;
+  overflow: hidden;
+}
+
+.mini-game-target span {
+  position: absolute;
+  top: 6px;
+  left: var(--target-offset);
+  width: 22px;
+  height: 24px;
+  border-radius: 7px;
+  background: #2a9d8f;
+  box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.16);
+}
+
 .view-header {
   display: flex;
   align-items: start;
@@ -509,5 +560,9 @@ meter {
 
   .care-history dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mini-game {
+    grid-template-columns: 1fr;
   }
 }
