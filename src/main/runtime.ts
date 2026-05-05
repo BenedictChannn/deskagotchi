@@ -30,6 +30,7 @@ import { hasBlockingIssues } from "@shared/packageValidation";
 import {
   applyCareAction,
   createInitialPetState,
+  DEFAULT_SIMULATION_CONFIG,
   progressPetState
 } from "@shared/simulation";
 
@@ -186,7 +187,11 @@ export class DeskagotchiRuntime {
       activeState.stats.cleanliness < 20 ||
       activeState.messCount > 0;
     const cooldownMs = save.settings.notificationCooldownMinutes * 60_000;
-    if (!needsAttention || now.getTime() - this.lastNotificationAt < cooldownMs) {
+    if (
+      !needsAttention ||
+      isQuietHours(now, save.settings.quietHoursEnabled, save.settings.quietHoursStart, save.settings.quietHoursEnd) ||
+      now.getTime() - this.lastNotificationAt < cooldownMs
+    ) {
       return;
     }
     this.lastNotificationAt = now.getTime();
@@ -343,7 +348,12 @@ export class DeskagotchiRuntime {
     const save = this.requireSave();
     const activeState = this.getActiveState(save);
     const activePackage = this.getPetPackage(activeState.packageId);
-    const progressed = progressPetState(activeState, activePackage.petPackage, now);
+    const progressed = progressPetState(
+      activeState,
+      activePackage.petPackage,
+      now,
+      createRuntimeSimulationConfig(save)
+    );
     this.replaceInstance(progressed.state);
     await this.persistSave();
   }
@@ -428,6 +438,52 @@ export class DeskagotchiRuntime {
     }
     return this.save;
   }
+}
+
+function createRuntimeSimulationConfig(save: DeskagotchiSave): typeof DEFAULT_SIMULATION_CONFIG {
+  if (!save.settings.lowMaintenanceMode) {
+    return DEFAULT_SIMULATION_CONFIG;
+  }
+
+  return {
+    ...DEFAULT_SIMULATION_CONFIG,
+    maxOfflineCatchupHours: 18,
+    decayPerHour: {
+      hunger: DEFAULT_SIMULATION_CONFIG.decayPerHour.hunger * 0.55,
+      happiness: DEFAULT_SIMULATION_CONFIG.decayPerHour.happiness * 0.55,
+      energy: DEFAULT_SIMULATION_CONFIG.decayPerHour.energy * 0.65,
+      cleanliness: DEFAULT_SIMULATION_CONFIG.decayPerHour.cleanliness * 0.55
+    },
+    healthPenaltyPerHour: DEFAULT_SIMULATION_CONFIG.healthPenaltyPerHour * 0.5
+  };
+}
+
+function isQuietHours(
+  now: Date,
+  enabled: boolean,
+  quietHoursStart: string,
+  quietHoursEnd: string
+): boolean {
+  if (!enabled) {
+    return false;
+  }
+
+  const startMinutes = parseClockMinutes(quietHoursStart);
+  const endMinutes = parseClockMinutes(quietHoursEnd);
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  if (startMinutes === endMinutes) {
+    return false;
+  }
+  if (startMinutes < endMinutes) {
+    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
+  }
+  return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+}
+
+function parseClockMinutes(value: string): number {
+  const [hours, minutes] = value.split(":").map((part) => Number(part));
+  return hours * 60 + minutes;
 }
 
 export function createAssetUrl(packageId: string, relativeAssetPath: string): string {

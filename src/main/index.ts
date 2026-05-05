@@ -55,6 +55,8 @@ if (!app.requestSingleInstanceLock()) {
     app.setAppUserModelId("app.deskagotchi.desktop");
     runtime = new DeskagotchiRuntime(getResourceRoot(), app.getPath("userData"));
     await runtime.initialize();
+    const startupSnapshot = await runtime.getSnapshot();
+    applySettings(startupSnapshot.save.settings);
     registerAssetProtocol();
     registerIpcHandlers();
     createPetWindow();
@@ -80,7 +82,7 @@ function getResourceRoot(): string {
 }
 
 function getPreloadPath(): string {
-  return path.join(__dirname, "../preload/index.js");
+  return path.join(__dirname, "../preload/index.mjs");
 }
 
 function createPetWindow(): void {
