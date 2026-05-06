@@ -29,6 +29,10 @@ const api: DeskagotchiApi = {
   movePetWindow: (deltaX: number, deltaY: number) =>
     ipcRenderer.invoke(IpcChannel.MovePetWindow, { deltaX, deltaY }),
   finishPetWindowDrag: () => ipcRenderer.invoke(IpcChannel.FinishPetWindowDrag),
+  enterPetWindowPlayMode: () =>
+    ipcRenderer.invoke(IpcChannel.EnterPetWindowPlayMode),
+  exitPetWindowPlayMode: () =>
+    ipcRenderer.invoke(IpcChannel.ExitPetWindowPlayMode),
   setClickThrough: (enabled: boolean) =>
     ipcRenderer.invoke(IpcChannel.SetClickThrough, enabled),
   hatchCreateDraft: (input: HatchDraftInput) =>

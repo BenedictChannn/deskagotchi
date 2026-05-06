@@ -14,6 +14,11 @@ interface Point {
   y: number;
 }
 
+interface StageBounds {
+  width: number;
+  height: number;
+}
+
 interface BallState extends Point {
   vx: number;
   vy: number;
@@ -27,10 +32,10 @@ interface PlayStageProps {
 }
 
 /**
- * Render the transient ball mini-game inside the pet overlay.
+ * Render the transient ball mini-game across the transparent monitor overlay.
  *
  * @param props - Snapshot, reward callback, and close callback.
- * @returns A bounded play surface with draggable ball and chasing pet.
+ * @returns A screen-sized play surface with a draggable ball and chasing pet.
  */
 export function PlayStage({
   snapshot,
@@ -40,6 +45,7 @@ export function PlayStage({
   const stageRef = useRef<HTMLElement>(null);
   const lastFrameAt = useRef<number>();
   const nextRewardAt = useRef(0);
+  const initializedStage = useRef(false);
   const initialBall = {
     x: 150,
     y: 42,
@@ -68,6 +74,16 @@ export function PlayStage({
       const bounds = getStageBounds(stageRef.current);
       const currentBall = ballRef.current;
       let nextBall = currentBall;
+
+      if (!initializedStage.current) {
+        initializedStage.current = true;
+        nextBall = createInitialBall(bounds);
+        ballRef.current = nextBall;
+        setBall(nextBall);
+        setPet(createInitialPet(bounds));
+        animationFrame = window.requestAnimationFrame(tick);
+        return;
+      }
 
       if (!currentBall.dragging) {
         let nextX = currentBall.x + currentBall.vx * delta;
@@ -235,11 +251,28 @@ export function PlayStage({
   );
 }
 
-function getStageBounds(stage: HTMLElement | null): { width: number; height: number } {
+function getStageBounds(stage: HTMLElement | null): StageBounds {
   const rect = stage?.getBoundingClientRect();
   return {
     width: Math.max(180, rect?.width ?? 220),
     height: Math.max(180, rect?.height ?? 220)
+  };
+}
+
+function createInitialBall(bounds: StageBounds): BallState {
+  return {
+    x: clamp(bounds.width * 0.58, 20, bounds.width - BALL_SIZE - 20),
+    y: clamp(bounds.height * 0.24, 20, bounds.height - BALL_SIZE - 20),
+    vx: 1.2,
+    vy: 0,
+    dragging: false
+  };
+}
+
+function createInitialPet(bounds: StageBounds): Point {
+  return {
+    x: clamp(bounds.width * 0.45, 0, bounds.width - PET_SIZE),
+    y: clamp(bounds.height * 0.72, 0, bounds.height - PET_SIZE)
   };
 }
 

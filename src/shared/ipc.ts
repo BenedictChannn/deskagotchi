@@ -23,6 +23,8 @@ export enum IpcChannel {
   ResetPetWindow = "deskagotchi:resetPetWindow",
   MovePetWindow = "deskagotchi:movePetWindow",
   FinishPetWindowDrag = "deskagotchi:finishPetWindowDrag",
+  EnterPetWindowPlayMode = "deskagotchi:enterPetWindowPlayMode",
+  ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
   HatchCreateDraft = "deskagotchi:hatchCreateDraft",
   ExportPet = "deskagotchi:exportPet",
@@ -99,6 +101,8 @@ export interface DeskagotchiApi {
   resetPetWindow: () => Promise<void>;
   movePetWindow: (deltaX: number, deltaY: number) => Promise<void>;
   finishPetWindowDrag: () => Promise<void>;
+  enterPetWindowPlayMode: () => Promise<void>;
+  exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
   hatchCreateDraft: (input: HatchDraftInput) => Promise<HatchDraftResult>;
   exportPet: (packageId: string) => Promise<string | undefined>;

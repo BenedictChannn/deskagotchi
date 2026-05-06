@@ -54,6 +54,13 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setCareFlow(null);
   };
 
+  const closePlay = useCallback((): void => {
+    setPlayActive(false);
+    void window.deskagotchi
+      .exitPetWindowPlayMode()
+      .catch(() => undefined);
+  }, []);
+
   useEffect(() => {
     if (
       !menuOpen &&
@@ -70,17 +77,20 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       if (event.key !== "Escape") {
         return;
       }
+      if (playActive) {
+        closePlay();
+        return;
+      }
       setMenuOpen(false);
       setHealthOpen(false);
       setFeedOpen(false);
       setPlayOpen(false);
-      setPlayActive(false);
       setCareFlow(null);
     };
 
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
-  }, [careFlow, feedOpen, healthOpen, menuOpen, playActive, playOpen]);
+  }, [careFlow, closePlay, feedOpen, healthOpen, menuOpen, playActive, playOpen]);
 
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
@@ -183,7 +193,10 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setFeedOpen(false);
     setPlayOpen(false);
     setCareFlow(null);
-    setPlayActive(true);
+    void window.deskagotchi
+      .enterPetWindowPlayMode()
+      .then(() => setPlayActive(true))
+      .catch(() => setPlayActive(false));
   };
 
   const rewardPlay = useCallback(async (): Promise<void> => {
@@ -212,7 +225,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         <PlayStage
           snapshot={snapshot}
           onReward={() => void rewardPlay()}
-          onClose={() => setPlayActive(false)}
+          onClose={closePlay}
         />
       ) : (
         <section className="pet-drag-plane" aria-label="Deskagotchi overlay">
@@ -294,10 +307,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         />
       ) : null}
 
-      <div className="overlay-mood" aria-hidden="true">
-        <ItemIcon iconId="heart" size={14} />
-        <span>{snapshot.activeState.mood}</span>
-      </div>
+      {!playActive ? (
+        <div className="overlay-mood" aria-hidden="true">
+          <ItemIcon iconId="heart" size={14} />
+          <span>{snapshot.activeState.mood}</span>
+        </div>
+      ) : null}
     </main>
   );
 }

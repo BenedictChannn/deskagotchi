@@ -272,10 +272,9 @@ button {
 .overlay-play-stage {
   -webkit-app-region: no-drag;
   position: absolute;
-  inset: 8px;
+  inset: 0;
   overflow: hidden;
-  border: 2px solid rgba(18, 55, 22, 0.78);
-  background: rgba(220, 236, 168, 0.5);
+  background: transparent;
 }
 
 .overlay-play-pet,
@@ -315,18 +314,18 @@ button {
 }
 
 .overlay-play-close {
-  right: 4px;
-  top: 4px;
-  width: 22px;
-  height: 22px;
+  right: 16px;
+  top: 16px;
+  width: 28px;
+  height: 28px;
   padding: 0;
 }
 
 .overlay-play-score {
-  left: 4px;
-  top: 4px;
+  left: 16px;
+  top: 16px;
   min-width: 24px;
-  padding: 3px 5px;
+  padding: 5px 7px;
 }
 
 .overlay-mess-markers {

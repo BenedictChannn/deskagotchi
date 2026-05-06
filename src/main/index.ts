@@ -92,6 +92,8 @@ let panelWindow: BrowserWindow | undefined;
 let tray: Tray | undefined;
 let isQuitting = false;
 let simulationTimer: NodeJS.Timeout | undefined;
+let playModePreviousBounds: Rectangle | undefined;
+let suppressPetWindowBoundsPersistence = false;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -368,6 +370,14 @@ function registerIpcHandlers(): void {
     validateIpcSender(event);
     await persistPetWindowBounds();
   });
+  ipcMain.handle(IpcChannel.EnterPetWindowPlayMode, (event) => {
+    validateIpcSender(event);
+    enterPetWindowPlayMode();
+  });
+  ipcMain.handle(IpcChannel.ExitPetWindowPlayMode, async (event) => {
+    validateIpcSender(event);
+    await exitPetWindowPlayMode();
+  });
   ipcMain.handle(IpcChannel.SetClickThrough, (event, enabled: unknown) => {
     validateIpcSender(event);
     petWindow?.setIgnoreMouseEvents(
@@ -539,6 +549,7 @@ function showPetWindow(): void {
  */
 function resetPetWindow(): void {
   const { x, y } = defaultPetWindowBounds();
+  playModePreviousBounds = undefined;
   petWindow?.setBounds({
     x,
     y,
@@ -555,7 +566,11 @@ function resetPetWindow(): void {
  * @param delta - Screen-pixel movement since the previous pointer event.
  */
 function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
-  if (petWindow === undefined || petWindow.isDestroyed()) {
+  if (
+    petWindow === undefined ||
+    petWindow.isDestroyed() ||
+    playModePreviousBounds !== undefined
+  ) {
     return;
   }
 
@@ -567,6 +582,44 @@ function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
       y: bounds.y + Math.round(delta.deltaY)
     })
   );
+}
+
+/**
+ * Expand the transparent pet window to the current monitor for Ball play.
+ */
+function enterPetWindowPlayMode(): void {
+  if (petWindow === undefined || petWindow.isDestroyed()) {
+    return;
+  }
+
+  if (playModePreviousBounds === undefined) {
+    playModePreviousBounds = petWindow.getBounds();
+  }
+
+  const display = screen.getDisplayMatching(petWindow.getBounds());
+  setPetWindowBoundsWithoutPersistence(display.workArea);
+  petWindow.setIgnoreMouseEvents(false);
+  petWindow.show();
+  petWindow.moveTop();
+}
+
+/**
+ * Restore the small pet overlay after a temporary full-monitor play session.
+ */
+async function exitPetWindowPlayMode(): Promise<void> {
+  if (petWindow === undefined || petWindow.isDestroyed()) {
+    playModePreviousBounds = undefined;
+    return;
+  }
+
+  const restoreBounds = playModePreviousBounds;
+  if (restoreBounds !== undefined) {
+    setPetWindowBoundsWithoutPersistence(ensureVisibleBounds(restoreBounds));
+  }
+  playModePreviousBounds = undefined;
+  petWindow.show();
+  petWindow.moveTop();
+  await persistPetWindowBounds({ force: true });
 }
 
 /**
@@ -585,12 +638,31 @@ function defaultPetWindowBounds(): { x: number; y: number } {
 /**
  * Persist the current overlay bounds if the pet window is alive.
  */
-async function persistPetWindowBounds(): Promise<void> {
+async function persistPetWindowBounds(options: { force?: boolean } = {}): Promise<void> {
   if (petWindow === undefined || petWindow.isDestroyed()) {
+    return;
+  }
+  if (
+    options.force !== true &&
+    (playModePreviousBounds !== undefined || suppressPetWindowBoundsPersistence)
+  ) {
     return;
   }
   const bounds = petWindow.getBounds();
   await runtime.updatePetWindowBounds(bounds);
+}
+
+/**
+ * Resize the overlay for transient modes without overwriting saved pet bounds.
+ *
+ * @param bounds - Electron bounds to apply to the live overlay.
+ */
+function setPetWindowBoundsWithoutPersistence(bounds: Rectangle): void {
+  suppressPetWindowBoundsPersistence = true;
+  petWindow?.setBounds(bounds);
+  setTimeout(() => {
+    suppressPetWindowBoundsPersistence = false;
+  }, 250);
 }
 
 /**

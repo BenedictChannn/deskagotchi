@@ -75,6 +75,8 @@ class DevDeskagotchiApi {
       resetPetWindow: async () => undefined,
       movePetWindow: async () => undefined,
       finishPetWindowDrag: async () => undefined,
+      enterPetWindowPlayMode: async () => undefined,
+      exitPetWindowPlayMode: async () => undefined,
       setClickThrough: async () => undefined,
       hatchCreateDraft: async (input) => this.hatchCreateDraft(input),
       exportPet: async () => undefined,
