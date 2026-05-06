@@ -11,7 +11,8 @@ import {
   Sparkles,
   Stethoscope,
   SwitchCamera,
-  WandSparkles
+  WandSparkles,
+  X
 } from "lucide-react";
 
 import { CareActionType, PetSource, type PetStats } from "@shared/domain";
@@ -87,6 +88,15 @@ export function PanelApp({
           label="Settings"
           onClick={() => selectView(PanelView.Settings)}
         />
+        <button
+          type="button"
+          className="panel-close-button"
+          onClick={() => void window.deskagotchi.hidePanel()}
+          aria-label="Close panel"
+          title="Close panel"
+        >
+          <X size={18} />
+        </button>
       </aside>
 
       <section className="panel-content">

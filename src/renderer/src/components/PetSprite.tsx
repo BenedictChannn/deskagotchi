@@ -15,6 +15,8 @@ interface PetSpriteProps {
   interactive?: boolean;
   /** Optional click handler used by overlay and panel controls. */
   onClick?: () => void;
+  /** Optional pointer-down handler used by the desktop overlay drag controller. */
+  onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }
 
 /**
@@ -27,7 +29,8 @@ export function PetSprite({
   snapshot,
   size,
   interactive = false,
-  onClick
+  onClick,
+  onPointerDown
 }: PetSpriteProps): React.JSX.Element {
   const animation = useMemo(
     () => selectAnimation(snapshot),
@@ -59,6 +62,7 @@ export function PetSprite({
       type="button"
       className={interactive ? "pet-sprite pet-sprite--button" : "pet-sprite"}
       onClick={onClick}
+      onPointerDown={onPointerDown}
       aria-label={`${snapshot.activeState.nickname} is ${snapshot.activeState.mood}`}
       style={{
         width: size,

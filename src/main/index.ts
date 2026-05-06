@@ -61,6 +61,12 @@ const PackageIdInputSchema = PetPackageSchema.shape.packageId;
 const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
   .partial()
   .strict();
+const WindowDragDeltaInputSchema = z
+  .object({
+    deltaX: z.number().finite().min(-4096).max(4096),
+    deltaY: z.number().finite().min(-4096).max(4096)
+  })
+  .strict();
 const OptionalHatchTextSchema = z.string().trim().max(120).optional();
 const HatchDraftInputSchema = z
   .object({
@@ -87,7 +93,6 @@ if (!app.requestSingleInstanceLock()) {
   app.on("second-instance", () => {
     resetPetWindow();
     showPetWindow();
-    createPanelWindow(PanelView.Status);
   });
 
   void app
@@ -102,9 +107,6 @@ if (!app.requestSingleInstanceLock()) {
       registerIpcHandlers();
       createPetWindow();
       createTray();
-      if (!app.isPackaged) {
-        createPanelWindow(PanelView.Status);
-      }
       startSimulationTimer();
       powerMonitor.on("resume", () => void tickSimulation());
       powerMonitor.on("unlock-screen", () => void tickSimulation());
@@ -152,9 +154,7 @@ function createPetWindow(): void {
   const snapshotPromise = runtime.getSnapshot();
   snapshotPromise
     .then((snapshot) => {
-      const savedBounds = app.isPackaged
-        ? snapshot.save.settings.petWindowBounds
-        : undefined;
+      const savedBounds = snapshot.save.settings.petWindowBounds;
       const bounds = ensureVisibleBounds(
         savedBounds ?? {
           ...defaultPetWindowBounds(),
@@ -233,6 +233,12 @@ function createPanelWindow(view: PanelView): void {
     }
   });
   panelWindow.setMenu(null);
+  panelWindow.on("close", () => {
+    if (!app.isPackaged && !isQuitting) {
+      isQuitting = true;
+      app.quit();
+    }
+  });
   panelWindow.on("closed", () => {
     panelWindow = undefined;
   });
@@ -333,11 +339,27 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle(IpcChannel.HidePanel, (event) => {
     validateIpcSender(event);
+    if (!app.isPackaged) {
+      isQuitting = true;
+      app.quit();
+      return;
+    }
+
     panelWindow?.hide();
   });
   ipcMain.handle(IpcChannel.ResetPetWindow, async (event) => {
     validateIpcSender(event);
     resetPetWindow();
+    await persistPetWindowBounds();
+  });
+  ipcMain.handle(IpcChannel.MovePetWindow, (event, delta: unknown) => {
+    validateIpcSender(event);
+    movePetWindow(
+      parseIpcInput(WindowDragDeltaInputSchema, delta, "window drag delta")
+    );
+  });
+  ipcMain.handle(IpcChannel.FinishPetWindowDrag, async (event) => {
+    validateIpcSender(event);
     await persistPetWindowBounds();
   });
   ipcMain.handle(IpcChannel.SetClickThrough, (event, enabled: unknown) => {
@@ -519,6 +541,26 @@ function resetPetWindow(): void {
   });
   petWindow?.show();
   petWindow?.moveTop();
+}
+
+/**
+ * Move the pet overlay by a renderer-reported pointer delta.
+ *
+ * @param delta - Screen-pixel movement since the previous pointer event.
+ */
+function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
+  if (petWindow === undefined || petWindow.isDestroyed()) {
+    return;
+  }
+
+  const bounds = petWindow.getBounds();
+  petWindow.setBounds(
+    ensureVisibleBounds({
+      ...bounds,
+      x: bounds.x + Math.round(delta.deltaX),
+      y: bounds.y + Math.round(delta.deltaY)
+    })
+  );
 }
 
 /**

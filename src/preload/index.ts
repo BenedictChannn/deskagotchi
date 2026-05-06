@@ -26,6 +26,9 @@ const api: DeskagotchiApi = {
   openPanel: (view: PanelView) => ipcRenderer.invoke(IpcChannel.OpenPanel, view),
   hidePanel: () => ipcRenderer.invoke(IpcChannel.HidePanel),
   resetPetWindow: () => ipcRenderer.invoke(IpcChannel.ResetPetWindow),
+  movePetWindow: (deltaX: number, deltaY: number) =>
+    ipcRenderer.invoke(IpcChannel.MovePetWindow, { deltaX, deltaY }),
+  finishPetWindowDrag: () => ipcRenderer.invoke(IpcChannel.FinishPetWindowDrag),
   setClickThrough: (enabled: boolean) =>
     ipcRenderer.invoke(IpcChannel.SetClickThrough, enabled),
   hatchCreateDraft: (input: HatchDraftInput) =>
