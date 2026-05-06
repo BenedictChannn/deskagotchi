@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { CareActionType } from "@shared/domain";
+import { CareActionType, PetLifecycleStatus } from "@shared/domain";
 import { ItemCategory, type ItemCatalogEntry } from "@shared/itemIcons";
 import type { DeskagotchiSnapshot } from "@shared/ipc";
 
@@ -27,6 +27,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [feedOpen, setFeedOpen] = useState(false);
   const [playOpen, setPlayOpen] = useState(false);
   const [playActive, setPlayActive] = useState(false);
+  const [careFlow, setCareFlow] = useState<"medicine" | "clean" | "sleep" | null>(
+    null
+  );
   const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
     ItemCategory.Meal
   );
@@ -48,10 +51,18 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setHealthOpen(false);
     setFeedOpen(false);
     setPlayOpen(false);
+    setCareFlow(null);
   };
 
   useEffect(() => {
-    if (!menuOpen && !healthOpen && !feedOpen && !playOpen && !playActive) {
+    if (
+      !menuOpen &&
+      !healthOpen &&
+      !feedOpen &&
+      !playOpen &&
+      !playActive &&
+      careFlow === null
+    ) {
       return undefined;
     }
 
@@ -64,11 +75,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setFeedOpen(false);
       setPlayOpen(false);
       setPlayActive(false);
+      setCareFlow(null);
     };
 
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
-  }, [feedOpen, healthOpen, menuOpen, playActive, playOpen]);
+  }, [careFlow, feedOpen, healthOpen, menuOpen, playActive, playOpen]);
 
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
@@ -110,6 +122,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setFeedOpen(false);
       setPlayOpen(false);
       setPlayActive(false);
+      setCareFlow(null);
     }
     void window.deskagotchi.movePetWindow(deltaX, deltaY);
   };
@@ -141,6 +154,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         setHealthOpen(false);
         setFeedOpen(false);
         setPlayOpen(false);
+        setCareFlow(null);
       }
       return !current;
     });
@@ -151,6 +165,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setHealthOpen(false);
     setPlayOpen(false);
     setPlayActive(false);
+    setCareFlow(null);
     setFeedOpen(true);
   };
 
@@ -158,6 +173,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setMenuOpen(false);
     setHealthOpen(false);
     setFeedOpen(false);
+    setCareFlow(null);
     setPlayOpen(true);
   };
 
@@ -166,6 +182,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setHealthOpen(false);
     setFeedOpen(false);
     setPlayOpen(false);
+    setCareFlow(null);
     setPlayActive(true);
   };
 
@@ -177,7 +194,16 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setMenuOpen(false);
     setFeedOpen(false);
     setPlayOpen(false);
+    setCareFlow(null);
     setHealthOpen((current) => !current);
+  };
+
+  const openCareFlow = (flow: "medicine" | "clean" | "sleep"): void => {
+    setMenuOpen(false);
+    setHealthOpen(false);
+    setFeedOpen(false);
+    setPlayOpen(false);
+    setCareFlow(flow);
   };
 
   return (
@@ -199,6 +225,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           />
         </section>
       )}
+      {!playActive && snapshot.activeState.messCount > 0 ? (
+        <MessMarkers count={snapshot.activeState.messCount} />
+      ) : null}
 
       {menuOpen ? (
         <nav className="overlay-actions" aria-label="Pet actions">
@@ -216,15 +245,21 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           </ActionButton>
           <ActionButton
             label="Clean"
-            onClick={() => void performAction(CareActionType.Clean)}
+            onClick={() => openCareFlow("clean")}
           >
             <ItemIcon iconId="sponge" />
           </ActionButton>
           <ActionButton
             label="Sleep"
-            onClick={() => void performAction(CareActionType.ToggleSleep)}
+            onClick={() => openCareFlow("sleep")}
           >
             <ItemIcon iconId="crescent" />
+          </ActionButton>
+          <ActionButton
+            label="Med"
+            onClick={() => openCareFlow("medicine")}
+          >
+            <ItemIcon iconId="capsule" />
           </ActionButton>
           <ActionButton
             label="Health"
@@ -250,6 +285,14 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         />
       ) : null}
       {playOpen ? <PlayPicker onStart={startPlay} /> : null}
+      {careFlow !== null ? (
+        <CareFlowCard
+          flow={careFlow}
+          snapshot={snapshot}
+          onCancel={() => setCareFlow(null)}
+          onConfirm={(actionType) => void performAction(actionType)}
+        />
+      ) : null}
 
       <div className="overlay-mood" aria-hidden="true">
         <ItemIcon iconId="heart" size={14} />
@@ -257,6 +300,99 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       </div>
     </main>
   );
+}
+
+function MessMarkers({ count }: { count: number }): React.JSX.Element {
+  const markers = Array.from({ length: Math.min(3, count) }, (_, index) => index);
+  return (
+    <div className="overlay-mess-markers" aria-hidden="true">
+      {markers.map((marker) => (
+        <ItemIcon key={marker} iconId="mess" size={18} />
+      ))}
+    </div>
+  );
+}
+
+function CareFlowCard({
+  flow,
+  snapshot,
+  onCancel,
+  onConfirm
+}: {
+  flow: "medicine" | "clean" | "sleep";
+  snapshot: DeskagotchiSnapshot;
+  onCancel: () => void;
+  onConfirm: (actionType: CareActionType) => void;
+}): React.JSX.Element {
+  const state = snapshot.activeState;
+  const isSleeping = state.lifecycleStatus === PetLifecycleStatus.Sleeping;
+  const flowConfig = getCareFlowConfig(flow, snapshot);
+  const actionType = flowConfig.actionType;
+
+  return (
+    <section className="overlay-care-flow" aria-label={flowConfig.label}>
+      <div className="overlay-care-flow-header">
+        <ItemIcon iconId={flowConfig.iconId} size={22} />
+        <span>{flowConfig.label}</span>
+      </div>
+      <p>{flowConfig.message}</p>
+      <div className="overlay-care-flow-actions">
+        <button type="button" onClick={onCancel}>
+          X
+        </button>
+        {actionType !== undefined ? (
+          <button
+            type="button"
+            onClick={() => onConfirm(actionType)}
+          >
+            {isSleeping && flow === "sleep" ? "Wake" : flowConfig.actionLabel}
+          </button>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function getCareFlowConfig(
+  flow: "medicine" | "clean" | "sleep",
+  snapshot: DeskagotchiSnapshot
+): {
+  label: string;
+  iconId: string;
+  message: string;
+  actionLabel: string;
+  actionType?: CareActionType;
+} {
+  const state = snapshot.activeState;
+  if (flow === "medicine") {
+    const needsMedicine = state.isSick || state.stats.health < 55;
+    return {
+      label: "Medicine",
+      iconId: needsMedicine ? "capsule" : "face",
+      message: needsMedicine ? "Needs care" : "Looks OK",
+      actionLabel: "Use",
+      actionType: needsMedicine ? CareActionType.Medicine : undefined
+    };
+  }
+
+  if (flow === "clean") {
+    const needsCleaning = state.messCount > 0 || state.stats.cleanliness < 92;
+    return {
+      label: "Clean",
+      iconId: needsCleaning ? "sponge" : "sparkle",
+      message: needsCleaning ? "Clean up" : "Already clean",
+      actionLabel: "Clean",
+      actionType: needsCleaning ? CareActionType.Clean : undefined
+    };
+  }
+
+  return {
+    label: "Lights",
+    iconId: state.lifecycleStatus === PetLifecycleStatus.Sleeping ? "lamp" : "crescent",
+    message: state.lifecycleStatus === PetLifecycleStatus.Sleeping ? "Sleeping" : "Rest now",
+    actionLabel: "Sleep",
+    actionType: CareActionType.ToggleSleep
+  };
 }
 
 function PlayPicker({

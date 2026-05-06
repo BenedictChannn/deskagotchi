@@ -131,6 +131,68 @@ describe("simulation", () => {
     expect(cleanResult.state.mood).toBe(Mood.Cleaning);
   });
 
+  it("cleans messes and restores cleanliness", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      messCount: 2,
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        cleanliness: 24,
+        health: 50
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.Clean,
+      now: startedAt
+    });
+
+    expect(result.state.messCount).toBe(0);
+    expect(result.state.stats.cleanliness).toBe(100);
+    expect(result.state.stats.health).toBe(55);
+    expect(result.state.mood).toBe(Mood.Cleaning);
+  });
+
+  it("uses medicine to cure sickness", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      isSick: true,
+      careHistory: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").careHistory,
+        medicineDelayHours: 3
+      },
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-3").stats,
+        health: 20,
+        happiness: 70
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.Medicine,
+      now: startedAt
+    });
+
+    expect(result.state.isSick).toBe(false);
+    expect(result.state.stats.health).toBe(55);
+    expect(result.state.stats.happiness).toBe(66);
+    expect(result.state.careHistory.medicineDelayHours).toBe(0);
+  });
+
+  it("toggles sleep and derives sleeping mood", () => {
+    const state = createInitialPetState(petPackage, "Miso", startedAt, "miso-1");
+    const sleepResult = applyCareAction(state, petPackage, {
+      type: CareActionType.ToggleSleep,
+      now: startedAt
+    });
+    const wakeResult = applyCareAction(sleepResult.state, petPackage, {
+      type: CareActionType.ToggleSleep,
+      now: startedAt
+    });
+
+    expect(sleepResult.state.lifecycleStatus).toBe(PetLifecycleStatus.Sleeping);
+    expect(sleepResult.state.mood).toBe(Mood.Sleeping);
+    expect(wakeResult.state.lifecycleStatus).toBe(PetLifecycleStatus.Active);
+  });
+
   it("uses deterministic mood priority", () => {
     const state = {
       ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
