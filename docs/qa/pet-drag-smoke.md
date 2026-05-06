@@ -5,7 +5,8 @@ Use this checklist for GitHub issue [#3](https://github.com/BenedictChannn/deska
 - Start the app with `npm.cmd run dev`.
 - Confirm only the pet overlay opens by default.
 - Click the visible pet without dragging and confirm the care menu opens.
-- Drag the visible pet and confirm the overlay moves.
+- Drag the visible pet and confirm the overlay moves through the pet sprite
+  pointer handler, not a native full-window drag region.
 - Confirm dragging does not open the care menu.
 - Drag the pet toward each screen edge and confirm it remains visible.
 - Restart the app and confirm the pet restores to the last valid visible position.

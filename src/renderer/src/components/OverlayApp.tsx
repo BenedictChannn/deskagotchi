@@ -95,9 +95,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       lastScreenY: event.screenY,
       totalDelta: 0
     };
-    window.addEventListener("pointermove", moveDrag);
-    window.addEventListener("pointerup", finishDrag);
-    window.addEventListener("pointercancel", finishDrag);
+    event.currentTarget.addEventListener("pointermove", moveDrag);
+    event.currentTarget.addEventListener("pointerup", finishDrag);
+    event.currentTarget.addEventListener("pointercancel", finishDrag);
   };
 
   const moveDrag = (event: PointerEvent): void => {
@@ -133,9 +133,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       return;
     }
 
-    window.removeEventListener("pointermove", moveDrag);
-    window.removeEventListener("pointerup", finishDrag);
-    window.removeEventListener("pointercancel", finishDrag);
+    currentDrag.target.removeEventListener("pointermove", moveDrag);
+    currentDrag.target.removeEventListener("pointerup", finishDrag);
+    currentDrag.target.removeEventListener("pointercancel", finishDrag);
     if (currentDrag.target.hasPointerCapture(event.pointerId)) {
       currentDrag.target.releasePointerCapture(event.pointerId);
     }
