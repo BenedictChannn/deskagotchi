@@ -73,7 +73,7 @@ Validate committed pet packages:
 npm.cmd run validate:pets
 ```
 
-Regenerate placeholder built-in pet assets:
+Regenerate built-in pet assets:
 
 ```powershell
 npm.cmd run generate:pets
@@ -120,12 +120,14 @@ Each pet package is a directory containing:
 
 ```text
 pet.json
-spritesheet.svg
-preview.svg
-icon.svg
+spritesheet.png
+preview.png
+icon.png
 ```
 
-The MVP runtime accepts `.svg`, `.png`, and `.webp` assets. Final imagegen assets should use transparent `.png` or `.webp` spritesheets.
+The MVP runtime accepts `.svg`, `.png`, and `.webp` assets. The monochrome LCD
+production path should use lightweight transparent `.png` atlases; legacy SVGs
+are still accepted for placeholder pets.
 
 Important `pet.json` fields:
 

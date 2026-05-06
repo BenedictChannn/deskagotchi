@@ -2,6 +2,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { generateDeskdogLcdAssets } from "./generate-deskdog-lcd-assets.mjs";
+
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const petsRoot = path.join(projectRoot, "resources", "pets");
 
@@ -55,19 +57,6 @@ const pets = [
     ]
   },
   {
-    packageId: "deskdog",
-    name: "Deskdog",
-    description: "A stubby original dog-like companion that bounces when work gets quiet.",
-    species: "Dog-like desk companion",
-    personality: "Loyal, playful, and snack-motivated.",
-    palette: ["#d8a47f", "#8f5f3c", "#2b2118", "#fff4d6"],
-    playStyle: "chase",
-    foods: ["crunchy kibble", "rice ball"],
-    dislikes: ["lemon peel"],
-    body: "dog",
-    growthStages: basicGrowth("Deskdog")
-  },
-  {
     packageId: "deskduck",
     name: "Deskduck",
     description: "A small original duck-like companion with a determined little waddle.",
@@ -105,6 +94,8 @@ for (const pet of pets) {
   await writeFile(path.join(packageRoot, "preview.svg"), singleFrameSvg(pet, "happy", 1, 192));
   await writeFile(path.join(packageRoot, "icon.svg"), singleFrameSvg(pet, "idle", 0, 96));
 }
+
+await generateDeskdogLcdAssets();
 
 function toPackage(pet) {
   return {

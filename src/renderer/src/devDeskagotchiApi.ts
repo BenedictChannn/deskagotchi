@@ -22,7 +22,12 @@ import {
 } from "@shared/ipc";
 import { applyCareAction, createInitialPetState } from "@shared/simulation";
 
-const STORAGE_KEY = "deskagotchi.dev.save.v1";
+import deskdogIconUrl from "../../../resources/pets/deskdog/icon.png?url";
+import deskdogManifest from "../../../resources/pets/deskdog/pet.json";
+import deskdogPreviewUrl from "../../../resources/pets/deskdog/preview.png?url";
+import deskdogSpritesheetUrl from "../../../resources/pets/deskdog/spritesheet.png?url";
+
+const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
@@ -65,6 +70,8 @@ class DevDeskagotchiApi {
       },
       hidePanel: async () => undefined,
       resetPetWindow: async () => undefined,
+      movePetWindow: async () => undefined,
+      finishPetWindowDrag: async () => undefined,
       setClickThrough: async () => undefined,
       hatchCreateDraft: async (input) => this.hatchCreateDraft(input),
       exportPet: async () => undefined,
@@ -343,12 +350,12 @@ function repairDevSave(
 }
 
 /**
- * Create the built-in placeholder packages used by the browser adapter.
+ * Create the built-in packages used by the browser adapter.
  *
- * @returns Runtime packages with generated SVG assets.
+ * @returns Runtime packages with generated PNG and SVG assets.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  const builtInPackages = [
+  const placeholderPackages = [
     createDevPetPackage({
       packageId: "deskcat",
       name: "Deskcat",
@@ -375,7 +382,29 @@ function createDevPackages(): RuntimePetPackage[] {
     })
   ].map(toRuntimePackage);
 
+  const builtInPackages = [
+    createDeskdogRuntimePackage(),
+    ...placeholderPackages
+  ];
+
   return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
+}
+
+/**
+ * Attach the generated Deskbit Dog package to the browser development adapter.
+ *
+ * @returns Runtime package using the same PNG files that Electron serves.
+ */
+function createDeskdogRuntimePackage(): RuntimePetPackage {
+  return {
+    petPackage: PetPackageSchema.parse(deskdogManifest),
+    assetUrls: {
+      spritesheet: deskdogSpritesheetUrl,
+      preview: deskdogPreviewUrl,
+      icon: deskdogIconUrl
+    },
+    issues: []
+  };
 }
 
 /**

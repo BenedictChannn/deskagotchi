@@ -5,7 +5,7 @@ import path from "node:path";
 import AdmZip from "adm-zip";
 import { vi } from "vitest";
 
-import { DeskagotchiRuntime } from "./runtime";
+import { createAssetUrl, DeskagotchiRuntime } from "./runtime";
 
 const electronMocks = vi.hoisted(() => ({
   showOpenDialog: vi.fn()
@@ -99,6 +99,14 @@ describe("runtime import and hatch safety", () => {
       ])
     );
     await expectCustomPets(userDataDir, []);
+  });
+});
+
+describe("asset URLs", () => {
+  it("includes an optional asset version query to bust renderer cache", () => {
+    expect(createAssetUrl("deskdog", "spritesheet.png", "hash v3")).toBe(
+      "deskagotchi://pet-asset/deskdog/spritesheet.png?v=hash%20v3"
+    );
   });
 });
 

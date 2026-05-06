@@ -3,17 +3,17 @@
   "packageId": "deskdog",
   "packageVersion": "0.1.0",
   "minAppVersion": "0.1.0",
-  "name": "Deskdog",
-  "description": "A stubby original dog-like companion that bounces when work gets quiet.",
+  "name": "Deskbit Dog",
+  "description": "A tiny retro-LCD dog companion with true monochrome sprite animation rows.",
   "source": "built-in",
   "species": "Dog-like desk companion",
   "personality": "Loyal, playful, and snack-motivated.",
   "createdAt": "2026-05-05T00:00:00.000Z",
   "assetVersion": "0.1.0",
   "assets": {
-    "spritesheet": "spritesheet.svg",
-    "preview": "preview.svg",
-    "icon": "icon.svg"
+    "spritesheet": "spritesheet.png",
+    "preview": "preview.png",
+    "icon": "icon.png"
   },
   "animations": [
     {
@@ -22,7 +22,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 5,
       "loop": true
     },
     {
@@ -31,7 +31,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 7,
       "loop": true,
       "fallback": "idle"
     },
@@ -41,7 +41,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 4,
       "loop": true,
       "fallback": "idle"
     },
@@ -51,7 +51,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 5,
       "loop": true,
       "fallback": "idle"
     },
@@ -71,7 +71,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 7,
       "loop": true,
       "fallback": "idle"
     },
@@ -91,7 +91,7 @@
       "frames": 4,
       "frameWidth": 96,
       "frameHeight": 96,
-      "fps": 6,
+      "fps": 5,
       "loop": true,
       "fallback": "idle"
     },
@@ -151,7 +151,7 @@
     {
       "id": "baby",
       "stage": "baby",
-      "label": "Baby Deskdog",
+      "label": "Baby Deskbit Dog",
       "minAgeHours": 2,
       "careScoreMin": 0,
       "careScoreMax": 100,
@@ -172,7 +172,7 @@
     {
       "id": "child",
       "stage": "child",
-      "label": "Child Deskdog",
+      "label": "Child Deskbit Dog",
       "minAgeHours": 8,
       "careScoreMin": 0,
       "careScoreMax": 100,
@@ -193,7 +193,7 @@
     {
       "id": "teen",
       "stage": "teen",
-      "label": "Teen Deskdog",
+      "label": "Teen Deskbit Dog",
       "minAgeHours": 30,
       "careScoreMin": 0,
       "careScoreMax": 100,
@@ -214,7 +214,7 @@
     {
       "id": "adult",
       "stage": "adult",
-      "label": "Adult Deskdog",
+      "label": "Adult Deskbit Dog",
       "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
@@ -249,21 +249,23 @@
     "affectionGainMultiplier": 1
   },
   "colorPalette": [
-    "#d8a47f",
-    "#8f5f3c",
-    "#2b2118",
-    "#fff4d6"
+    "#dceca8",
+    "#7d9d58",
+    "#123716",
+    "#f7f8e7"
   ],
   "author": "Deskagotchi",
-  "license": "Original Deskagotchi placeholder asset",
+  "license": "Original Deskagotchi retro-LCD pixel asset",
   "capabilities": [
     "mvp-animation",
     "growth-v1",
-    "placeholder-art"
+    "retro-lcd",
+    "pixel-poc"
   ],
   "validationStatus": "passed",
-  "assetHash": "deskdog-placeholder-v1",
+  "assetHash": "deskdog-lcd-v1",
   "generation": {
-    "mode": "local-placeholder"
+    "mode": "manual",
+    "prompt": "Dependency-free generated LCD pixel dog based on the approved Deskagotchi mockup direction."
   }
 }

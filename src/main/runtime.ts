@@ -521,12 +521,26 @@ export class DeskagotchiRuntime {
 
   private toRuntimePackage(loadedPackage: LoadedPetPackage): RuntimePetPackage {
     const packageId = loadedPackage.petPackage.packageId;
+    const assetVersion =
+      loadedPackage.petPackage.assetHash ?? loadedPackage.petPackage.assetVersion;
     return {
       petPackage: loadedPackage.petPackage,
       assetUrls: {
-        spritesheet: createAssetUrl(packageId, loadedPackage.petPackage.assets.spritesheet),
-        preview: createAssetUrl(packageId, loadedPackage.petPackage.assets.preview),
-        icon: createAssetUrl(packageId, loadedPackage.petPackage.assets.icon)
+        spritesheet: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.spritesheet,
+          assetVersion
+        ),
+        preview: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.preview,
+          assetVersion
+        ),
+        icon: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.icon,
+          assetVersion
+        )
       },
       issues: loadedPackage.issues
     };
@@ -644,11 +658,20 @@ function parseClockMinutes(value: string): number {
  * @param relativeAssetPath - Slash-delimited asset path inside the package.
  * @returns Encoded deskagotchi protocol URL.
  */
-export function createAssetUrl(packageId: string, relativeAssetPath: string): string {
-  return `deskagotchi://pet-asset/${encodeURIComponent(packageId)}/${relativeAssetPath
+export function createAssetUrl(
+  packageId: string,
+  relativeAssetPath: string,
+  assetVersion?: string
+): string {
+  const assetPath = `deskagotchi://pet-asset/${encodeURIComponent(packageId)}/${relativeAssetPath
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/")}`;
+  if (assetVersion === undefined) {
+    return assetPath;
+  }
+
+  return `${assetPath}?v=${encodeURIComponent(assetVersion)}`;
 }
 
 /**
