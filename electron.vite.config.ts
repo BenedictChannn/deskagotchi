@@ -23,6 +23,10 @@ export default defineConfig({
   },
   renderer: {
     plugins: [react()],
+    server: {
+      port: 5187,
+      strictPort: true
+    },
     resolve: {
       alias: {
         "@shared": resolve("src/shared"),

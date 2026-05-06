@@ -41,6 +41,16 @@ npm.cmd run dev
 
 The pet opens as a transparent desktop overlay. Use the tray icon to recover the pet window, open settings, or quit.
 
+During dev, the renderer is pinned to `http://localhost:5187` so browser-based checks do not collide with other Vite apps. With `npm.cmd run dev` running, open these routes for renderer feedback:
+
+```text
+http://localhost:5187/#/panel/status
+http://localhost:5187/#/panel/pet-selector
+http://localhost:5187/#/panel/hatch
+http://localhost:5187/#/panel/settings
+http://localhost:5187/#/
+```
+
 ## Validate
 
 ```powershell

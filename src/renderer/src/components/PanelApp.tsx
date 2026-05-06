@@ -131,7 +131,7 @@ function StatusView({
         <div>
           <h1>{snapshot.activeState.nickname}</h1>
           <p>
-            {snapshot.activePackage.petPackage.species} · {snapshot.activeState.lifeStage}
+            {snapshot.activePackage.petPackage.species} - {snapshot.activeState.lifeStage}
           </p>
           <p>{snapshot.activePackage.petPackage.personality}</p>
         </div>
@@ -201,11 +201,11 @@ function StatusView({
       <section className="mini-game" aria-label="Play mini-game">
         <div>
           <h2>Play</h2>
-          <p>Rhythm taps build happiness and affection.</p>
         </div>
         <button
           className="mini-game-target"
           type="button"
+          aria-label="Tap target"
           onClick={() => void tapMiniGame()}
           style={{
             "--target-offset": `${(miniGameTaps * 19) % 78}%`
@@ -243,7 +243,7 @@ function PetSelectorView({
       <header className="view-header">
         <div>
           <h1>Pets</h1>
-          <p>Built-in and local custom pet packages use the same manifest.</p>
+          <p>Choose who keeps you company on the desktop.</p>
         </div>
         <CommandButton
           icon={<Import size={18} />}
@@ -303,7 +303,7 @@ function HatchView({
   const createDraft = async (): Promise<void> => {
     const result = await window.deskagotchi.hatchCreateDraft(form);
     if (result.installed) {
-      setMessage("Installed local Hatch draft.");
+      setMessage("Installed pet.");
       onInstalled();
       return;
     }
@@ -328,7 +328,7 @@ function HatchView({
       <header className="view-header">
         <div>
           <h1>Hatch</h1>
-          <p>Create a custom pet draft, preview it, then approve installation.</p>
+          <p>Preview a custom companion before installing it.</p>
         </div>
       </header>
 

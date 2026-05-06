@@ -52,6 +52,22 @@ describe("simulation", () => {
 
     expect(result.state.ageHours).toBeCloseTo(2, 3);
     expect(result.state.stats.hunger).toBeGreaterThan(90);
+    expect(result.state.mood).toBe(Mood.Eating);
+  });
+
+  it("keeps immediate action moods visible for renderer feedback", () => {
+    const state = createInitialPetState(petPackage, "Miso", startedAt, "miso-1");
+    const playResult = applyCareAction(state, petPackage, {
+      type: CareActionType.Play,
+      now: new Date("2026-05-05T00:01:00.000Z")
+    });
+    const cleanResult = applyCareAction(state, petPackage, {
+      type: CareActionType.Clean,
+      now: new Date("2026-05-05T00:01:00.000Z")
+    });
+
+    expect(playResult.state.mood).toBe(Mood.Playing);
+    expect(cleanResult.state.mood).toBe(Mood.Cleaning);
   });
 
   it("uses deterministic mood priority", () => {

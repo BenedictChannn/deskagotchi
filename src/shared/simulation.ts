@@ -212,7 +212,7 @@ export function applyCareAction(
   return {
     state: {
       ...nextState,
-      mood: deriveMood(nextState),
+      mood: deriveActionMood(nextState, action.type),
       updatedAt: action.now.toISOString(),
       lastSimulatedAt: action.now.toISOString()
     },
@@ -265,11 +265,32 @@ export function moodToAnimation(mood: Mood): AnimationId {
     case Mood.Sick:
       return AnimationId.Sick;
     case Mood.Dirty:
+    case Mood.Cleaning:
       return AnimationId.Cleaning;
     case Mood.Attention:
       return AnimationId.Attention;
     case Mood.Idle:
       return AnimationId.Idle;
+  }
+}
+
+function deriveActionMood(
+  state: PetInstanceState,
+  actionType: CareActionType
+): Mood {
+  switch (actionType) {
+    case CareActionType.FeedMeal:
+    case CareActionType.FeedSnack:
+      return Mood.Eating;
+    case CareActionType.Play:
+      return Mood.Playing;
+    case CareActionType.Clean:
+      return Mood.Cleaning;
+    case CareActionType.Medicine:
+    case CareActionType.Pet:
+      return Mood.Happy;
+    case CareActionType.ToggleSleep:
+      return deriveMood(state);
   }
 }
 

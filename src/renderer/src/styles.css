@@ -12,6 +12,13 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -132,6 +139,7 @@ button {
 }
 
 .panel-shell {
+  width: 100vw;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 184px 1fr;
