@@ -57,8 +57,18 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         fallback: AnimationId.Idle
       },
       {
-        id: AnimationId.Sleeping,
+        id: AnimationId.Walking,
         row: 2,
+        frames: 4,
+        frameWidth: 96,
+        frameHeight: 96,
+        fps: 8,
+        loop: true,
+        fallback: AnimationId.Idle
+      },
+      {
+        id: AnimationId.Sleeping,
+        row: 3,
         frames: 2,
         frameWidth: 96,
         frameHeight: 96,
@@ -68,7 +78,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
       },
       {
         id: AnimationId.Sick,
-        row: 3,
+        row: 4,
         frames: 2,
         frameWidth: 96,
         frameHeight: 96,
@@ -97,6 +107,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         animationSet: [
           AnimationId.Idle,
           AnimationId.Happy,
+          AnimationId.Walking,
           AnimationId.Sleeping,
           AnimationId.Sick
         ]
@@ -111,6 +122,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         animationSet: [
           AnimationId.Idle,
           AnimationId.Happy,
+          AnimationId.Walking,
           AnimationId.Sleeping,
           AnimationId.Sick
         ]

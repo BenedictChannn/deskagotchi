@@ -4,7 +4,9 @@ import {
   LifeStage,
   PackageValidationStatus,
   PetSource,
+  DeskagotchiSaveSchema,
   PlayStyle,
+  PetPackageSchema,
   ValidationSeverity,
   type DeskagotchiSave,
   type PetInstanceState,
@@ -21,6 +23,7 @@ import {
 import { applyCareAction, createInitialPetState } from "@shared/simulation";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v1";
+const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
@@ -167,6 +170,7 @@ class DevDeskagotchiApi {
       colorPalette: normalizeColors(input.preferredColors)
     });
     this.packages = [...this.packages, toRuntimePackage(petPackage)];
+    this.persistCustomPackages();
     await this.switchPet(packageId);
 
     return {
@@ -252,6 +256,13 @@ class DevDeskagotchiApi {
       )
     };
   }
+
+  /**
+   * Persist generated custom packages so browser reloads can resolve active saves.
+   */
+  private persistCustomPackages(): void {
+    persistCustomDevPackages(this.packages);
+  }
 }
 
 /**
@@ -264,16 +275,13 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored !== null) {
     try {
-      const parsed = JSON.parse(stored) as DeskagotchiSave;
-      if (
-        parsed.schemaVersion === 1 &&
-        packages.some((petPackage) =>
-          parsed.instances.some(
-            (instance) => instance.packageId === petPackage.petPackage.packageId
-          )
-        )
-      ) {
-        return parsed;
+      const parsed = DeskagotchiSaveSchema.safeParse(JSON.parse(stored));
+      if (parsed.success) {
+        const repairedSave = repairDevSave(parsed.data, packages);
+        if (repairedSave !== undefined) {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(repairedSave));
+          return repairedSave;
+        }
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
@@ -303,12 +311,44 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
 }
 
 /**
+ * Remove save instances that reference unavailable packages and repair active selection.
+ *
+ * @param save - Parsed browser development save.
+ * @param packages - Runtime packages available after loading persisted custom manifests.
+ * @returns A repaired save, or undefined when no saved instance can be resolved.
+ */
+function repairDevSave(
+  save: DeskagotchiSave,
+  packages: RuntimePetPackage[]
+): DeskagotchiSave | undefined {
+  const packageIds = new Set(
+    packages.map((petPackage) => petPackage.petPackage.packageId)
+  );
+  const availableInstances = save.instances.filter((instance) =>
+    packageIds.has(instance.packageId)
+  );
+  if (availableInstances.length === 0) {
+    return undefined;
+  }
+
+  const activeInstance = availableInstances.find(
+    (instance) => instance.instanceId === save.activeInstanceId
+  );
+
+  return {
+    ...save,
+    activeInstanceId: activeInstance?.instanceId ?? availableInstances[0].instanceId,
+    instances: availableInstances
+  };
+}
+
+/**
  * Create the built-in placeholder packages used by the browser adapter.
  *
  * @returns Runtime packages with generated SVG assets.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  return [
+  const builtInPackages = [
     createDevPetPackage({
       packageId: "deskcat",
       name: "Deskcat",
@@ -334,6 +374,60 @@ function createDevPackages(): RuntimePetPackage[] {
       colorPalette: ["#9bdbd4", "#4ecdc4", "#243447", "#fff4d6"]
     })
   ].map(toRuntimePackage);
+
+  return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
+}
+
+/**
+ * Load generated custom package manifests from browser storage.
+ *
+ * @returns Schema-valid custom pet packages created by the development hatch flow.
+ */
+function loadCustomDevPackages(): PetPackage[] {
+  const stored = window.localStorage.getItem(CUSTOM_PACKAGES_STORAGE_KEY);
+  if (stored === null) {
+    return [];
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+      window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
+      return [];
+    }
+
+    return parsed.flatMap((candidate) => {
+      const parsedPackage = PetPackageSchema.safeParse(candidate);
+      if (!parsedPackage.success || parsedPackage.data.source !== PetSource.Custom) {
+        return [];
+      }
+      return [parsedPackage.data];
+    });
+  } catch {
+    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
+    return [];
+  }
+}
+
+/**
+ * Persist generated custom package manifests for browser development reloads.
+ *
+ * @param packages - Current runtime package registry.
+ */
+function persistCustomDevPackages(packages: RuntimePetPackage[]): void {
+  const customPackages = packages
+    .map((runtimePackage) => runtimePackage.petPackage)
+    .filter((petPackage) => petPackage.source === PetSource.Custom);
+
+  if (customPackages.length === 0) {
+    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(
+    CUSTOM_PACKAGES_STORAGE_KEY,
+    JSON.stringify(customPackages)
+  );
 }
 
 /**

@@ -1,9 +1,16 @@
-import { CareActionType, LifeStage, Mood, PetLifecycleStatus } from "./domain";
+import {
+  AnimationId,
+  CareActionType,
+  LifeStage,
+  Mood,
+  PetLifecycleStatus
+} from "./domain";
 import { createTestPetPackage } from "./fixtures";
 import {
   applyCareAction,
   createInitialPetState,
   deriveMood,
+  moodToAnimation,
   progressPetState
 } from "./simulation";
 
@@ -85,14 +92,82 @@ describe("simulation", () => {
     expect(deriveMood(state)).toBe(Mood.Sleeping);
   });
 
-  it("advances growth stages by age and care score", () => {
-    const state = createInitialPetState(petPackage, "Miso", startedAt, "miso-1");
-    const result = progressPetState(
-      state,
-      petPackage,
-      new Date("2026-05-08T12:00:00.000Z")
+  it("uses walking as a deterministic healthy ambient mood", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      ageHours: 0.25,
+      lifeStage: LifeStage.Baby
+    };
+
+    expect(deriveMood(state)).toBe(Mood.Walking);
+    expect(moodToAnimation(Mood.Walking)).toBe(AnimationId.Walking);
+  });
+
+  it("selects competing growth branches by age and care score", () => {
+    const adultAnimationSet = [
+      AnimationId.Idle,
+      AnimationId.Happy,
+      AnimationId.Walking,
+      AnimationId.Sleeping,
+      AnimationId.Sick
+    ];
+    const branchedPetPackage = createTestPetPackage({
+      growthStages: [
+        ...petPackage.growthStages.filter(
+          (growthStage) => growthStage.stage !== LifeStage.Adult
+        ),
+        {
+          id: "adult-steady",
+          stage: LifeStage.Adult,
+          label: "Steady Adult",
+          minAgeHours: 72,
+          careScoreMin: 0,
+          careScoreMax: 49,
+          animationSet: adultAnimationSet
+        },
+        {
+          id: "adult-star",
+          stage: LifeStage.Adult,
+          label: "Star Adult",
+          minAgeHours: 72,
+          careScoreMin: 50,
+          careScoreMax: 100,
+          animationSet: adultAnimationSet
+        }
+      ]
+    });
+    const simulationTime = new Date("2026-05-08T00:00:00.000Z");
+    const adultState = {
+      ...createInitialPetState(branchedPetPackage, "Miso", simulationTime, "miso-1"),
+      ageHours: 72
+    };
+    const lowCareResult = progressPetState(
+      {
+        ...adultState,
+        careHistory: {
+          ...adultState.careHistory,
+          qualityScore: 35
+        }
+      },
+      branchedPetPackage,
+      simulationTime
+    );
+    const highCareResult = progressPetState(
+      {
+        ...adultState,
+        instanceId: "miso-2",
+        careHistory: {
+          ...adultState.careHistory,
+          qualityScore: 85
+        }
+      },
+      branchedPetPackage,
+      simulationTime
     );
 
-    expect(result.state.lifeStage).toBe(LifeStage.Adult);
+    expect(lowCareResult.state.lifeStage).toBe(LifeStage.Adult);
+    expect(lowCareResult.state.growthStageId).toBe("adult-steady");
+    expect(highCareResult.state.lifeStage).toBe(LifeStage.Adult);
+    expect(highCareResult.state.growthStageId).toBe("adult-star");
   });
 });

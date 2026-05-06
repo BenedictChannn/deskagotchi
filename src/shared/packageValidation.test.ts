@@ -31,15 +31,19 @@ describe("package validation", () => {
   it("rejects passed packages that miss required MVP animations", () => {
     const petPackage = createTestPetPackage({
       animations: createTestPetPackage().animations.filter(
-        (animation) => animation.id !== AnimationId.Sick
+        (animation) => animation.id !== AnimationId.Walking
       ),
       validationStatus: PackageValidationStatus.Passed
     });
     const issues = validatePetPackage(petPackage);
 
-    expect(issues.some((issue) => issue.code === "missing_required_animation")).toBe(
-      true
-    );
+    expect(
+      issues.some(
+        (issue) =>
+          issue.code === "missing_required_animation" &&
+          issue.message.includes(AnimationId.Walking)
+      )
+    ).toBe(true);
     expect(issues.some((issue) => issue.code === "passed_package_has_errors")).toBe(
       true
     );

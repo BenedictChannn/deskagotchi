@@ -5,11 +5,12 @@
  * windows, tray actions, and the background simulation timer.
  */
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   app,
   BrowserWindow,
+  type IpcMainInvokeEvent,
   ipcMain,
   Menu,
   nativeImage,
@@ -20,10 +21,15 @@ import {
   Tray,
   type Rectangle
 } from "electron";
+import { z } from "zod";
 
-import { CareActionType } from "@shared/domain";
 import {
-  type HatchDraftInput,
+  CareActionType,
+  ColorHexSchema,
+  DeskagotchiSaveSchema,
+  PetPackageSchema
+} from "@shared/domain";
+import {
   IpcChannel,
   PanelView,
   type UpdateSettingsInput
@@ -47,6 +53,26 @@ protocol.registerSchemesAsPrivileged([
 const PET_WINDOW_DEFAULT_SIZE = 240;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
+const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+const CareActionTypeInputSchema = z.nativeEnum(CareActionType);
+const PanelViewInputSchema = z.nativeEnum(PanelView);
+const BooleanInputSchema = z.boolean();
+const PackageIdInputSchema = PetPackageSchema.shape.packageId;
+const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
+  .partial()
+  .strict();
+const OptionalHatchTextSchema = z.string().trim().max(120).optional();
+const HatchDraftInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(40),
+    description: z.string().trim().min(1).max(280),
+    species: z.string().trim().min(1).max(80),
+    personality: z.string().trim().min(1).max(120),
+    preferredColors: z.array(ColorHexSchema).min(2).max(8),
+    accessory: OptionalHatchTextSchema,
+    theme: OptionalHatchTextSchema
+  })
+  .strict();
 
 let runtime: DeskagotchiRuntime;
 let petWindow: BrowserWindow | undefined;
@@ -110,6 +136,10 @@ function getResourceRoot(): string {
 
 function getPreloadPath(): string {
   return path.join(__dirname, "../preload/index.mjs");
+}
+
+function getRendererFilePath(): string {
+  return path.join(__dirname, "../renderer/index.html");
 }
 
 /**
@@ -218,10 +248,10 @@ function createPanelWindow(view: PanelView): void {
  */
 function createRendererUrl(mode: "overlay" | "panel", view?: PanelView): string {
   const hash = view === undefined ? `#/${mode}` : `#/${mode}/${view}`;
-  if (process.env.ELECTRON_RENDERER_URL !== undefined) {
+  if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL !== undefined) {
     return `${process.env.ELECTRON_RENDERER_URL}${hash}`;
   }
-  return `${pathToFileURL(path.join(__dirname, "../renderer/index.html")).toString()}${hash}`;
+  return `${pathToFileURL(getRendererFilePath()).toString()}${hash}`;
 }
 
 /**
@@ -256,54 +286,131 @@ function registerAssetProtocol(): void {
  * so open windows refresh through their normal data path.
  */
 function registerIpcHandlers(): void {
-  ipcMain.handle(IpcChannel.GetSnapshot, () => runtime.getSnapshot());
-  ipcMain.handle(IpcChannel.PerformAction, async (_event, actionType: CareActionType) => {
-    const snapshot = await runtime.performAction(actionType);
+  ipcMain.handle(IpcChannel.GetSnapshot, (event) => {
+    validateIpcSender(event);
+    return runtime.getSnapshot();
+  });
+  ipcMain.handle(IpcChannel.PerformAction, async (event, actionType: unknown) => {
+    validateIpcSender(event);
+    const validatedActionType = parseIpcInput(
+      CareActionTypeInputSchema,
+      actionType,
+      "care action type"
+    );
+    const snapshot = await runtime.performAction(validatedActionType);
     broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
-  ipcMain.handle(IpcChannel.SwitchPet, async (_event, packageId: string) => {
-    const snapshot = await runtime.switchPet(packageId);
+  ipcMain.handle(IpcChannel.SwitchPet, async (event, packageId: unknown) => {
+    validateIpcSender(event);
+    const validatedPackageId = parseIpcInput(
+      PackageIdInputSchema,
+      packageId,
+      "package id"
+    );
+    const snapshot = await runtime.switchPet(validatedPackageId);
     broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
-  ipcMain.handle(IpcChannel.UpdateSettings, async (_event, settings: UpdateSettingsInput) => {
-    const snapshot = await runtime.updateSettings(settings);
+  ipcMain.handle(IpcChannel.UpdateSettings, async (event, settings: unknown) => {
+    validateIpcSender(event);
+    const validatedSettings = parseIpcInput(
+      UpdateSettingsInputSchema,
+      settings,
+      "settings update"
+    );
+    const snapshot = await runtime.updateSettings(validatedSettings);
     applySettings(snapshot.save.settings);
     broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
-  ipcMain.handle(IpcChannel.OpenPanel, (_event, view: PanelView) => {
-    createPanelWindow(view);
+  ipcMain.handle(IpcChannel.OpenPanel, (event, view: unknown) => {
+    validateIpcSender(event);
+    createPanelWindow(parseIpcInput(PanelViewInputSchema, view, "panel view"));
   });
-  ipcMain.handle(IpcChannel.HidePanel, () => {
+  ipcMain.handle(IpcChannel.HidePanel, (event) => {
+    validateIpcSender(event);
     panelWindow?.hide();
   });
-  ipcMain.handle(IpcChannel.ResetPetWindow, async () => {
+  ipcMain.handle(IpcChannel.ResetPetWindow, async (event) => {
+    validateIpcSender(event);
     resetPetWindow();
     await persistPetWindowBounds();
   });
-  ipcMain.handle(IpcChannel.SetClickThrough, (_event, enabled: boolean) => {
-    petWindow?.setIgnoreMouseEvents(enabled, { forward: true });
+  ipcMain.handle(IpcChannel.SetClickThrough, (event, enabled: unknown) => {
+    validateIpcSender(event);
+    petWindow?.setIgnoreMouseEvents(
+      parseIpcInput(BooleanInputSchema, enabled, "click-through flag"),
+      { forward: true }
+    );
   });
-  ipcMain.handle(IpcChannel.HatchCreateDraft, async (_event, input: HatchDraftInput) => {
-    const result = await runtime.hatchCreateDraft(input);
+  ipcMain.handle(IpcChannel.HatchCreateDraft, async (event, input: unknown) => {
+    validateIpcSender(event);
+    const result = await runtime.hatchCreateDraft(
+      parseIpcInput(HatchDraftInputSchema, input, "hatch draft")
+    );
     broadcastSnapshotUpdated();
     rebuildTray();
     return result;
   });
-  ipcMain.handle(IpcChannel.ExportPet, (_event, packageId: string) =>
-    runtime.exportPet(packageId)
-  );
-  ipcMain.handle(IpcChannel.ImportPet, async () => {
+  ipcMain.handle(IpcChannel.ExportPet, (event, packageId: unknown) => {
+    validateIpcSender(event);
+    return runtime.exportPet(
+      parseIpcInput(PackageIdInputSchema, packageId, "package id")
+    );
+  });
+  ipcMain.handle(IpcChannel.ImportPet, async (event) => {
+    validateIpcSender(event);
     const snapshot = await runtime.importPet();
     broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
+}
+
+function validateIpcSender(event: IpcMainInvokeEvent): void {
+  const senderUrl = event.senderFrame?.url ?? event.sender.getURL();
+  if (!isTrustedRendererUrl(senderUrl)) {
+    throw new Error("Rejected IPC call from an untrusted renderer origin.");
+  }
+}
+
+function isTrustedRendererUrl(rawUrl: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+
+  if (url.protocol === "file:") {
+    url.hash = "";
+    url.search = "";
+    return (
+      path.normalize(fileURLToPath(url)) === path.normalize(getRendererFilePath())
+    );
+  }
+
+  return (
+    !app.isPackaged &&
+    (url.protocol === "http:" || url.protocol === "https:") &&
+    LOCAL_DEV_HOSTNAMES.has(url.hostname)
+  );
+}
+
+function parseIpcInput<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  inputName: string
+): T {
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    throw new Error(`Invalid IPC ${inputName}.`);
+  }
+  return result.data;
 }
 
 function createTray(): void {

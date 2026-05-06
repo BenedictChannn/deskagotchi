@@ -16,6 +16,7 @@ import {
 export const REQUIRED_MVP_ANIMATIONS = [
   AnimationId.Idle,
   AnimationId.Happy,
+  AnimationId.Walking,
   AnimationId.Sleeping,
   AnimationId.Sick
 ];

@@ -37,6 +37,12 @@ export function PetSprite({
   const reducedMotion = snapshot.save.settings.reducedMotion;
   const scale = size / animation.frameWidth;
   const visibleFrame = frame % animation.frames;
+  const sheetColumns = Math.max(
+    ...snapshot.activePackage.petPackage.animations.map(
+      (manifestEntry) => manifestEntry.frames
+    )
+  );
+  const backgroundWidth = animation.frameWidth * sheetColumns * scale;
 
   useEffect(() => {
     if (reducedMotion || animation.frames <= 1) {
@@ -58,7 +64,7 @@ export function PetSprite({
         width: size,
         height: size,
         backgroundImage: `url("${snapshot.activePackage.assetUrls.spritesheet}")`,
-        backgroundSize: `${animation.frameWidth * 4 * scale}px auto`,
+        backgroundSize: `${backgroundWidth}px auto`,
         backgroundPosition: `${-visibleFrame * animation.frameWidth * scale}px ${-animation.row * animation.frameHeight * scale}px`
       }}
     />
@@ -73,32 +79,78 @@ export function PetSprite({
  */
 function selectAnimation(snapshot: DeskagotchiSnapshot): AnimationManifestEntry {
   const requestedAnimation = moodToAnimation(snapshot.activeState.mood);
+  const animations = animationsForActiveGrowthStage(snapshot);
+  const requestedEntry = findAnimation(animations, requestedAnimation);
+  if (requestedEntry !== undefined) {
+    return requestedEntry;
+  }
+
+  const packageRequestedEntry = findAnimation(
+    snapshot.activePackage.petPackage.animations,
+    requestedAnimation
+  );
+  if (packageRequestedEntry?.fallback !== undefined) {
+    const fallbackEntry = findAnimation(animations, packageRequestedEntry.fallback);
+    if (fallbackEntry !== undefined) {
+      return fallbackEntry;
+    }
+  }
+
   return (
-    findAnimation(snapshot, requestedAnimation) ??
-    findAnimation(snapshot, AnimationId.Idle) ??
+    findAnimation(animations, AnimationId.Idle) ??
+    animations[0] ??
     snapshot.activePackage.petPackage.animations[0]
   );
 }
 
 /**
- * Find an animation entry with an idle fallback.
+ * Select the animation entries available for the active growth stage.
  *
  * @param snapshot - Current Deskagotchi runtime snapshot.
+ * @returns The active growth-stage animation entries, or the full manifest when unavailable.
+ */
+function animationsForActiveGrowthStage(
+  snapshot: DeskagotchiSnapshot
+): AnimationManifestEntry[] {
+  const allAnimations = snapshot.activePackage.petPackage.animations;
+  const activeGrowthStage = snapshot.activePackage.petPackage.growthStages.find(
+    (growthStage) => growthStage.id === snapshot.activeState.growthStageId
+  );
+  if (activeGrowthStage === undefined) {
+    return allAnimations;
+  }
+
+  const scopedAnimations = activeGrowthStage.animationSet
+    .map((animationId) => findAnimation(allAnimations, animationId))
+    .filter(isAnimationEntry);
+
+  return scopedAnimations.length > 0 ? scopedAnimations : allAnimations;
+}
+
+/**
+ * Find an animation entry.
+ *
+ * @param animations - Candidate animation entries to search.
  * @param animationId - Requested animation identifier.
- * @returns The requested animation, the idle animation, or undefined when neither exists.
+ * @returns The requested animation, or undefined when it is unavailable.
  */
 function findAnimation(
-  snapshot: DeskagotchiSnapshot,
+  animations: AnimationManifestEntry[],
   animationId: AnimationId
 ): AnimationManifestEntry | undefined {
-  const animation = snapshot.activePackage.petPackage.animations.find(
+  return animations.find(
     (candidate) => candidate.id === animationId
   );
-  if (animation !== undefined) {
-    return animation;
-  }
-  const fallback = snapshot.activePackage.petPackage.animations.find(
-    (candidate) => candidate.id === AnimationId.Idle
-  );
-  return fallback;
+}
+
+/**
+ * Narrow optional animation lookups for growth-stage filtering.
+ *
+ * @param animation - Optional manifest entry from a lookup.
+ * @returns True when the lookup produced an animation entry.
+ */
+function isAnimationEntry(
+  animation: AnimationManifestEntry | undefined
+): animation is AnimationManifestEntry {
+  return animation !== undefined;
 }

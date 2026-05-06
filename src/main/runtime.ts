@@ -54,6 +54,8 @@ import {
 const IMAGEGEN_PLACEHOLDER_NOTE =
   "This local draft is ready for replacement by the approved imagegen pipeline.";
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
+const MAX_IMPORTED_PACKAGE_ENTRIES = 128;
+const MAX_HATCH_DESCRIPTION_LENGTH = 200;
 
 /**
  * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
@@ -297,33 +299,41 @@ export class DeskagotchiRuntime {
 
     const packageId = slugify(`${input.name}-${randomUUID().slice(0, 8)}`);
     const packageRoot = path.join(this.storagePaths.customPetsDir, packageId);
-    await mkdir(packageRoot, { recursive: true });
-    const colorPalette = normalizePalette(input.preferredColors);
-    const petPackage = createHatchPackage(input, packageId, colorPalette);
-    await writeJsonAtomic(path.join(packageRoot, "pet.json"), petPackage);
-    await writeFile(
-      path.join(packageRoot, "spritesheet.svg"),
-      createHatchSpriteSheet(input, colorPalette),
-      "utf8"
-    );
-    await writeFile(
-      path.join(packageRoot, "preview.svg"),
-      createHatchPreview(input, colorPalette, 192),
-      "utf8"
-    );
-    await writeFile(
-      path.join(packageRoot, "icon.svg"),
-      createHatchPreview(input, colorPalette, 96),
-      "utf8"
-    );
+    let loadedIssues: ValidationIssue[];
+    try {
+      await mkdir(packageRoot, { recursive: true });
+      const colorPalette = normalizePalette(input.preferredColors);
+      const petPackage = createHatchPackage(input, packageId, colorPalette);
+      await writeJsonAtomic(path.join(packageRoot, "pet.json"), petPackage);
+      await writeFile(
+        path.join(packageRoot, "spritesheet.svg"),
+        createHatchSpriteSheet(input, colorPalette),
+        "utf8"
+      );
+      await writeFile(
+        path.join(packageRoot, "preview.svg"),
+        createHatchPreview(input, colorPalette, 192),
+        "utf8"
+      );
+      await writeFile(
+        path.join(packageRoot, "icon.svg"),
+        createHatchPreview(input, colorPalette, 96),
+        "utf8"
+      );
 
-    const loadedPackage = await loadPetPackage(packageRoot, PetSource.Custom);
-    if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
-      return {
-        packageId,
-        installed: false,
-        issues: loadedPackage.issues
-      };
+      const loadedPackage = await loadPetPackage(packageRoot, PetSource.Custom);
+      loadedIssues = loadedPackage.issues;
+      if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
+        await rm(packageRoot, { recursive: true, force: true });
+        return {
+          packageId,
+          installed: false,
+          issues: loadedPackage.issues
+        };
+      }
+    } catch (error) {
+      await rm(packageRoot, { recursive: true, force: true });
+      throw error;
     }
 
     await this.reloadPackages();
@@ -331,7 +341,7 @@ export class DeskagotchiRuntime {
     return {
       packageId,
       installed: true,
-      issues: loadedPackage.issues
+      issues: loadedIssues
     };
   }
 
@@ -395,33 +405,63 @@ export class DeskagotchiRuntime {
     );
     await mkdir(destination, { recursive: true });
 
-    for (const entry of archive.getEntries()) {
-      if (entry.isDirectory) {
-        continue;
-      }
-      const normalizedEntryName = entry.entryName.replaceAll("\\", "/");
-      if (
-        normalizedEntryName.startsWith("/") ||
-        normalizedEntryName.split("/").includes("..")
-      ) {
-        throw new Error(`Unsafe archive path '${entry.entryName}'.`);
-      }
-      if (entry.header.size > MAX_IMPORTED_PACKAGE_BYTES) {
-        throw new Error(`Archive entry '${entry.entryName}' is too large.`);
-      }
-      const extension = path.extname(normalizedEntryName).toLowerCase();
-      if ([".exe", ".cmd", ".bat", ".ps1", ".sh", ".js", ".mjs"].includes(extension)) {
-        throw new Error(`Archive entry '${entry.entryName}' is executable.`);
-      }
-      const targetPath = path.join(destination, normalizedEntryName);
-      await mkdir(path.dirname(targetPath), { recursive: true });
-      await writeFile(targetPath, entry.getData());
-    }
+    try {
+      let entryCount = 0;
+      let cumulativeUncompressedBytes = 0;
 
-    const loadedPackage = await loadPetPackage(destination, PetSource.Custom);
-    if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
+      for (const entry of archive.getEntries()) {
+        entryCount += 1;
+        if (entryCount > MAX_IMPORTED_PACKAGE_ENTRIES) {
+          throw new Error("Imported pet pack contains too many entries.");
+        }
+
+        if (entry.isDirectory) {
+          continue;
+        }
+
+        const normalizedEntryName = entry.entryName.replaceAll("\\", "/");
+        if (
+          normalizedEntryName.startsWith("/") ||
+          normalizedEntryName.split("/").includes("..")
+        ) {
+          throw new Error(`Unsafe archive path '${entry.entryName}'.`);
+        }
+        if (entry.header.size > MAX_IMPORTED_PACKAGE_BYTES) {
+          throw new Error(`Archive entry '${entry.entryName}' is too large.`);
+        }
+        cumulativeUncompressedBytes += entry.header.size;
+        if (cumulativeUncompressedBytes > MAX_IMPORTED_PACKAGE_BYTES) {
+          throw new Error("Imported pet pack exceeds the uncompressed size limit.");
+        }
+
+        const extension = path.extname(normalizedEntryName).toLowerCase();
+        if ([".exe", ".cmd", ".bat", ".ps1", ".sh", ".js", ".mjs"].includes(extension)) {
+          throw new Error(`Archive entry '${entry.entryName}' is executable.`);
+        }
+
+        const data = entry.getData();
+        if (data.byteLength > MAX_IMPORTED_PACKAGE_BYTES) {
+          throw new Error(`Archive entry '${entry.entryName}' is too large.`);
+        }
+        const actualUncompressedBytes =
+          cumulativeUncompressedBytes - entry.header.size + data.byteLength;
+        if (actualUncompressedBytes > MAX_IMPORTED_PACKAGE_BYTES) {
+          throw new Error("Imported pet pack exceeds the uncompressed size limit.");
+        }
+        cumulativeUncompressedBytes = actualUncompressedBytes;
+
+        const targetPath = path.join(destination, normalizedEntryName);
+        await mkdir(path.dirname(targetPath), { recursive: true });
+        await writeFile(targetPath, data);
+      }
+
+      const loadedPackage = await loadPetPackage(destination, PetSource.Custom);
+      if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
+        throw new Error("Imported pet pack failed validation.");
+      }
+    } catch (error) {
       await rm(destination, { recursive: true, force: true });
-      throw new Error("Imported pet pack failed validation.");
+      throw error;
     }
   }
 
@@ -648,6 +688,36 @@ function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
       severity: ValidationSeverity.Error,
       code: "hatch_name_invalid",
       message: "Pet name must be between 1 and 40 characters."
+    });
+  }
+
+  if (
+    input.description.trim().length < 1 ||
+    input.description.trim().length > MAX_HATCH_DESCRIPTION_LENGTH
+  ) {
+    issues.push({
+      severity: ValidationSeverity.Error,
+      code: "hatch_description_invalid",
+      message: `Pet description must be between 1 and ${MAX_HATCH_DESCRIPTION_LENGTH} characters.`
+    });
+  }
+
+  if (input.species.trim().length < 1 || input.species.trim().length > 80) {
+    issues.push({
+      severity: ValidationSeverity.Error,
+      code: "hatch_species_invalid",
+      message: "Pet species must be between 1 and 80 characters."
+    });
+  }
+
+  if (
+    input.personality.trim().length < 1 ||
+    input.personality.trim().length > 120
+  ) {
+    issues.push({
+      severity: ValidationSeverity.Error,
+      code: "hatch_personality_invalid",
+      message: "Pet personality must be between 1 and 120 characters."
     });
   }
 

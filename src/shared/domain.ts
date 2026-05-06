@@ -56,6 +56,7 @@ export enum Mood {
   Sick = "sick",
   Dirty = "dirty",
   Cleaning = "cleaning",
+  Walking = "walking",
   Attention = "attention"
 }
 

@@ -290,6 +290,10 @@ export function deriveMood(state: PetInstanceState): Mood {
     return Mood.Happy;
   }
 
+  if (shouldUseAmbientWalkingMood(state)) {
+    return Mood.Walking;
+  }
+
   return Mood.Idle;
 }
 
@@ -318,11 +322,30 @@ export function moodToAnimation(mood: Mood): AnimationId {
     case Mood.Dirty:
     case Mood.Cleaning:
       return AnimationId.Cleaning;
+    case Mood.Walking:
+      return AnimationId.Walking;
     case Mood.Attention:
       return AnimationId.Attention;
     case Mood.Idle:
       return AnimationId.Idle;
   }
+}
+
+function shouldUseAmbientWalkingMood(state: PetInstanceState): boolean {
+  if (state.lifeStage === LifeStage.Egg) {
+    return false;
+  }
+
+  if (
+    state.stats.energy < 45 ||
+    state.stats.hunger < 45 ||
+    state.stats.cleanliness < 45 ||
+    state.stats.health < 45
+  ) {
+    return false;
+  }
+
+  return Math.floor(state.ageHours * 4) % 4 === 1;
 }
 
 function deriveActionMood(

@@ -43,71 +43,64 @@ export function PanelApp({
   initialView,
   snapshot
 }: PanelAppProps): React.JSX.Element {
-  const [activeView, setActiveView] = useState(initialView);
-  const [localSnapshot, setLocalSnapshot] = useState(snapshot);
-
-  const refresh = async (): Promise<void> => {
-    setLocalSnapshot(await window.deskagotchi.getSnapshot());
-  };
+  const activeView = initialView;
 
   const performAction = async (actionType: CareActionType): Promise<void> => {
-    setLocalSnapshot(await window.deskagotchi.performAction(actionType));
+    await window.deskagotchi.performAction(actionType);
+  };
+
+  const selectView = (view: PanelView): void => {
+    window.location.hash = `#/panel/${view}`;
   };
 
   return (
     <main className="panel-shell">
       <aside className="panel-sidebar">
         <div className="panel-brand">
-          <img src={localSnapshot.activePackage.assetUrls.icon} alt="" />
+          <img src={snapshot.activePackage.assetUrls.icon} alt="" />
           <div>
             <strong>Deskagotchi</strong>
-            <span>{localSnapshot.activeState.nickname}</span>
+            <span>{snapshot.activeState.nickname}</span>
           </div>
         </div>
         <PanelNavButton
           active={activeView === PanelView.Status}
           icon={<Stethoscope size={18} />}
           label="Status"
-          onClick={() => setActiveView(PanelView.Status)}
+          onClick={() => selectView(PanelView.Status)}
         />
         <PanelNavButton
           active={activeView === PanelView.PetSelector}
           icon={<SwitchCamera size={18} />}
           label="Pets"
-          onClick={() => setActiveView(PanelView.PetSelector)}
+          onClick={() => selectView(PanelView.PetSelector)}
         />
         <PanelNavButton
           active={activeView === PanelView.Hatch}
           icon={<WandSparkles size={18} />}
           label="Hatch"
-          onClick={() => setActiveView(PanelView.Hatch)}
+          onClick={() => selectView(PanelView.Hatch)}
         />
         <PanelNavButton
           active={activeView === PanelView.Settings}
           icon={<Settings size={18} />}
           label="Settings"
-          onClick={() => setActiveView(PanelView.Settings)}
+          onClick={() => selectView(PanelView.Settings)}
         />
       </aside>
 
       <section className="panel-content">
         {activeView === PanelView.Status ? (
-          <StatusView snapshot={localSnapshot} onAction={performAction} />
+          <StatusView snapshot={snapshot} onAction={performAction} />
         ) : null}
         {activeView === PanelView.PetSelector ? (
-          <PetSelectorView
-            snapshot={localSnapshot}
-            onChanged={(nextSnapshot) => setLocalSnapshot(nextSnapshot)}
-          />
+          <PetSelectorView snapshot={snapshot} />
         ) : null}
         {activeView === PanelView.Hatch ? (
-          <HatchView onInstalled={() => void refresh()} />
+          <HatchView />
         ) : null}
         {activeView === PanelView.Settings ? (
-          <SettingsView
-            snapshot={localSnapshot}
-            onChanged={(nextSnapshot) => setLocalSnapshot(nextSnapshot)}
-          />
+          <SettingsView snapshot={snapshot} />
         ) : null}
       </section>
     </main>
@@ -229,14 +222,12 @@ function StatusView({
 }
 
 function PetSelectorView({
-  snapshot,
-  onChanged
+  snapshot
 }: {
   snapshot: DeskagotchiSnapshot;
-  onChanged: (snapshot: DeskagotchiSnapshot) => void;
 }): React.JSX.Element {
   const switchPet = async (petPackage: RuntimePetPackage): Promise<void> => {
-    onChanged(await window.deskagotchi.switchPet(petPackage.petPackage.packageId));
+    await window.deskagotchi.switchPet(petPackage.petPackage.packageId);
   };
 
   const exportPet = async (petPackage: RuntimePetPackage): Promise<void> => {
@@ -244,7 +235,7 @@ function PetSelectorView({
   };
 
   const importPet = async (): Promise<void> => {
-    onChanged(await window.deskagotchi.importPet());
+    await window.deskagotchi.importPet();
   };
 
   return (
@@ -291,11 +282,7 @@ function PetSelectorView({
   );
 }
 
-function HatchView({
-  onInstalled
-}: {
-  onInstalled: () => void;
-}): React.JSX.Element {
+function HatchView(): React.JSX.Element {
   const [previewVersion, setPreviewVersion] = useState(0);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [form, setForm] = useState<HatchDraftInput>({
@@ -313,7 +300,6 @@ function HatchView({
     const result = await window.deskagotchi.hatchCreateDraft(form);
     if (result.installed) {
       setMessage("Installed pet.");
-      onInstalled();
       return;
     }
     setMessage(result.issues.map((issue) => issue.message).join(" "));
@@ -446,14 +432,12 @@ function HatchView({
 }
 
 function SettingsView({
-  snapshot,
-  onChanged
+  snapshot
 }: {
   snapshot: DeskagotchiSnapshot;
-  onChanged: (snapshot: DeskagotchiSnapshot) => void;
 }): React.JSX.Element {
   const update = async (settings: UpdateSettingsInput): Promise<void> => {
-    onChanged(await window.deskagotchi.updateSettings(settings));
+    await window.deskagotchi.updateSettings(settings);
   };
 
   return (
