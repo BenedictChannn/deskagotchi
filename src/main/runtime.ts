@@ -2,7 +2,7 @@
  * Runtime service for main-process state, package, and simulation operations.
  */
 import { randomUUID } from "node:crypto";
-import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import AdmZip from "adm-zip";
@@ -10,7 +10,7 @@ import { app, dialog, Notification } from "electron";
 
 import {
   AnimationId,
-  CareActionType,
+  type CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   LifeStage,
@@ -253,7 +253,7 @@ export class DeskagotchiRuntime {
    *
    * @param now - Clock value used for quiet-hours and cooldown checks.
    */
-  async maybeNotifyAttention(now = new Date()): Promise<void> {
+  maybeNotifyAttention(now = new Date()): void {
     const save = this.requireSave();
     if (!save.settings.notificationsEnabled) {
       return;

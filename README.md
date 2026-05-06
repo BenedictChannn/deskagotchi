@@ -57,7 +57,15 @@ http://localhost:5187/#/
 npm.cmd run check
 ```
 
-This runs TypeScript typechecking and the Vitest suite.
+This runs ESLint, TypeScript typechecking, and the Vitest suite.
+
+The pre-commit hook runs the faster gate:
+
+```powershell
+npm.cmd run precommit
+```
+
+That checks linting and TypeScript before Git accepts a commit.
 
 Validate committed pet packages:
 

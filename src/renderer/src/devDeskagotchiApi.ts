@@ -1,6 +1,6 @@
 import {
   AnimationId,
-  CareActionType,
+  type CareActionType,
   LifeStage,
   PackageValidationStatus,
   PetSource,

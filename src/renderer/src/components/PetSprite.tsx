@@ -31,14 +31,14 @@ export function PetSprite({
 }: PetSpriteProps): React.JSX.Element {
   const animation = useMemo(
     () => selectAnimation(snapshot),
-    [snapshot.activePackage.petPackage.animations, snapshot.activeState.mood]
+    [snapshot]
   );
   const [frame, setFrame] = useState(0);
   const reducedMotion = snapshot.save.settings.reducedMotion;
   const scale = size / animation.frameWidth;
+  const visibleFrame = frame % animation.frames;
 
   useEffect(() => {
-    setFrame(0);
     if (reducedMotion || animation.frames <= 1) {
       return undefined;
     }
@@ -59,7 +59,7 @@ export function PetSprite({
         height: size,
         backgroundImage: `url("${snapshot.activePackage.assetUrls.spritesheet}")`,
         backgroundSize: `${animation.frameWidth * 4 * scale}px auto`,
-        backgroundPosition: `${-frame * animation.frameWidth * scale}px ${-animation.row * animation.frameHeight * scale}px`
+        backgroundPosition: `${-visibleFrame * animation.frameWidth * scale}px ${-animation.row * animation.frameHeight * scale}px`
       }}
     />
   );

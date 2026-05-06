@@ -22,7 +22,12 @@ import {
 } from "electron";
 
 import { CareActionType } from "@shared/domain";
-import { IpcChannel, PanelView, type UpdateSettingsInput } from "@shared/ipc";
+import {
+  type HatchDraftInput,
+  IpcChannel,
+  PanelView,
+  type UpdateSettingsInput
+} from "@shared/ipc";
 
 import { DeskagotchiRuntime } from "./runtime";
 
@@ -59,23 +64,29 @@ if (!app.requestSingleInstanceLock()) {
     createPanelWindow(PanelView.Status);
   });
 
-  app.whenReady().then(async () => {
-    app.setAppUserModelId("app.deskagotchi.desktop");
-    runtime = new DeskagotchiRuntime(getResourceRoot(), app.getPath("userData"));
-    await runtime.initialize();
-    const startupSnapshot = await runtime.getSnapshot();
-    applySettings(startupSnapshot.save.settings);
-    registerAssetProtocol();
-    registerIpcHandlers();
-    createPetWindow();
-    createTray();
-    if (!app.isPackaged) {
-      createPanelWindow(PanelView.Status);
-    }
-    startSimulationTimer();
-    powerMonitor.on("resume", () => void tickSimulation());
-    powerMonitor.on("unlock-screen", () => void tickSimulation());
-  });
+  void app
+    .whenReady()
+    .then(async () => {
+      app.setAppUserModelId("app.deskagotchi.desktop");
+      runtime = new DeskagotchiRuntime(getResourceRoot(), app.getPath("userData"));
+      await runtime.initialize();
+      const startupSnapshot = await runtime.getSnapshot();
+      applySettings(startupSnapshot.save.settings);
+      registerAssetProtocol();
+      registerIpcHandlers();
+      createPetWindow();
+      createTray();
+      if (!app.isPackaged) {
+        createPanelWindow(PanelView.Status);
+      }
+      startSimulationTimer();
+      powerMonitor.on("resume", () => void tickSimulation());
+      powerMonitor.on("unlock-screen", () => void tickSimulation());
+    })
+    .catch((error: unknown) => {
+      console.error(error);
+      app.quit();
+    });
 }
 
 app.on("before-quit", () => {
@@ -156,7 +167,7 @@ function createPetWindow(): void {
         petWindow?.show();
         petWindow?.moveTop();
       });
-      petWindow.loadURL(createRendererUrl("overlay"));
+      void petWindow.loadURL(createRendererUrl("overlay"));
     })
     .catch((error) => {
       console.error(error);
@@ -171,7 +182,7 @@ function createPetWindow(): void {
  */
 function createPanelWindow(view: PanelView): void {
   if (panelWindow !== undefined && !panelWindow.isDestroyed()) {
-    panelWindow.loadURL(createRendererUrl("panel", view));
+    void panelWindow.loadURL(createRendererUrl("panel", view));
     panelWindow.show();
     panelWindow.focus();
     return;
@@ -195,7 +206,7 @@ function createPanelWindow(view: PanelView): void {
   panelWindow.on("closed", () => {
     panelWindow = undefined;
   });
-  panelWindow.loadURL(createRendererUrl("panel", view));
+  void panelWindow.loadURL(createRendererUrl("panel", view));
 }
 
 /**
@@ -248,20 +259,20 @@ function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.GetSnapshot, () => runtime.getSnapshot());
   ipcMain.handle(IpcChannel.PerformAction, async (_event, actionType: CareActionType) => {
     const snapshot = await runtime.performAction(actionType);
-    await broadcastSnapshotUpdated();
+    broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
   ipcMain.handle(IpcChannel.SwitchPet, async (_event, packageId: string) => {
     const snapshot = await runtime.switchPet(packageId);
-    await broadcastSnapshotUpdated();
+    broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
   ipcMain.handle(IpcChannel.UpdateSettings, async (_event, settings: UpdateSettingsInput) => {
     const snapshot = await runtime.updateSettings(settings);
     applySettings(snapshot.save.settings);
-    await broadcastSnapshotUpdated();
+    broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
@@ -278,9 +289,9 @@ function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.SetClickThrough, (_event, enabled: boolean) => {
     petWindow?.setIgnoreMouseEvents(enabled, { forward: true });
   });
-  ipcMain.handle(IpcChannel.HatchCreateDraft, async (_event, input) => {
+  ipcMain.handle(IpcChannel.HatchCreateDraft, async (_event, input: HatchDraftInput) => {
     const result = await runtime.hatchCreateDraft(input);
-    await broadcastSnapshotUpdated();
+    broadcastSnapshotUpdated();
     rebuildTray();
     return result;
   });
@@ -289,7 +300,7 @@ function registerIpcHandlers(): void {
   );
   ipcMain.handle(IpcChannel.ImportPet, async () => {
     const snapshot = await runtime.importPet();
-    await broadcastSnapshotUpdated();
+    broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
   });
@@ -344,7 +355,7 @@ function rebuildTray(): void {
  */
 async function performTrayAction(actionType: CareActionType): Promise<void> {
   await runtime.performAction(actionType);
-  await broadcastSnapshotUpdated();
+  broadcastSnapshotUpdated();
   showPetWindow();
 }
 
@@ -471,11 +482,11 @@ function startSimulationTimer(): void {
  */
 async function tickSimulation(): Promise<void> {
   await runtime.getSnapshot();
-  await runtime.maybeNotifyAttention();
-  await broadcastSnapshotUpdated();
+  runtime.maybeNotifyAttention();
+  broadcastSnapshotUpdated();
 }
 
-async function broadcastSnapshotUpdated(): Promise<void> {
+function broadcastSnapshotUpdated(): void {
   petWindow?.webContents.send(IpcChannel.SnapshotUpdated);
   panelWindow?.webContents.send(IpcChannel.SnapshotUpdated);
 }

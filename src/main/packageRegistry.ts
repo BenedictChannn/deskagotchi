@@ -7,7 +7,7 @@ import path from "node:path";
 import {
   PetPackageSchema,
   type PetPackage,
-  PetSource,
+  type PetSource,
   type ValidationIssue,
   ValidationSeverity
 } from "@shared/domain";
