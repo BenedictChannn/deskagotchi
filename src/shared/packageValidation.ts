@@ -1,3 +1,8 @@
+/**
+ * Shared package validation helpers for manifests and runtime imports.
+ *
+ * @module
+ */
 import {
   AnimationId,
   PackageValidationStatus,
@@ -7,6 +12,7 @@ import {
   ValidationSeverity
 } from "./domain";
 
+/** Minimum animation set required for an MVP-compatible pet package. */
 export const REQUIRED_MVP_ANIMATIONS = [
   AnimationId.Idle,
   AnimationId.Happy,
@@ -16,6 +22,12 @@ export const REQUIRED_MVP_ANIMATIONS = [
 
 const ALLOWED_ASSET_EXTENSIONS = [".png", ".webp", ".svg"];
 
+/**
+ * Parses unknown package data and converts schema errors into validation issues.
+ *
+ * @param input Raw manifest data from disk, import, or authoring tools.
+ * @returns Parsed package when valid, plus validation issues for display/logging.
+ */
 export function parsePetPackage(input: unknown): {
   package?: PetPackage;
   issues: ValidationIssue[];
@@ -40,6 +52,12 @@ export function parsePetPackage(input: unknown): {
   };
 }
 
+/**
+ * Runs semantic package checks that require a schema-valid pet manifest.
+ *
+ * @param petPackage Parsed pet package manifest.
+ * @returns Validation issues for missing animations, asset formats, and growth links.
+ */
 export function validatePetPackage(petPackage: PetPackage): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const animationIds = new Set<AnimationId>();
@@ -144,6 +162,12 @@ export function validatePetPackage(petPackage: PetPackage): ValidationIssue[] {
   return issues;
 }
 
+/**
+ * Indicates whether a package issue list contains any blocking errors.
+ *
+ * @param issues Issues returned by package parsing or semantic validation.
+ * @returns True when at least one issue has error severity.
+ */
 export function hasBlockingIssues(issues: ValidationIssue[]): boolean {
   return issues.some((issue) => issue.severity === ValidationSeverity.Error);
 }

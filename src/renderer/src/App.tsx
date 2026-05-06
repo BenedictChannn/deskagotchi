@@ -6,11 +6,19 @@ import { PanelView } from "@shared/ipc";
 import { OverlayApp } from "./components/OverlayApp";
 import { PanelApp } from "./components/PanelApp";
 
+/** Route state derived from the renderer hash fragment. */
 interface RouteState {
+  /** Window mode selected by the URL hash. */
   mode: "overlay" | "panel";
+  /** Initial panel subview requested by deep links. */
   panelView: PanelView;
 }
 
+/**
+ * Render the Deskagotchi overlay or control panel from the current bridge state.
+ *
+ * @returns The active renderer surface for the current route.
+ */
 export function App(): React.JSX.Element {
   const [snapshot, setSnapshot] = useState<DeskagotchiSnapshot>();
   const [route, setRoute] = useState<RouteState>(() => getRouteState());
@@ -67,6 +75,11 @@ export function App(): React.JSX.Element {
   return content;
 }
 
+/**
+ * Parse the current hash route into the renderer mode and panel view.
+ *
+ * @returns The route state used to select the top-level renderer surface.
+ */
 function getRouteState(): RouteState {
   const parts = window.location.hash.replace(/^#\/?/, "").split("/");
   const mode = parts[0] === "panel" ? "panel" : "overlay";
@@ -74,6 +87,12 @@ function getRouteState(): RouteState {
   return { mode, panelView };
 }
 
+/**
+ * Normalize a route segment into a supported panel view.
+ *
+ * @param value - Raw panel route segment from the URL hash.
+ * @returns The matching panel view, or the status view when the segment is missing or unknown.
+ */
 function parsePanelView(value: string | undefined): PanelView {
   switch (value) {
     case PanelView.Settings:

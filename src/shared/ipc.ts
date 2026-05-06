@@ -1,3 +1,8 @@
+/**
+ * Shared IPC contract between Electron main, preload, and renderer code.
+ *
+ * @module
+ */
 import type {
   CareActionType,
   DeskagotchiSave,
@@ -6,6 +11,7 @@ import type {
   ValidationIssue
 } from "./domain";
 
+/** IPC channel names shared by preload, renderer, and Electron main process. */
 export enum IpcChannel {
   GetSnapshot = "deskagotchi:getSnapshot",
   PerformAction = "deskagotchi:performAction",
@@ -21,6 +27,7 @@ export enum IpcChannel {
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
 }
 
+/** Panel routes the main process can ask the renderer shell to display. */
 export enum PanelView {
   Status = "status",
   Settings = "settings",
@@ -28,6 +35,7 @@ export enum PanelView {
   PetSelector = "pet-selector"
 }
 
+/** Runtime package view with resolved asset URLs and validation issues. */
 export interface RuntimePetPackage {
   petPackage: PetPackage;
   assetUrls: {
@@ -38,6 +46,7 @@ export interface RuntimePetPackage {
   issues: ValidationIssue[];
 }
 
+/** Complete state snapshot sent from Electron main to the renderer. */
 export interface DeskagotchiSnapshot {
   save: DeskagotchiSave;
   activeState: PetInstanceState;
@@ -47,6 +56,7 @@ export interface DeskagotchiSnapshot {
   userDataPath: string;
 }
 
+/** Input collected by Hatch before generating or installing a draft pet package. */
 export interface HatchDraftInput {
   name: string;
   description: string;
@@ -57,14 +67,17 @@ export interface HatchDraftInput {
   theme?: string;
 }
 
+/** Result of creating and installing a Hatch draft package. */
 export interface HatchDraftResult {
   packageId: string;
   installed: boolean;
   issues: ValidationIssue[];
 }
 
+/** Partial save-settings update accepted over IPC. */
 export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
 
+/** Renderer-facing API exposed by preload for desktop pet operations. */
 export interface DeskagotchiApi {
   getSnapshot: () => Promise<DeskagotchiSnapshot>;
   performAction: (actionType: CareActionType) => Promise<DeskagotchiSnapshot>;

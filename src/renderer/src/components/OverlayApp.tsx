@@ -15,10 +15,18 @@ import { PanelView } from "@shared/ipc";
 
 import { PetSprite } from "./PetSprite";
 
+/** Props for the always-on-desktop pet overlay. */
 interface OverlayAppProps {
+  /** Current simulation snapshot used to render pet state and actions. */
   snapshot: DeskagotchiSnapshot;
 }
 
+/**
+ * Render the compact overlay pet and its quick action radial menu.
+ *
+ * @param props - Overlay snapshot and action state.
+ * @returns The desktop overlay renderer view.
+ */
 export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false);
 

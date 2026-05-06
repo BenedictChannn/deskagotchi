@@ -5,13 +5,24 @@ import { AnimationId } from "@shared/domain";
 import type { DeskagotchiSnapshot } from "@shared/ipc";
 import { moodToAnimation } from "@shared/simulation";
 
+/** Props for rendering a package spritesheet frame as a pet sprite. */
 interface PetSpriteProps {
+  /** Snapshot containing the active pet package, save settings, and mood. */
   snapshot: DeskagotchiSnapshot;
+  /** CSS pixel size for the square sprite button. */
   size: number;
+  /** Whether the sprite should use interactive button styling. */
   interactive?: boolean;
+  /** Optional click handler used by overlay and panel controls. */
   onClick?: () => void;
 }
 
+/**
+ * Render the active pet animation frame from its spritesheet.
+ *
+ * @param props - Sprite snapshot, dimensions, and optional interaction behavior.
+ * @returns A button element displaying the current pet frame.
+ */
 export function PetSprite({
   snapshot,
   size,
@@ -54,6 +65,12 @@ export function PetSprite({
   );
 }
 
+/**
+ * Select the most appropriate animation for the active pet mood.
+ *
+ * @param snapshot - Current Deskagotchi runtime snapshot.
+ * @returns The mood animation, idle fallback, or first manifest entry.
+ */
 function selectAnimation(snapshot: DeskagotchiSnapshot): AnimationManifestEntry {
   const requestedAnimation = moodToAnimation(snapshot.activeState.mood);
   return (
@@ -63,6 +80,13 @@ function selectAnimation(snapshot: DeskagotchiSnapshot): AnimationManifestEntry 
   );
 }
 
+/**
+ * Find an animation entry with an idle fallback.
+ *
+ * @param snapshot - Current Deskagotchi runtime snapshot.
+ * @param animationId - Requested animation identifier.
+ * @returns The requested animation, the idle animation, or undefined when neither exists.
+ */
 function findAnimation(
   snapshot: DeskagotchiSnapshot,
   animationId: AnimationId

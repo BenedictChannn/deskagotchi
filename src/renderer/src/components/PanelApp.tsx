@@ -25,11 +25,20 @@ import { PanelView } from "@shared/ipc";
 
 import { PetSprite } from "./PetSprite";
 
+/** Props for the full Deskagotchi control panel. */
 interface PanelAppProps {
+  /** Panel view selected by the route when the panel opens. */
   initialView: PanelView;
+  /** Initial bridge snapshot used to seed local panel state. */
   snapshot: DeskagotchiSnapshot;
 }
 
+/**
+ * Render the full control panel for status, pet selection, hatching, and settings.
+ *
+ * @param props - Initial view and application snapshot from the bridge.
+ * @returns The panel renderer view.
+ */
 export function PanelApp({
   initialView,
   snapshot

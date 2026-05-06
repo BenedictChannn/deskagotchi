@@ -1,3 +1,6 @@
+/**
+ * Runtime service for main-process state, package, and simulation operations.
+ */
 import { randomUUID } from "node:crypto";
 import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -52,6 +55,12 @@ const IMAGEGEN_PLACEHOLDER_NOTE =
   "This local draft is ready for replacement by the approved imagegen pipeline.";
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
 
+/**
+ * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
+ *
+ * The main process keeps a single runtime instance so IPC handlers and background
+ * timers mutate one in-memory save before persisting it atomically.
+ */
 export class DeskagotchiRuntime {
   private readonly resourcePetsDir: string;
   private readonly storagePaths: StoragePaths;
@@ -59,11 +68,23 @@ export class DeskagotchiRuntime {
   private save: DeskagotchiSave | undefined;
   private lastNotificationAt = 0;
 
+  /**
+   * Create a runtime bound to packaged resources and Electron user data.
+   *
+   * @param resourceRoot - Directory containing built-in app resources.
+   * @param userDataDir - Electron userData directory for saves and custom pets.
+   */
   constructor(resourceRoot: string, userDataDir: string) {
     this.resourcePetsDir = path.join(resourceRoot, "pets");
     this.storagePaths = createStoragePaths(userDataDir);
   }
 
+  /**
+   * Load pet packages, create or recover a save, and catch up active pet state.
+   *
+   * @param now - Clock value used for deterministic tests and offline catchup.
+   * @throws Error when no valid pet package is available.
+   */
   async initialize(now = new Date()): Promise<void> {
     await this.reloadPackages();
     this.save = await loadOrCreateSave(
@@ -74,16 +95,35 @@ export class DeskagotchiRuntime {
     await this.progressActivePet(now);
   }
 
+  /**
+   * Return the active Electron userData directory.
+   *
+   * @returns Absolute path used for saves, custom pets, exports, and temp files.
+   */
   getUserDataPath(): string {
     return this.storagePaths.userDataDir;
   }
 
+  /**
+   * Resolve the root directory for a loaded package.
+   *
+   * @param packageId - Pet package identifier.
+   * @returns Absolute package root, or undefined when the package is not loaded.
+   */
   getPackageRoot(packageId: string): string | undefined {
     return this.loadedPackages.find(
       (loadedPackage) => loadedPackage.petPackage.packageId === packageId
     )?.packageRoot;
   }
 
+  /**
+   * Resolve a package asset path after verifying the package is loaded.
+   *
+   * @param packageId - Pet package identifier.
+   * @param relativeAssetPath - Asset path declared by the package manifest.
+   * @returns Absolute file path to the asset.
+   * @throws Error when the package is unknown or the asset escapes its package root.
+   */
   resolveAsset(packageId: string, relativeAssetPath: string): string {
     const packageRoot = this.getPackageRoot(packageId);
     if (packageRoot === undefined) {
@@ -92,11 +132,24 @@ export class DeskagotchiRuntime {
     return resolvePackageAssetPath(packageRoot, relativeAssetPath);
   }
 
+  /**
+   * Progress the active pet and return a renderer-ready snapshot.
+   *
+   * @param now - Clock value used for simulation progress.
+   * @returns Current save, active pet state, loaded packages, and app metadata.
+   */
   async getSnapshot(now = new Date()): Promise<DeskagotchiSnapshot> {
     await this.progressActivePet(now);
     return this.createSnapshot();
   }
 
+  /**
+   * Apply a care action to the active pet and persist the result.
+   *
+   * @param actionType - Care action requested by the user.
+   * @param now - Clock value used by simulation and action effects.
+   * @returns Updated renderer snapshot.
+   */
   async performAction(
     actionType: CareActionType,
     now = new Date()
@@ -113,6 +166,14 @@ export class DeskagotchiRuntime {
     return this.createSnapshot();
   }
 
+  /**
+   * Make a package the active pet, creating its first instance if needed.
+   *
+   * @param packageId - Pet package to activate.
+   * @param now - Clock value used when creating a new pet instance.
+   * @returns Updated renderer snapshot.
+   * @throws Error when the package is not loaded.
+   */
   async switchPet(packageId: string, now = new Date()): Promise<DeskagotchiSnapshot> {
     const save = this.requireSave();
     const selectedPackage = this.getPetPackage(packageId);
@@ -141,6 +202,13 @@ export class DeskagotchiRuntime {
     return this.createSnapshot();
   }
 
+  /**
+   * Merge user settings into the persisted save.
+   *
+   * @param settings - Partial settings supplied by the renderer.
+   * @param now - Clock value used to progress the active pet before snapshotting.
+   * @returns Updated renderer snapshot.
+   */
   async updateSettings(
     settings: UpdateSettingsInput,
     now = new Date()
@@ -158,6 +226,11 @@ export class DeskagotchiRuntime {
     return this.createSnapshot();
   }
 
+  /**
+   * Persist the last known pet overlay bounds.
+   *
+   * @param bounds - Electron window bounds to restore on next packaged launch.
+   */
   async updatePetWindowBounds(bounds: {
     x: number;
     y: number;
@@ -175,6 +248,11 @@ export class DeskagotchiRuntime {
     await this.persistSave();
   }
 
+  /**
+   * Show a native notification when the active pet needs attention.
+   *
+   * @param now - Clock value used for quiet-hours and cooldown checks.
+   */
   async maybeNotifyAttention(now = new Date()): Promise<void> {
     const save = this.requireSave();
     if (!save.settings.notificationsEnabled) {
@@ -201,6 +279,12 @@ export class DeskagotchiRuntime {
     }).show();
   }
 
+  /**
+   * Create and install a local placeholder pet package from hatch input.
+   *
+   * @param input - User-provided hatch prompt details and preferred colors.
+   * @returns Installation result and package validation issues.
+   */
   async hatchCreateDraft(input: HatchDraftInput): Promise<HatchDraftResult> {
     const safetyIssues = validateHatchInput(input);
     if (hasBlockingIssues(safetyIssues)) {
@@ -251,6 +335,12 @@ export class DeskagotchiRuntime {
     };
   }
 
+  /**
+   * Export an installed custom pet package to a shareable archive.
+   *
+   * @param packageId - Custom package identifier to export.
+   * @returns Archive path, or undefined when the package cannot be exported.
+   */
   async exportPet(packageId: string): Promise<string | undefined> {
     const loadedPackage = this.loadedPackages.find(
       (candidate) => candidate.petPackage.packageId === packageId
@@ -270,6 +360,12 @@ export class DeskagotchiRuntime {
     return outputPath;
   }
 
+  /**
+   * Prompt for and import a custom pet archive.
+   *
+   * @returns Current snapshot when canceled, or a refreshed snapshot after import.
+   * @throws Error when the selected archive violates package safety rules.
+   */
   async importPet(): Promise<DeskagotchiSnapshot> {
     const selection = await dialog.showOpenDialog({
       title: "Import Deskagotchi Pet Pack",
@@ -440,6 +536,12 @@ export class DeskagotchiRuntime {
   }
 }
 
+/**
+ * Create the simulation config implied by save-level maintenance settings.
+ *
+ * @param save - Current persisted save.
+ * @returns Default or low-maintenance simulation configuration.
+ */
 function createRuntimeSimulationConfig(save: DeskagotchiSave): typeof DEFAULT_SIMULATION_CONFIG {
   if (!save.settings.lowMaintenanceMode) {
     return DEFAULT_SIMULATION_CONFIG;
@@ -458,6 +560,15 @@ function createRuntimeSimulationConfig(save: DeskagotchiSave): typeof DEFAULT_SI
   };
 }
 
+/**
+ * Determine whether native notifications should be suppressed for quiet hours.
+ *
+ * @param now - Current local time.
+ * @param enabled - Whether quiet hours are active.
+ * @param quietHoursStart - Start clock in HH:mm format.
+ * @param quietHoursEnd - End clock in HH:mm format.
+ * @returns True when the current local time falls inside the quiet-hour window.
+ */
 function isQuietHours(
   now: Date,
   enabled: boolean,
@@ -486,6 +597,13 @@ function parseClockMinutes(value: string): number {
   return hours * 60 + minutes;
 }
 
+/**
+ * Create the renderer URL for a package asset served by the custom protocol.
+ *
+ * @param packageId - Pet package identifier.
+ * @param relativeAssetPath - Slash-delimited asset path inside the package.
+ * @returns Encoded deskagotchi protocol URL.
+ */
 export function createAssetUrl(packageId: string, relativeAssetPath: string): string {
   return `deskagotchi://pet-asset/${encodeURIComponent(packageId)}/${relativeAssetPath
     .split("/")
@@ -493,6 +611,12 @@ export function createAssetUrl(packageId: string, relativeAssetPath: string): st
     .join("/")}`;
 }
 
+/**
+ * Validate hatch prompt input before creating local package files.
+ *
+ * @param input - Hatch prompt details from the renderer.
+ * @returns Package-style validation issues for blocked or invalid input.
+ */
 function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const combinedText = `${input.name} ${input.description} ${input.species} ${input.personality} ${input.accessory ?? ""} ${input.theme ?? ""}`.toLowerCase();
@@ -530,6 +654,14 @@ function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
   return issues;
 }
 
+/**
+ * Build the placeholder pet manifest used before generated art is approved.
+ *
+ * @param input - Hatch prompt details from the renderer.
+ * @param packageId - Generated package identifier.
+ * @param colorPalette - Normalized package color palette.
+ * @returns Pet package manifest for the local draft.
+ */
 function createHatchPackage(
   input: HatchDraftInput,
   packageId: string,
@@ -624,6 +756,13 @@ function growthStage(
   };
 }
 
+/**
+ * Render a deterministic SVG spritesheet for a local hatch draft.
+ *
+ * @param input - Hatch prompt details from the renderer.
+ * @param palette - Normalized color palette.
+ * @returns Complete SVG document for the placeholder spritesheet.
+ */
 function createHatchSpriteSheet(input: HatchDraftInput, palette: string[]): string {
   const rows = [AnimationId.Idle, AnimationId.Happy, AnimationId.Sleeping, AnimationId.Sick];
   const frames = rows.flatMap((animationId, rowIndex) =>

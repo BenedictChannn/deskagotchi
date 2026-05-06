@@ -24,6 +24,9 @@ const STORAGE_KEY = "deskagotchi.dev.save.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
+/**
+ * Install a browser-only Deskagotchi bridge for Vite development.
+ */
 export function installDevDeskagotchiApi(): void {
   if (window.deskagotchi !== undefined || !DEV_HOSTS.has(window.location.hostname)) {
     return;
@@ -33,10 +36,21 @@ export function installDevDeskagotchiApi(): void {
   window.deskagotchi = api.toBridgeApi();
 }
 
+/**
+ * Browser implementation of the Electron preload bridge.
+ *
+ * @remarks This adapter keeps local development usable without Electron by persisting a
+ * simulated save to localStorage and dispatching DOM events for snapshot updates.
+ */
 class DevDeskagotchiApi {
   private packages = createDevPackages();
   private save = loadDevSave(this.packages);
 
+  /**
+   * Create the public bridge shape expected by renderer components.
+   *
+   * @returns A Deskagotchi bridge API backed by browser storage and events.
+   */
   toBridgeApi(): DeskagotchiApi {
     return {
       getSnapshot: async () => this.createSnapshot(),
@@ -60,6 +74,13 @@ class DevDeskagotchiApi {
     };
   }
 
+  /**
+   * Apply a care action to the active pet and broadcast the resulting snapshot.
+   *
+   * @param actionType - Care action selected by the renderer.
+   * @returns The updated snapshot after simulation and persistence.
+   * @throws Error when the active pet state or package cannot be found.
+   */
   private async performAction(
     actionType: CareActionType
   ): Promise<DeskagotchiSnapshot> {
@@ -73,6 +94,13 @@ class DevDeskagotchiApi {
     return this.persistAndSnapshot();
   }
 
+  /**
+   * Select an installed pet package, creating a first instance when needed.
+   *
+   * @param packageId - Package identifier selected in the panel.
+   * @returns The updated snapshot with the package active.
+   * @throws Error when the package is unknown.
+   */
   private async switchPet(packageId: string): Promise<DeskagotchiSnapshot> {
     const selectedPackage = this.getRuntimePackage(packageId);
     const existingInstance = this.save.instances.find(
@@ -91,6 +119,12 @@ class DevDeskagotchiApi {
     return this.persistAndSnapshot();
   }
 
+  /**
+   * Merge partial settings into the browser save.
+   *
+   * @param settings - Partial settings payload from the renderer.
+   * @returns The updated snapshot after persistence.
+   */
   private async updateSettings(
     settings: UpdateSettingsInput
   ): Promise<DeskagotchiSnapshot> {
@@ -104,6 +138,12 @@ class DevDeskagotchiApi {
     return this.persistAndSnapshot();
   }
 
+  /**
+   * Create and install a local custom pet draft for browser testing.
+   *
+   * @param input - Hatch form values from the panel.
+   * @returns Installation result and validation issues for the draft.
+   */
   private async hatchCreateDraft(
     input: HatchDraftInput
   ): Promise<{ packageId: string; installed: boolean; issues: ValidationIssue[] }> {
@@ -136,6 +176,12 @@ class DevDeskagotchiApi {
     };
   }
 
+  /**
+   * Build a snapshot matching the Electron runtime contract.
+   *
+   * @returns The current browser-backed Deskagotchi snapshot.
+   * @throws Error when the active pet state or package cannot be found.
+   */
   private createSnapshot(): DeskagotchiSnapshot {
     const activeState = this.getActiveState();
     const activePackage = this.getRuntimePackage(activeState.packageId);
@@ -149,12 +195,23 @@ class DevDeskagotchiApi {
     };
   }
 
+  /**
+   * Persist the save and notify renderer subscribers.
+   *
+   * @returns The snapshot after writing localStorage and dispatching the update event.
+   */
   private persistAndSnapshot(): DeskagotchiSnapshot {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.save));
     window.dispatchEvent(new Event(SNAPSHOT_EVENT));
     return this.createSnapshot();
   }
 
+  /**
+   * Resolve the active pet instance from the save.
+   *
+   * @returns The active pet instance state.
+   * @throws Error when the save points at a missing instance.
+   */
   private getActiveState(): PetInstanceState {
     const activeState = this.save.instances.find(
       (instance) => instance.instanceId === this.save.activeInstanceId
@@ -165,6 +222,13 @@ class DevDeskagotchiApi {
     return activeState;
   }
 
+  /**
+   * Resolve a runtime package by package id.
+   *
+   * @param packageId - Package identifier to look up.
+   * @returns The matching runtime pet package.
+   * @throws Error when no package exists for the id.
+   */
   private getRuntimePackage(packageId: string): RuntimePetPackage {
     const petPackage = this.packages.find(
       (candidate) => candidate.petPackage.packageId === packageId
@@ -175,6 +239,11 @@ class DevDeskagotchiApi {
     return petPackage;
   }
 
+  /**
+   * Replace an existing pet instance in the browser save.
+   *
+   * @param instance - Updated pet state to store by instance id.
+   */
   private replaceInstance(instance: PetInstanceState): void {
     this.save = {
       ...this.save,
@@ -185,6 +254,12 @@ class DevDeskagotchiApi {
   }
 }
 
+/**
+ * Load a compatible browser save or create a new seed save.
+ *
+ * @param packages - Runtime packages available in the development adapter.
+ * @returns A save that references at least one available package.
+ */
 function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored !== null) {
@@ -227,6 +302,11 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
   };
 }
 
+/**
+ * Create the built-in placeholder packages used by the browser adapter.
+ *
+ * @returns Runtime packages with generated SVG assets.
+ */
 function createDevPackages(): RuntimePetPackage[] {
   return [
     createDevPetPackage({
@@ -256,6 +336,12 @@ function createDevPackages(): RuntimePetPackage[] {
   ].map(toRuntimePackage);
 }
 
+/**
+ * Create a package manifest for a generated development pet.
+ *
+ * @param overrides - Package identity, copy, palette, and optional source override.
+ * @returns A package manifest compatible with runtime validation expectations.
+ */
 function createDevPetPackage(overrides: {
   packageId: string;
   name: string;
@@ -328,6 +414,12 @@ function createDevPetPackage(overrides: {
   };
 }
 
+/**
+ * Attach generated browser asset URLs to a pet package.
+ *
+ * @param petPackage - Package manifest to convert.
+ * @returns Runtime package with spritesheet, preview, and icon data URLs.
+ */
 function toRuntimePackage(petPackage: PetPackage): RuntimePetPackage {
   const [primary, secondary, outline, highlight] = normalizeColors(petPackage.colorPalette);
   const preview = createPetSvgDataUrl(primary, secondary, outline, highlight, AnimationId.Happy, 1);
@@ -342,6 +434,14 @@ function toRuntimePackage(petPackage: PetPackage): RuntimePetPackage {
   };
 }
 
+/**
+ * Create an animation manifest row for the generated spritesheet.
+ *
+ * @param id - Animation identifier represented by the row.
+ * @param row - Zero-based spritesheet row index.
+ * @param fps - Playback rate for the animation.
+ * @returns Package animation metadata for a four-frame row.
+ */
 function animation(id: AnimationId, row: number, fps: number): PetPackage["animations"][number] {
   return {
     id,
@@ -355,6 +455,17 @@ function animation(id: AnimationId, row: number, fps: number): PetPackage["anima
   };
 }
 
+/**
+ * Create a care-score growth stage definition.
+ *
+ * @param id - Stable growth-stage identifier.
+ * @param lifeStage - Lifecycle bucket represented by the stage.
+ * @param label - Display label for the stage.
+ * @param minAgeHours - Minimum pet age required for the stage.
+ * @param careScoreMin - Inclusive minimum care score for the stage.
+ * @param careScoreMax - Inclusive maximum care score for the stage.
+ * @returns Package growth-stage metadata.
+ */
 function growthStage(
   id: string,
   lifeStage: LifeStage,
@@ -374,6 +485,12 @@ function growthStage(
   };
 }
 
+/**
+ * Generate a data URL spritesheet for all supported animation rows.
+ *
+ * @param colors - Preferred package colors used to render the placeholder pet.
+ * @returns Encoded SVG data URL for the development spritesheet.
+ */
 function createSpritesheetDataUrl(colors: string[]): string {
   const [primary, secondary, outline, highlight] = normalizeColors(colors);
   const rows = Object.values(AnimationId).flatMap((animationId, rowIndex) =>
@@ -394,6 +511,17 @@ function createSpritesheetDataUrl(colors: string[]): string {
   );
 }
 
+/**
+ * Generate a single-frame preview or icon data URL.
+ *
+ * @param primary - Primary body color.
+ * @param secondary - Secondary accent color.
+ * @param outline - Outline and facial feature color.
+ * @param highlight - Highlight and accessory color.
+ * @param animationId - Animation expression to render.
+ * @param frame - Frame index used for simple motion offsets.
+ * @returns Encoded SVG data URL for the preview frame.
+ */
 function createPetSvgDataUrl(
   primary: string,
   secondary: string,
@@ -414,6 +542,17 @@ function createPetSvgDataUrl(
   );
 }
 
+/**
+ * Generate reusable SVG markup for a placeholder pet frame.
+ *
+ * @param primary - Primary body color.
+ * @param secondary - Secondary accent color.
+ * @param outline - Outline and facial feature color.
+ * @param highlight - Highlight and accessory color.
+ * @param animationId - Animation expression to render.
+ * @param frame - Frame index used for simple motion offsets.
+ * @returns SVG fragment inserted into spritesheets and previews.
+ */
 function createPetMarkup(
   primary: string,
   secondary: string,
@@ -449,6 +588,12 @@ function createPetMarkup(
   return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/>${eyes}${mouth}${patch}${call}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
 }
 
+/**
+ * Validate browser hatch input before installing a generated package.
+ *
+ * @param input - Hatch form values from the panel.
+ * @returns Validation issues blocking installation, or an empty array.
+ */
 function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
   if (input.name.trim().length > 0) {
     return [];
@@ -462,6 +607,12 @@ function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
   ];
 }
 
+/**
+ * Normalize a preferred color list into the four-color placeholder palette.
+ *
+ * @param colors - User or package-provided hex colors.
+ * @returns Primary, secondary, outline, and highlight colors.
+ */
 function normalizeColors(colors: string[]): string[] {
   const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
   const palette = validColors.length >= 2 ? validColors : ["#9bdbd4", "#4ecdc4"];
@@ -473,6 +624,12 @@ function normalizeColors(colors: string[]): string[] {
   ];
 }
 
+/**
+ * Convert free-form package names into compact package ids.
+ *
+ * @param value - Raw value to normalize.
+ * @returns Lowercase slug capped to the package id length used by the adapter.
+ */
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -481,6 +638,12 @@ function slugify(value: string): string {
     .slice(0, 72);
 }
 
+/**
+ * Encode SVG text for use in image URLs.
+ *
+ * @param svg - Raw SVG document string.
+ * @returns Data URL suitable for img and CSS background usage.
+ */
 function svgDataUrl(svg: string): string {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }

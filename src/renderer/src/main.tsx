@@ -1,3 +1,4 @@
+/** Renderer entry point that installs the development bridge and mounts React. */
 import React from "react";
 import ReactDOM from "react-dom/client";
 

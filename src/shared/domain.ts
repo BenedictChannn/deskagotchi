@@ -1,14 +1,26 @@
+/**
+ * Shared domain schemas and value types for Deskagotchi gameplay.
+ *
+ * @module
+ */
 import { z } from "zod";
 
+/** Current persisted pet package schema version accepted by the app. */
 export const CURRENT_PET_PACKAGE_SCHEMA_VERSION = 1;
+
+/** Current persisted pet instance state schema version accepted by the app. */
 export const CURRENT_PET_STATE_SCHEMA_VERSION = 1;
+
+/** Current simulation tuning schema version used by default configuration. */
 export const CURRENT_SIMULATION_CONFIG_VERSION = 1;
 
+/** Identifies whether a package ships with the app or was created by the user. */
 export enum PetSource {
   BuiltIn = "built-in",
   Custom = "custom"
 }
 
+/** Coarse growth stages used by the simulation and package manifests. */
 export enum LifeStage {
   Egg = "egg",
   Baby = "baby",
@@ -17,6 +29,7 @@ export enum LifeStage {
   Adult = "adult"
 }
 
+/** Renderer animation keys that packages may expose in their sprite manifests. */
 export enum AnimationId {
   Idle = "idle",
   Happy = "happy",
@@ -31,6 +44,7 @@ export enum AnimationId {
   Attention = "attention"
 }
 
+/** User-facing simulation moods that map state to animation and UI feedback. */
 export enum Mood {
   Idle = "idle",
   Happy = "happy",
@@ -45,6 +59,7 @@ export enum Mood {
   Attention = "attention"
 }
 
+/** Lifecycle state that controls whether a pet is simulated as active or suspended. */
 export enum PetLifecycleStatus {
   Active = "active",
   Sleeping = "sleeping",
@@ -52,12 +67,14 @@ export enum PetLifecycleStatus {
   Archived = "archived"
 }
 
+/** Validation marker stored on pet packages after authoring or import checks. */
 export enum PackageValidationStatus {
   Draft = "draft",
   Passed = "passed",
   Failed = "failed"
 }
 
+/** Play interaction categories used by package personality metadata. */
 export enum PlayStyle {
   Chase = "chase",
   Puzzle = "puzzle",
@@ -65,6 +82,7 @@ export enum PlayStyle {
   Calm = "calm"
 }
 
+/** Discrete care commands accepted by the shared simulation layer. */
 export enum CareActionType {
   FeedMeal = "feed_meal",
   FeedSnack = "feed_snack",
@@ -75,13 +93,16 @@ export enum CareActionType {
   Pet = "pet"
 }
 
+/** Severity level for package and asset validation diagnostics. */
 export enum ValidationSeverity {
   Error = "error",
   Warning = "warning"
 }
 
+/** Validates six-digit hex colors stored in package palettes. */
 export const ColorHexSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
+/** Validates asset paths that remain inside a package-relative directory. */
 export const SafeRelativePathSchema = z
   .string()
   .min(1)
@@ -96,6 +117,7 @@ export const SafeRelativePathSchema = z
     message: "Path traversal is not allowed."
   });
 
+/** Validates one row of a package spritesheet animation manifest. */
 export const AnimationManifestEntrySchema = z.object({
   id: z.nativeEnum(AnimationId),
   row: z.number().int().min(0),
@@ -107,10 +129,12 @@ export const AnimationManifestEntrySchema = z.object({
   fallback: z.nativeEnum(AnimationId).optional()
 });
 
+/** One animation row declared by a pet package manifest. */
 export type AnimationManifestEntry = z.infer<
   typeof AnimationManifestEntrySchema
 >;
 
+/** Validates one package growth branch for a life stage and care-score range. */
 export const GrowthStageManifestSchema = z.object({
   id: z.string().min(1).max(80),
   stage: z.nativeEnum(LifeStage),
@@ -121,8 +145,10 @@ export const GrowthStageManifestSchema = z.object({
   animationSet: z.array(z.nativeEnum(AnimationId)).min(1)
 });
 
+/** Growth branch metadata used to select package art as pets age. */
 export type GrowthStageManifest = z.infer<typeof GrowthStageManifestSchema>;
 
+/** Validates installable pet package metadata, assets, growth, and modifiers. */
 export const PetPackageSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_PACKAGE_SCHEMA_VERSION),
   packageId: z.string().min(3).max(80).regex(/^[a-z0-9][a-z0-9-]+$/),
@@ -167,8 +193,10 @@ export const PetPackageSchema = z.object({
     .optional()
 });
 
+/** Installable pet package manifest consumed by registry, renderer, and simulation. */
 export type PetPackage = z.infer<typeof PetPackageSchema>;
 
+/** Validates bounded gameplay stats persisted on each pet instance. */
 export const PetStatsSchema = z.object({
   hunger: z.number().min(0).max(100),
   happiness: z.number().min(0).max(100),
@@ -180,8 +208,10 @@ export const PetStatsSchema = z.object({
   weight: z.number().min(1).max(999)
 });
 
+/** Mutable gameplay stats for a single pet instance. */
 export type PetStats = z.infer<typeof PetStatsSchema>;
 
+/** Validates rolling care-quality counters used for growth and consequences. */
 export const CareHistorySchema = z.object({
   missedCareTicks: z.number().int().min(0),
   sickHours: z.number().min(0),
@@ -195,8 +225,10 @@ export const CareHistorySchema = z.object({
   qualityScore: z.number().min(0).max(100)
 });
 
+/** Rolling care-quality counters retained between simulation ticks. */
 export type CareHistory = z.infer<typeof CareHistorySchema>;
 
+/** Validates one persisted pet instance and its gameplay state. */
 export const PetInstanceStateSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_STATE_SCHEMA_VERSION),
   instanceId: z.string().min(3).max(100),
@@ -218,8 +250,10 @@ export const PetInstanceStateSchema = z.object({
   careHistory: CareHistorySchema
 });
 
+/** Persisted gameplay state for one hatched pet instance. */
 export type PetInstanceState = z.infer<typeof PetInstanceStateSchema>;
 
+/** Validates the top-level Deskagotchi save file shared across app processes. */
 export const DeskagotchiSaveSchema = z.object({
   schemaVersion: z.literal(1),
   activeInstanceId: z.string().min(3).max(100),
@@ -247,8 +281,10 @@ export const DeskagotchiSaveSchema = z.object({
   })
 });
 
+/** Top-level persisted save data, including instances and desktop settings. */
 export type DeskagotchiSave = z.infer<typeof DeskagotchiSaveSchema>;
 
+/** Human-readable validation diagnostic returned by package checks. */
 export interface ValidationIssue {
   severity: ValidationSeverity;
   code: string;

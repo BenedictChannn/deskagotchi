@@ -1,3 +1,8 @@
+/**
+ * Shared test fixtures for gameplay and package validation.
+ *
+ * @module
+ */
 import {
   AnimationId,
   LifeStage,
@@ -7,6 +12,12 @@ import {
   type PetPackage
 } from "./domain";
 
+/**
+ * Creates a schema-valid package for shared-layer tests.
+ *
+ * @param overrides Partial manifest fields to merge into the default package.
+ * @returns A complete pet package suitable for simulation and validation tests.
+ */
 export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPackage {
   return {
     schemaVersion: 1,

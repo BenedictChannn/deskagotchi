@@ -1,3 +1,8 @@
+/**
+ * Shared pet simulation rules for offline progression and care actions.
+ *
+ * @module
+ */
 import {
   AnimationId,
   CareActionType,
@@ -11,6 +16,7 @@ import {
   PetLifecycleStatus
 } from "./domain";
 
+/** Tunable constants that control offline catch-up, decay, and growth timing. */
 export interface SimulationConfig {
   version: typeof CURRENT_SIMULATION_CONFIG_VERSION;
   tickMinutes: number;
@@ -28,17 +34,20 @@ export interface SimulationConfig {
   stageThresholdHours: Record<LifeStage, number>;
 }
 
+/** Domain event emitted when simulation detects a notable state transition. */
 export interface SimulationEvent {
   code: string;
   message: string;
   occurredAt: string;
 }
 
+/** User care command scheduled at a specific wall-clock time. */
 export interface CareAction {
   type: CareActionType;
   now: Date;
 }
 
+/** Default simulation balance used by the desktop runtime and tests. */
 export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   version: CURRENT_SIMULATION_CONFIG_VERSION,
   tickMinutes: 15,
@@ -62,6 +71,15 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   }
 };
 
+/**
+ * Creates the first persisted state for a newly hatched pet.
+ *
+ * @param petPackage Package manifest that supplies growth stages and identity.
+ * @param nickname User-facing nickname stored on the pet instance.
+ * @param now Creation time used for all initial timestamps.
+ * @param instanceId Optional stable id for tests or import flows.
+ * @returns A new pet instance initialized with baseline stats and care history.
+ */
 export function createInitialPetState(
   petPackage: PetPackage,
   nickname: string,
@@ -114,6 +132,18 @@ export function createInitialPetState(
   };
 }
 
+/**
+ * Advances a pet from its last simulation timestamp to the provided time.
+ *
+ * Offline catch-up is capped by configuration, while leftover elapsed time is
+ * tracked as debt so the pet can still age without applying unbounded decay.
+ *
+ * @param state Current persisted pet state.
+ * @param petPackage Package manifest that supplies care modifiers and growth data.
+ * @param now Wall-clock time to simulate up to.
+ * @param config Optional simulation tuning override.
+ * @returns Updated state plus domain events emitted during progression.
+ */
 export function progressPetState(
   state: PetInstanceState,
   petPackage: PetPackage,
@@ -200,6 +230,15 @@ export function progressPetState(
   };
 }
 
+/**
+ * Progresses the pet to the action time, then applies one care command.
+ *
+ * @param state Current persisted pet state.
+ * @param petPackage Package manifest that supplies care modifiers.
+ * @param action Care command and timestamp.
+ * @param config Optional simulation tuning override.
+ * @returns Updated state plus any progression events emitted before the action.
+ */
 export function applyCareAction(
   state: PetInstanceState,
   petPackage: PetPackage,
@@ -220,6 +259,12 @@ export function applyCareAction(
   };
 }
 
+/**
+ * Derives the highest-priority mood implied by the current state.
+ *
+ * @param state Current pet state after progression or care effects.
+ * @returns The mood the renderer should use for idle feedback.
+ */
 export function deriveMood(state: PetInstanceState): Mood {
   if (state.lifecycleStatus === PetLifecycleStatus.Sleeping) {
     return Mood.Sleeping;
@@ -248,6 +293,12 @@ export function deriveMood(state: PetInstanceState): Mood {
   return Mood.Idle;
 }
 
+/**
+ * Maps a simulation mood to the package animation id expected by the renderer.
+ *
+ * @param mood Mood derived from pet state or immediate action feedback.
+ * @returns The animation id that best represents the mood.
+ */
 export function moodToAnimation(mood: Mood): AnimationId {
   switch (mood) {
     case Mood.Happy:

@@ -1,3 +1,4 @@
+/** Electron preload entry point for the renderer bridge setup. */
 import { contextBridge, ipcRenderer } from "electron";
 
 import {
@@ -9,6 +10,11 @@ import {
 } from "@shared/ipc";
 import type { CareActionType } from "@shared/domain";
 
+/**
+ * Narrow IPC facade exposed to the renderer process.
+ *
+ * @remarks The renderer receives only typed bridge methods and never imports Electron directly.
+ */
 const api: DeskagotchiApi = {
   getSnapshot: () => ipcRenderer.invoke(IpcChannel.GetSnapshot),
   performAction: (actionType: CareActionType) =>
@@ -33,4 +39,5 @@ const api: DeskagotchiApi = {
   }
 };
 
+// Expose only the typed Deskagotchi bridge object to the isolated renderer world.
 contextBridge.exposeInMainWorld("deskagotchi", api);

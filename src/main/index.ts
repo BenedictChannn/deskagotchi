@@ -1,3 +1,9 @@
+/**
+ * Electron main-process entrypoint for Deskagotchi.
+ *
+ * Owns single-instance startup, privileged asset protocol registration, native
+ * windows, tray actions, and the background simulation timer.
+ */
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -80,6 +86,11 @@ app.on("window-all-closed", () => {
   // Keep the companion alive in the tray until the explicit quit command.
 });
 
+/**
+ * Resolve the packaged or development resource directory.
+ *
+ * @returns Absolute path that contains built-in pet resources.
+ */
 function getResourceRoot(): string {
   return app.isPackaged
     ? path.join(process.resourcesPath, "resources")
@@ -90,6 +101,12 @@ function getPreloadPath(): string {
   return path.join(__dirname, "../preload/index.mjs");
 }
 
+/**
+ * Create the transparent pet overlay window after persisted state is available.
+ *
+ * The overlay is hidden instead of closed during normal operation so the tray
+ * remains the owner of the app lifetime.
+ */
 function createPetWindow(): void {
   const snapshotPromise = runtime.getSnapshot();
   snapshotPromise
@@ -147,6 +164,11 @@ function createPetWindow(): void {
     });
 }
 
+/**
+ * Create or focus the control panel window on a specific panel route.
+ *
+ * @param view - Initial panel view to show.
+ */
 function createPanelWindow(view: PanelView): void {
   if (panelWindow !== undefined && !panelWindow.isDestroyed()) {
     panelWindow.loadURL(createRendererUrl("panel", view));
@@ -176,6 +198,13 @@ function createPanelWindow(view: PanelView): void {
   panelWindow.loadURL(createRendererUrl("panel", view));
 }
 
+/**
+ * Build the renderer URL for dev-server and packaged app modes.
+ *
+ * @param mode - Renderer route family to open.
+ * @param view - Optional panel subview.
+ * @returns URL with the hash route expected by the renderer.
+ */
 function createRendererUrl(mode: "overlay" | "panel", view?: PanelView): string {
   const hash = view === undefined ? `#/${mode}` : `#/${mode}/${view}`;
   if (process.env.ELECTRON_RENDERER_URL !== undefined) {
@@ -184,6 +213,11 @@ function createRendererUrl(mode: "overlay" | "panel", view?: PanelView): string 
   return `${pathToFileURL(path.join(__dirname, "../renderer/index.html")).toString()}${hash}`;
 }
 
+/**
+ * Register the custom protocol that exposes pet package assets to sandboxed renderers.
+ *
+ * @throws Error when the runtime cannot resolve a requested package asset.
+ */
 function registerAssetProtocol(): void {
   protocol.handle("deskagotchi", async (request) => {
     const url = new URL(request.url);
@@ -204,6 +238,12 @@ function registerAssetProtocol(): void {
   });
 }
 
+/**
+ * Bind renderer IPC commands to runtime mutations and native-window effects.
+ *
+ * Handlers that mutate pet or settings state also broadcast a snapshot invalidation
+ * so open windows refresh through their normal data path.
+ */
 function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannel.GetSnapshot, () => runtime.getSnapshot());
   ipcMain.handle(IpcChannel.PerformAction, async (_event, actionType: CareActionType) => {
@@ -297,12 +337,22 @@ function rebuildTray(): void {
   tray.setContextMenu(menu);
 }
 
+/**
+ * Apply a care action initiated from the tray menu.
+ *
+ * @param actionType - Care action to apply to the active pet.
+ */
 async function performTrayAction(actionType: CareActionType): Promise<void> {
   await runtime.performAction(actionType);
   await broadcastSnapshotUpdated();
   showPetWindow();
 }
 
+/**
+ * Create the small native tray image without relying on external assets.
+ *
+ * @returns Native image suitable for Electron's Tray API.
+ */
 function createTrayIcon(): Electron.NativeImage {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="17" r="11" fill="#f7b267" stroke="#2f243a" stroke-width="3"/><path d="M9 12 L11 5 L16 11 L21 5 L23 12" fill="#f7b267" stroke="#2f243a" stroke-width="3" stroke-linejoin="round"/><circle cx="12" cy="16" r="2" fill="#2f243a"/><circle cx="20" cy="16" r="2" fill="#2f243a"/><path d="M12 22 Q16 25 20 22" fill="none" stroke="#2f243a" stroke-width="2" stroke-linecap="round"/></svg>`;
   return nativeImage.createFromDataURL(
@@ -310,6 +360,11 @@ function createTrayIcon(): Electron.NativeImage {
   );
 }
 
+/**
+ * Apply native Electron settings that mirror persisted user preferences.
+ *
+ * @param settings - Partial settings update or full saved settings object.
+ */
 function applySettings(settings: UpdateSettingsInput): void {
   if (settings.alwaysOnTop !== undefined) {
     petWindow?.setAlwaysOnTop(settings.alwaysOnTop);
@@ -321,6 +376,9 @@ function applySettings(settings: UpdateSettingsInput): void {
   }
 }
 
+/**
+ * Show the pet overlay, recreating it if Electron destroyed the native window.
+ */
 function showPetWindow(): void {
   if (petWindow === undefined || petWindow.isDestroyed()) {
     createPetWindow();
@@ -330,6 +388,9 @@ function showPetWindow(): void {
   petWindow.focus();
 }
 
+/**
+ * Return the pet overlay to the default visible location and size.
+ */
 function resetPetWindow(): void {
   const { x, y } = defaultPetWindowBounds();
   petWindow?.setBounds({
@@ -342,6 +403,11 @@ function resetPetWindow(): void {
   petWindow?.moveTop();
 }
 
+/**
+ * Compute the default lower-right overlay position on the primary display.
+ *
+ * @returns Overlay origin that leaves a small inset from the work area edge.
+ */
 function defaultPetWindowBounds(): { x: number; y: number } {
   const display = screen.getPrimaryDisplay();
   return {
@@ -350,6 +416,9 @@ function defaultPetWindowBounds(): { x: number; y: number } {
   };
 }
 
+/**
+ * Persist the current overlay bounds if the pet window is alive.
+ */
 async function persistPetWindowBounds(): Promise<void> {
   if (petWindow === undefined || petWindow.isDestroyed()) {
     return;
@@ -358,6 +427,12 @@ async function persistPetWindowBounds(): Promise<void> {
   await runtime.updatePetWindowBounds(bounds);
 }
 
+/**
+ * Clamp saved window bounds onto an available display work area.
+ *
+ * @param bounds - Previously saved or default Electron bounds.
+ * @returns Bounds with sane size limits and a visible origin.
+ */
 function ensureVisibleBounds(bounds: Rectangle): Rectangle {
   const displays = screen.getAllDisplays();
   const matchingDisplay =
@@ -391,6 +466,9 @@ function startSimulationTimer(): void {
   simulationTimer = setInterval(() => void tickSimulation(), 60_000);
 }
 
+/**
+ * Progress the simulation and notify renderers that a fresh snapshot is available.
+ */
 async function tickSimulation(): Promise<void> {
   await runtime.getSnapshot();
   await runtime.maybeNotifyAttention();
