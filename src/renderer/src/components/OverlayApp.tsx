@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CareActionType } from "@shared/domain";
 import { ItemCategory, type ItemCatalogEntry } from "@shared/itemIcons";
@@ -7,6 +7,7 @@ import type { DeskagotchiSnapshot } from "@shared/ipc";
 import { lcdItemIconSet } from "../itemIconAssets";
 import { ItemIcon } from "./ItemIcon";
 import { PetSprite } from "./PetSprite";
+import { PlayStage } from "./PlayStage";
 
 /** Props for the always-on-desktop pet overlay. */
 interface OverlayAppProps {
@@ -24,6 +25,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
   const [feedOpen, setFeedOpen] = useState(false);
+  const [playOpen, setPlayOpen] = useState(false);
+  const [playActive, setPlayActive] = useState(false);
   const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
     ItemCategory.Meal
   );
@@ -44,10 +47,11 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setMenuOpen(false);
     setHealthOpen(false);
     setFeedOpen(false);
+    setPlayOpen(false);
   };
 
   useEffect(() => {
-    if (!menuOpen && !healthOpen && !feedOpen) {
+    if (!menuOpen && !healthOpen && !feedOpen && !playOpen && !playActive) {
       return undefined;
     }
 
@@ -58,11 +62,13 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setMenuOpen(false);
       setHealthOpen(false);
       setFeedOpen(false);
+      setPlayOpen(false);
+      setPlayActive(false);
     };
 
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
-  }, [feedOpen, healthOpen, menuOpen]);
+  }, [feedOpen, healthOpen, menuOpen, playActive, playOpen]);
 
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
@@ -102,6 +108,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setMenuOpen(false);
       setHealthOpen(false);
       setFeedOpen(false);
+      setPlayOpen(false);
+      setPlayActive(false);
     }
     void window.deskagotchi.movePetWindow(deltaX, deltaY);
   };
@@ -132,6 +140,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       if (!current) {
         setHealthOpen(false);
         setFeedOpen(false);
+        setPlayOpen(false);
       }
       return !current;
     });
@@ -140,26 +149,56 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const openFeed = (): void => {
     setMenuOpen(false);
     setHealthOpen(false);
+    setPlayOpen(false);
+    setPlayActive(false);
     setFeedOpen(true);
   };
+
+  const openPlay = (): void => {
+    setMenuOpen(false);
+    setHealthOpen(false);
+    setFeedOpen(false);
+    setPlayOpen(true);
+  };
+
+  const startPlay = (): void => {
+    setMenuOpen(false);
+    setHealthOpen(false);
+    setFeedOpen(false);
+    setPlayOpen(false);
+    setPlayActive(true);
+  };
+
+  const rewardPlay = useCallback(async (): Promise<void> => {
+    await window.deskagotchi.performAction({ type: CareActionType.Play });
+  }, []);
 
   const toggleHealth = (): void => {
     setMenuOpen(false);
     setFeedOpen(false);
+    setPlayOpen(false);
     setHealthOpen((current) => !current);
   };
 
   return (
     <main className="overlay-window">
-      <section className="pet-drag-plane" aria-label="Deskagotchi overlay">
-        <PetSprite
-          interactive
+      {playActive ? (
+        <PlayStage
           snapshot={snapshot}
-          size={148}
-          onClick={toggleMenu}
-          onPointerDown={startDrag}
+          onReward={() => void rewardPlay()}
+          onClose={() => setPlayActive(false)}
         />
-      </section>
+      ) : (
+        <section className="pet-drag-plane" aria-label="Deskagotchi overlay">
+          <PetSprite
+            interactive
+            snapshot={snapshot}
+            size={148}
+            onClick={toggleMenu}
+            onPointerDown={startDrag}
+          />
+        </section>
+      )}
 
       {menuOpen ? (
         <nav className="overlay-actions" aria-label="Pet actions">
@@ -171,7 +210,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           </ActionButton>
           <ActionButton
             label="Play"
-            onClick={() => void performAction(CareActionType.Play)}
+            onClick={openPlay}
           >
             <ItemIcon iconId="ball" />
           </ActionButton>
@@ -210,12 +249,28 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           }}
         />
       ) : null}
+      {playOpen ? <PlayPicker onStart={startPlay} /> : null}
 
       <div className="overlay-mood" aria-hidden="true">
         <ItemIcon iconId="heart" size={14} />
         <span>{snapshot.activeState.mood}</span>
       </div>
     </main>
+  );
+}
+
+function PlayPicker({
+  onStart
+}: {
+  onStart: () => void;
+}): React.JSX.Element {
+  return (
+    <section className="overlay-play-picker" aria-label="Play options">
+      <button className="overlay-play-option" type="button" onClick={onStart}>
+        <ItemIcon iconId="ball" size={22} />
+        <span>Ball</span>
+      </button>
+    </section>
   );
 }
 

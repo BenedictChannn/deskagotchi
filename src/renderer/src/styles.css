@@ -98,6 +98,9 @@ button {
 .overlay-action-button:focus-visible,
 .overlay-feed-tab:focus-visible,
 .overlay-feed-item:focus-visible,
+.overlay-play-option:focus-visible,
+.overlay-play-ball:focus-visible,
+.overlay-play-close:focus-visible,
 .command-button:focus-visible,
 .panel-close-button:focus-visible,
 .panel-nav-button:focus-visible,
@@ -236,6 +239,92 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.overlay-play-picker {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  left: 36px;
+  right: 36px;
+  bottom: 8px;
+  display: grid;
+  padding: 8px;
+  border: 2px solid rgba(18, 55, 22, 0.78);
+  background: rgba(247, 248, 231, 0.95);
+  box-shadow: 0 10px 22px rgba(18, 55, 22, 0.2);
+}
+
+.overlay-play-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid rgba(18, 55, 22, 0.5);
+  background: #dceca8;
+  color: #123716;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.overlay-play-stage {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  inset: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(18, 55, 22, 0.78);
+  background: rgba(220, 236, 168, 0.5);
+}
+
+.overlay-play-pet,
+.overlay-play-ball {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.overlay-play-pet {
+  pointer-events: none;
+}
+
+.overlay-play-ball {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  touch-action: none;
+  cursor: grab;
+}
+
+.overlay-play-ball:active {
+  cursor: grabbing;
+}
+
+.overlay-play-close,
+.overlay-play-score {
+  position: absolute;
+  z-index: 2;
+  color: #123716;
+  background: #f7f8e7;
+  border: 1px solid rgba(18, 55, 22, 0.6);
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.overlay-play-close {
+  right: 4px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.overlay-play-score {
+  left: 4px;
+  top: 4px;
+  min-width: 24px;
+  padding: 3px 5px;
 }
 
 .overlay-health-stat {

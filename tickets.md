@@ -40,13 +40,13 @@
 | DG-007-04 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Wire selected food into simulation effects. | Meals and snacks change hunger/happiness/health/weight according to item data. |
 | DG-007-05 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Trigger eating mood and animation after feeding. | Selected food causes an eating response and then returns to derived mood. |
 | DG-007-06 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Add feed-flow tests. | Tests cover meal vs snack effects and invalid/empty selections. |
-| DG-008-01 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Define ball mini-game state model. | Ball, pet target, score/reward, and exit state are serializable or safely transient. |
-| DG-008-02 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Build compact Play picker UI. | Play opens inside the overlay and Ball can be selected. |
-| DG-008-03 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Implement draggable ball interaction. | User can drag and release the ball within a bounded play area. |
-| DG-008-04 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Add simple ball gravity and bounce. | Released ball falls and bounces without leaving the bounded area. |
-| DG-008-05 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Make pet chase and catch the ball. | Pet moves toward ball and catch condition rewards the user. |
-| DG-008-06 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Apply play rewards to simulation. | Catching or completing play increases happiness/affection without over-rewarding. |
-| DG-008-07 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Add play-mode exit and recovery behavior. | User can leave play mode and ball state cannot trap the overlay. |
+| DG-008-01 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Define ball mini-game state model. | Ball, pet target, score/reward, and exit state are serializable or safely transient. |
+| DG-008-02 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Build compact Play picker UI. | Play opens inside the overlay and Ball can be selected. |
+| DG-008-03 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Implement draggable ball interaction. | User can drag and release the ball within a bounded play area. |
+| DG-008-04 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Add simple ball gravity and bounce. | Released ball falls and bounces without leaving the bounded area. |
+| DG-008-05 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Make pet chase and catch the ball. | Pet moves toward ball and catch condition rewards the user. |
+| DG-008-06 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Apply play rewards to simulation. | Catching or completing play increases happiness/affection without over-rewarding. |
+| DG-008-07 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Done | Play | Add play-mode exit and recovery behavior. | User can leave play mode and ball state cannot trap the overlay. |
 | DG-009-01 | [#9](https://github.com/BenedictChannn/deskagotchi/issues/9) | P2 | Open | Care Flows | Define Medicine overlay states. | Medicine has sick, confirm, cure, no-op, and empty/unavailable states. |
 | DG-009-02 | [#9](https://github.com/BenedictChannn/deskagotchi/issues/9) | P2 | Open | Care Flows | Implement Medicine flow. | Sick pet can be cured through overlay UI and simulation state updates. |
 | DG-009-03 | [#9](https://github.com/BenedictChannn/deskagotchi/issues/9) | P2 | Open | Care Flows | Define Clean overlay states. | Clean has mess present, confirm, cleaning, success, and no-mess states. |
