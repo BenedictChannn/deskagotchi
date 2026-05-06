@@ -79,6 +79,12 @@ Regenerate built-in pet assets:
 npm.cmd run generate:pets
 ```
 
+Regenerate LCD item icons:
+
+```powershell
+npm.cmd run generate:items
+```
+
 Regenerate the Windows app icon:
 
 ```powershell
@@ -214,6 +220,7 @@ For a fully featured built-in pet, include:
 - `src/renderer/`: Overlay and panel React UI.
 - `src/shared/`: Domain schemas, package validation, IPC types, deterministic simulation.
 - `resources/pets/`: Built-in pet packages.
+- `resources/items/`: Built-in item icon atlases and care item manifests.
 - `scripts/`: Reproducible placeholder asset generation.
 
 The simulation engine is framework-agnostic and uses injected time so offline progression and evolution can be tested deterministically.

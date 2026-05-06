@@ -1,16 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Bath,
-  Bone,
-  Heart,
-  Moon,
-  Sparkles,
-  Stethoscope
-} from "lucide-react";
 
 import { CareActionType } from "@shared/domain";
 import type { DeskagotchiSnapshot } from "@shared/ipc";
 
+import { ItemIcon } from "./ItemIcon";
 import { PetSprite } from "./PetSprite";
 
 /** Props for the always-on-desktop pet overlay. */
@@ -154,31 +147,31 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
             label="Meal"
             onClick={() => void performAction(CareActionType.FeedMeal)}
           >
-            <Bone size={17} />
+            <ItemIcon iconId="bowl" />
           </ActionButton>
           <ActionButton
             label="Play"
             onClick={() => void performAction(CareActionType.Play)}
           >
-            <Sparkles size={17} />
+            <ItemIcon iconId="ball" />
           </ActionButton>
           <ActionButton
             label="Clean"
             onClick={() => void performAction(CareActionType.Clean)}
           >
-            <Bath size={17} />
+            <ItemIcon iconId="sponge" />
           </ActionButton>
           <ActionButton
             label="Sleep"
             onClick={() => void performAction(CareActionType.ToggleSleep)}
           >
-            <Moon size={17} />
+            <ItemIcon iconId="crescent" />
           </ActionButton>
           <ActionButton
             label="Health"
             onClick={toggleHealth}
           >
-            <Stethoscope size={17} />
+            <ItemIcon iconId="meter" />
           </ActionButton>
         </nav>
       ) : null}
@@ -186,7 +179,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       {healthOpen ? <OverlayHealthCard snapshot={snapshot} /> : null}
 
       <div className="overlay-mood" aria-hidden="true">
-        <Heart size={12} />
+        <ItemIcon iconId="heart" size={14} />
         <span>{snapshot.activeState.mood}</span>
       </div>
     </main>

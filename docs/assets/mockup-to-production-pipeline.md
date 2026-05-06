@@ -80,7 +80,8 @@ count, or growth-stage availability.
 
 ## Item Icon Contract
 
-Item icons should be atlas-backed rather than many scattered one-off files.
+Item icons should be atlas-backed rather than many scattered one-off files. The
+first committed item set is `resources/items/lcd-core/`.
 
 Planned `items.json` fields:
 
@@ -114,6 +115,9 @@ Each item entry should include:
 
 The feed/play/care UI should read from this data instead of hardcoding every
 option inside React components.
+
+The current renderer consumes this through `src/renderer/src/itemIconAssets.ts`
+and `src/renderer/src/components/ItemIcon.tsx`.
 
 ## Lightweight Validation Plan
 

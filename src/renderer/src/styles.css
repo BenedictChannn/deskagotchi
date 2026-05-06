@@ -83,6 +83,17 @@ button {
   cursor: grabbing;
 }
 
+.item-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.item-icon--missing {
+  border: 1px solid currentColor;
+}
+
 .pet-sprite--button:focus-visible,
 .overlay-action-button:focus-visible,
 .command-button:focus-visible,
