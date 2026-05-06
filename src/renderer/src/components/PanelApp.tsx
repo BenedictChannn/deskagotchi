@@ -47,7 +47,7 @@ export function PanelApp({
   const activeView = initialView;
 
   const performAction = async (actionType: CareActionType): Promise<void> => {
-    await window.deskagotchi.performAction(actionType);
+    await window.deskagotchi.performAction({ type: actionType });
   };
 
   const selectView = (view: PanelView): void => {

@@ -96,6 +96,8 @@ button {
 
 .pet-sprite--button:focus-visible,
 .overlay-action-button:focus-visible,
+.overlay-feed-tab:focus-visible,
+.overlay-feed-item:focus-visible,
 .command-button:focus-visible,
 .panel-close-button:focus-visible,
 .panel-nav-button:focus-visible,
@@ -169,6 +171,71 @@ button {
   border-radius: 8px;
   background: rgba(255, 250, 242, 0.94);
   box-shadow: 0 12px 28px rgba(26, 35, 45, 0.16);
+}
+
+.overlay-feed-picker {
+  -webkit-app-region: no-drag;
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 2px solid rgba(18, 55, 22, 0.78);
+  background: rgba(247, 248, 231, 0.95);
+  color: #123716;
+  box-shadow: 0 10px 22px rgba(18, 55, 22, 0.2);
+}
+
+.overlay-feed-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.overlay-feed-tab,
+.overlay-feed-item {
+  border: 1px solid rgba(18, 55, 22, 0.5);
+  background: #dceca8;
+  color: #123716;
+  font: inherit;
+}
+
+.overlay-feed-tab {
+  height: 24px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.overlay-feed-tab--active {
+  background: #123716;
+  color: #dceca8;
+}
+
+.overlay-feed-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.overlay-feed-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 4px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.overlay-feed-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .overlay-health-stat {

@@ -36,10 +36,10 @@
 | DG-006-07 | [#6](https://github.com/BenedictChannn/deskagotchi/issues/6) | P1 | Done | Item Icons | Visual QA the icon set at overlay size. | A preview confirms all icons are readable in the target UI scale. |
 | DG-007-01 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Define food item data model. | Foods have id, category, label, icon, availability, stat effects, and optional weight/health effects. |
 | DG-007-02 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Add default meal and snack catalog. | MVP has at least 3 meals and 3 snacks with different effects. |
-| DG-007-03 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Open | Feed | Build compact Feed picker UI. | Feed opens inside the overlay with Meal and Snack categories. |
-| DG-007-04 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Open | Feed | Wire selected food into simulation effects. | Meals and snacks change hunger/happiness/health/weight according to item data. |
-| DG-007-05 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Open | Feed | Trigger eating mood and animation after feeding. | Selected food causes an eating response and then returns to derived mood. |
-| DG-007-06 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Open | Feed | Add feed-flow tests. | Tests cover meal vs snack effects and invalid/empty selections. |
+| DG-007-03 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Build compact Feed picker UI. | Feed opens inside the overlay with Meal and Snack categories. |
+| DG-007-04 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Wire selected food into simulation effects. | Meals and snacks change hunger/happiness/health/weight according to item data. |
+| DG-007-05 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Trigger eating mood and animation after feeding. | Selected food causes an eating response and then returns to derived mood. |
+| DG-007-06 | [#7](https://github.com/BenedictChannn/deskagotchi/issues/7) | P2 | Done | Feed | Add feed-flow tests. | Tests cover meal vs snack effects and invalid/empty selections. |
 | DG-008-01 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Define ball mini-game state model. | Ball, pet target, score/reward, and exit state are serializable or safely transient. |
 | DG-008-02 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Build compact Play picker UI. | Play opens inside the overlay and Ball can be selected. |
 | DG-008-03 | [#8](https://github.com/BenedictChannn/deskagotchi/issues/8) | P2 | Open | Play | Implement draggable ball interaction. | User can drag and release the ball within a bounded play area. |

@@ -2,7 +2,7 @@
  * Runtime service for main-process state, package, and simulation operations.
  */
 import { randomUUID } from "node:crypto";
-import { mkdir, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import AdmZip from "adm-zip";
@@ -10,7 +10,7 @@ import { app, dialog, Notification } from "electron";
 
 import {
   AnimationId,
-  type CareActionType,
+  CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   LifeStage,
@@ -23,12 +23,19 @@ import {
   ValidationSeverity
 } from "@shared/domain";
 import {
+  type CareActionRequest,
   type DeskagotchiSnapshot,
   type HatchDraftInput,
   type HatchDraftResult,
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
+import {
+  ItemCategory,
+  ItemIconManifestSchema,
+  type ItemCatalogEntry,
+  type ItemIconManifest
+} from "@shared/itemIcons";
 import { hasBlockingIssues } from "@shared/packageValidation";
 import {
   applyCareAction,
@@ -65,8 +72,10 @@ const MAX_HATCH_DESCRIPTION_LENGTH = 200;
  */
 export class DeskagotchiRuntime {
   private readonly resourcePetsDir: string;
+  private readonly resourceItemsDir: string;
   private readonly storagePaths: StoragePaths;
   private loadedPackages: LoadedPetPackage[] = [];
+  private itemManifest: ItemIconManifest | undefined;
   private save: DeskagotchiSave | undefined;
   private lastNotificationAt = 0;
 
@@ -78,6 +87,7 @@ export class DeskagotchiRuntime {
    */
   constructor(resourceRoot: string, userDataDir: string) {
     this.resourcePetsDir = path.join(resourceRoot, "pets");
+    this.resourceItemsDir = path.join(resourceRoot, "items");
     this.storagePaths = createStoragePaths(userDataDir);
   }
 
@@ -88,6 +98,7 @@ export class DeskagotchiRuntime {
    * @throws Error when no valid pet package is available.
    */
   async initialize(now = new Date()): Promise<void> {
+    await this.loadItemManifest();
     await this.reloadPackages();
     this.save = await loadOrCreateSave(
       this.storagePaths,
@@ -148,20 +159,22 @@ export class DeskagotchiRuntime {
   /**
    * Apply a care action to the active pet and persist the result.
    *
-   * @param actionType - Care action requested by the user.
+   * @param request - Care action requested by the user.
    * @param now - Clock value used by simulation and action effects.
    * @returns Updated renderer snapshot.
    */
   async performAction(
-    actionType: CareActionType,
+    request: CareActionRequest,
     now = new Date()
   ): Promise<DeskagotchiSnapshot> {
     const save = this.requireSave();
     const activeState = this.getActiveState(save);
     const activePackage = this.getPetPackage(activeState.packageId);
+    const item = this.resolveCareItem(request);
     const actionResult = applyCareAction(activeState, activePackage.petPackage, {
-      type: actionType,
-      now
+      type: request.type,
+      now,
+      item
     });
     this.replaceInstance(actionResult.state);
     await this.persistSave();
@@ -544,6 +557,47 @@ export class DeskagotchiRuntime {
       },
       issues: loadedPackage.issues
     };
+  }
+
+  private async loadItemManifest(): Promise<void> {
+    const itemManifestPath = path.join(this.resourceItemsDir, "lcd-core", "items.json");
+    const rawManifest = await readFile(itemManifestPath, "utf8");
+    this.itemManifest = ItemIconManifestSchema.parse(JSON.parse(rawManifest));
+  }
+
+  private resolveCareItem(
+    request: CareActionRequest
+  ): ItemCatalogEntry | undefined {
+    if (request.itemId === undefined) {
+      return undefined;
+    }
+
+    const itemManifest = this.requireItemManifest();
+    const item = itemManifest.items.find(
+      (candidate) => candidate.id === request.itemId
+    );
+    if (item === undefined) {
+      throw new Error(`Unknown care item '${request.itemId}'.`);
+    }
+
+    if (request.type === CareActionType.FeedMeal && item.category !== ItemCategory.Meal) {
+      throw new Error(`Care item '${item.id}' is not a meal.`);
+    }
+    if (
+      request.type === CareActionType.FeedSnack &&
+      item.category !== ItemCategory.Snack
+    ) {
+      throw new Error(`Care item '${item.id}' is not a snack.`);
+    }
+
+    return item;
+  }
+
+  private requireItemManifest(): ItemIconManifest {
+    if (this.itemManifest === undefined) {
+      throw new Error("Item manifest has not been loaded.");
+    }
+    return this.itemManifest;
   }
 
   private getPetPackage(packageId: string): LoadedPetPackage {

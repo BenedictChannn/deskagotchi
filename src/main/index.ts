@@ -34,6 +34,7 @@ import {
   PanelView,
   type UpdateSettingsInput
 } from "@shared/ipc";
+import { ItemCatalogEntrySchema } from "@shared/itemIcons";
 
 import { DeskagotchiRuntime } from "./runtime";
 
@@ -54,7 +55,12 @@ const PET_WINDOW_DEFAULT_SIZE = 240;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
-const CareActionTypeInputSchema = z.nativeEnum(CareActionType);
+const CareActionInputSchema = z
+  .object({
+    type: z.nativeEnum(CareActionType),
+    itemId: ItemCatalogEntrySchema.shape.id.optional()
+  })
+  .strict();
 const PanelViewInputSchema = z.nativeEnum(PanelView);
 const BooleanInputSchema = z.boolean();
 const PackageIdInputSchema = PetPackageSchema.shape.packageId;
@@ -296,14 +302,14 @@ function registerIpcHandlers(): void {
     validateIpcSender(event);
     return runtime.getSnapshot();
   });
-  ipcMain.handle(IpcChannel.PerformAction, async (event, actionType: unknown) => {
+  ipcMain.handle(IpcChannel.PerformAction, async (event, actionInput: unknown) => {
     validateIpcSender(event);
-    const validatedActionType = parseIpcInput(
-      CareActionTypeInputSchema,
-      actionType,
-      "care action type"
+    const validatedAction = parseIpcInput(
+      CareActionInputSchema,
+      actionInput,
+      "care action"
     );
-    const snapshot = await runtime.performAction(validatedActionType);
+    const snapshot = await runtime.performAction(validatedAction);
     broadcastSnapshotUpdated();
     rebuildTray();
     return snapshot;
@@ -483,7 +489,7 @@ function rebuildTray(): void {
  * @param actionType - Care action to apply to the active pet.
  */
 async function performTrayAction(actionType: CareActionType): Promise<void> {
-  await runtime.performAction(actionType);
+  await runtime.performAction({ type: actionType });
   broadcastSnapshotUpdated();
   showPetWindow();
 }

@@ -15,6 +15,7 @@ import {
   type PetStats,
   PetLifecycleStatus
 } from "./domain";
+import { ItemCategory, type ItemCatalogEntry } from "./itemIcons";
 
 /** Tunable constants that control offline catch-up, decay, and growth timing. */
 export interface SimulationConfig {
@@ -45,6 +46,7 @@ export interface SimulationEvent {
 export interface CareAction {
   type: CareActionType;
   now: Date;
+  item?: ItemCatalogEntry;
 }
 
 /** Default simulation balance used by the desktop runtime and tests. */
@@ -246,7 +248,12 @@ export function applyCareAction(
   config = DEFAULT_SIMULATION_CONFIG
 ): { state: PetInstanceState; events: SimulationEvent[] } {
   const progressed = progressPetState(state, petPackage, action.now, config);
-  const nextState = applyActionEffects(progressed.state, action.type, petPackage);
+  const nextState = applyActionEffects(
+    progressed.state,
+    action.type,
+    petPackage,
+    action.item
+  );
 
   return {
     state: {
@@ -448,10 +455,14 @@ function applySimulationTick(
 function applyActionEffects(
   state: PetInstanceState,
   actionType: CareActionType,
-  petPackage: PetPackage
+  petPackage: PetPackage,
+  item?: ItemCatalogEntry
 ): PetInstanceState {
   switch (actionType) {
     case CareActionType.FeedMeal:
+      if (item !== undefined) {
+        return applyFoodItem(state, item, false);
+      }
       return {
         ...state,
         mood: Mood.Eating,
@@ -464,6 +475,9 @@ function applyActionEffects(
         }
       };
     case CareActionType.FeedSnack:
+      if (item !== undefined) {
+        return applyFoodItem(state, item, true);
+      }
       return {
         ...state,
         mood: Mood.Eating,
@@ -542,6 +556,46 @@ function applyActionEffects(
         }
       };
   }
+}
+
+function applyFoodItem(
+  state: PetInstanceState,
+  item: ItemCatalogEntry,
+  isSnack: boolean
+): PetInstanceState {
+  const itemCategoryMatches =
+    (isSnack && item.category === ItemCategory.Snack) ||
+    (!isSnack && item.category === ItemCategory.Meal);
+  if (!itemCategoryMatches) {
+    return state;
+  }
+
+  return {
+    ...state,
+    mood: Mood.Eating,
+    stats: applyItemEffects(state.stats, item),
+    careHistory: {
+      ...state.careHistory,
+      snackCount: state.careHistory.snackCount + (isSnack ? 1 : 0)
+    }
+  };
+}
+
+function applyItemEffects(
+  stats: PetStats,
+  item: ItemCatalogEntry
+): PetStats {
+  return {
+    ...stats,
+    hunger: clampStat(stats.hunger + (item.effects.hunger ?? 0)),
+    happiness: clampStat(stats.happiness + (item.effects.happiness ?? 0)),
+    energy: clampStat(stats.energy + (item.effects.energy ?? 0)),
+    cleanliness: clampStat(stats.cleanliness + (item.effects.cleanliness ?? 0)),
+    health: clampStat(stats.health + (item.effects.health ?? 0)),
+    affection: clampStat(stats.affection + (item.effects.affection ?? 0)),
+    discipline: clampStat(stats.discipline + (item.effects.discipline ?? 0)),
+    weight: clampWeight(stats.weight + (item.effects.weight ?? 0))
+  };
 }
 
 function applyGrowth(

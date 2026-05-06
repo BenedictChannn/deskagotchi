@@ -49,6 +49,7 @@ export const ItemCatalogEntrySchema = z
     label: z.string().min(1).max(40),
     category: z.nativeEnum(ItemCategory),
     iconId: ItemIconEntrySchema.shape.id,
+    quantity: z.literal("unlimited"),
     availability: z.enum(["always", "when_sick", "when_messy", "when_tired"]),
     effects: ItemEffectsSchema
   })

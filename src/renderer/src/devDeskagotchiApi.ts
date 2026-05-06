@@ -1,6 +1,5 @@
 import {
   AnimationId,
-  type CareActionType,
   LifeStage,
   PackageValidationStatus,
   PetSource,
@@ -14,6 +13,7 @@ import {
   type ValidationIssue
 } from "@shared/domain";
 import {
+  type CareActionRequest,
   type DeskagotchiApi,
   type DeskagotchiSnapshot,
   type HatchDraftInput,
@@ -21,16 +21,19 @@ import {
   type UpdateSettingsInput
 } from "@shared/ipc";
 import { applyCareAction, createInitialPetState } from "@shared/simulation";
+import { ItemIconManifestSchema } from "@shared/itemIcons";
 
 import deskdogIconUrl from "../../../resources/pets/deskdog/icon.png?url";
 import deskdogManifest from "../../../resources/pets/deskdog/pet.json";
 import deskdogPreviewUrl from "../../../resources/pets/deskdog/preview.png?url";
 import deskdogSpritesheetUrl from "../../../resources/pets/deskdog/spritesheet.png?url";
+import itemManifestData from "../../../resources/items/lcd-core/items.json";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const ITEM_MANIFEST = ItemIconManifestSchema.parse(itemManifestData);
 
 /**
  * Install a browser-only Deskagotchi bridge for Vite development.
@@ -62,7 +65,7 @@ class DevDeskagotchiApi {
   toBridgeApi(): DeskagotchiApi {
     return {
       getSnapshot: async () => this.createSnapshot(),
-      performAction: async (actionType) => this.performAction(actionType),
+      performAction: async (request) => this.performAction(request),
       switchPet: async (packageId) => this.switchPet(packageId),
       updateSettings: async (settings) => this.updateSettings(settings),
       openPanel: async (view) => {
@@ -87,18 +90,22 @@ class DevDeskagotchiApi {
   /**
    * Apply a care action to the active pet and broadcast the resulting snapshot.
    *
-   * @param actionType - Care action selected by the renderer.
+   * @param request - Care action selected by the renderer.
    * @returns The updated snapshot after simulation and persistence.
    * @throws Error when the active pet state or package cannot be found.
    */
   private async performAction(
-    actionType: CareActionType
+    request: CareActionRequest
   ): Promise<DeskagotchiSnapshot> {
     const activeState = this.getActiveState();
     const activePackage = this.getRuntimePackage(activeState.packageId);
+    const item = request.itemId === undefined
+      ? undefined
+      : ITEM_MANIFEST.items.find((candidate) => candidate.id === request.itemId);
     const next = applyCareAction(activeState, activePackage.petPackage, {
-      type: actionType,
-      now: new Date()
+      type: request.type,
+      now: new Date(),
+      item
     });
     this.replaceInstance(next.state);
     return this.persistAndSnapshot();

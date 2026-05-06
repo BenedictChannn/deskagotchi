@@ -2,13 +2,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 import {
+  type CareActionRequest,
   type DeskagotchiApi,
   type HatchDraftInput,
   IpcChannel,
   type PanelView,
   type UpdateSettingsInput
 } from "@shared/ipc";
-import type { CareActionType } from "@shared/domain";
 
 /**
  * Narrow IPC facade exposed to the renderer process.
@@ -17,8 +17,8 @@ import type { CareActionType } from "@shared/domain";
  */
 const api: DeskagotchiApi = {
   getSnapshot: () => ipcRenderer.invoke(IpcChannel.GetSnapshot),
-  performAction: (actionType: CareActionType) =>
-    ipcRenderer.invoke(IpcChannel.PerformAction, actionType),
+  performAction: (request: CareActionRequest) =>
+    ipcRenderer.invoke(IpcChannel.PerformAction, request),
   switchPet: (packageId: string) =>
     ipcRenderer.invoke(IpcChannel.SwitchPet, packageId),
   updateSettings: (settings: UpdateSettingsInput) =>

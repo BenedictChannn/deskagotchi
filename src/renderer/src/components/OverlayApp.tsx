@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { CareActionType } from "@shared/domain";
+import { ItemCategory, type ItemCatalogEntry } from "@shared/itemIcons";
 import type { DeskagotchiSnapshot } from "@shared/ipc";
 
+import { lcdItemIconSet } from "../itemIconAssets";
 import { ItemIcon } from "./ItemIcon";
 import { PetSprite } from "./PetSprite";
 
@@ -21,6 +23,10 @@ interface OverlayAppProps {
 export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false);
   const [healthOpen, setHealthOpen] = useState(false);
+  const [feedOpen, setFeedOpen] = useState(false);
+  const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
+    ItemCategory.Meal
+  );
   const dragState = useRef<{
     pointerId: number;
     target: HTMLButtonElement;
@@ -30,14 +36,18 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   }>();
   const suppressNextClick = useRef(false);
 
-  const performAction = async (actionType: CareActionType): Promise<void> => {
-    await window.deskagotchi.performAction(actionType);
+  const performAction = async (
+    actionType: CareActionType,
+    itemId?: string
+  ): Promise<void> => {
+    await window.deskagotchi.performAction({ type: actionType, itemId });
     setMenuOpen(false);
     setHealthOpen(false);
+    setFeedOpen(false);
   };
 
   useEffect(() => {
-    if (!menuOpen && !healthOpen) {
+    if (!menuOpen && !healthOpen && !feedOpen) {
       return undefined;
     }
 
@@ -47,11 +57,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       }
       setMenuOpen(false);
       setHealthOpen(false);
+      setFeedOpen(false);
     };
 
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
-  }, [healthOpen, menuOpen]);
+  }, [feedOpen, healthOpen, menuOpen]);
 
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
@@ -90,6 +101,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       suppressNextClick.current = true;
       setMenuOpen(false);
       setHealthOpen(false);
+      setFeedOpen(false);
     }
     void window.deskagotchi.movePetWindow(deltaX, deltaY);
   };
@@ -119,13 +131,21 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setMenuOpen((current) => {
       if (!current) {
         setHealthOpen(false);
+        setFeedOpen(false);
       }
       return !current;
     });
   };
 
+  const openFeed = (): void => {
+    setMenuOpen(false);
+    setHealthOpen(false);
+    setFeedOpen(true);
+  };
+
   const toggleHealth = (): void => {
     setMenuOpen(false);
+    setFeedOpen(false);
     setHealthOpen((current) => !current);
   };
 
@@ -144,8 +164,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       {menuOpen ? (
         <nav className="overlay-actions" aria-label="Pet actions">
           <ActionButton
-            label="Meal"
-            onClick={() => void performAction(CareActionType.FeedMeal)}
+            label="Feed"
+            onClick={openFeed}
           >
             <ItemIcon iconId="bowl" />
           </ActionButton>
@@ -177,6 +197,19 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       ) : null}
 
       {healthOpen ? <OverlayHealthCard snapshot={snapshot} /> : null}
+      {feedOpen ? (
+        <FeedPicker
+          activeCategory={feedCategory}
+          onCategoryChange={setFeedCategory}
+          onSelect={(item) => {
+            const actionType =
+              item.category === ItemCategory.Snack
+                ? CareActionType.FeedSnack
+                : CareActionType.FeedMeal;
+            void performAction(actionType, item.id);
+          }}
+        />
+      ) : null}
 
       <div className="overlay-mood" aria-hidden="true">
         <ItemIcon iconId="heart" size={14} />
@@ -184,6 +217,80 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       </div>
     </main>
   );
+}
+
+function FeedPicker({
+  activeCategory,
+  onCategoryChange,
+  onSelect
+}: {
+  activeCategory: ItemCategory.Meal | ItemCategory.Snack;
+  onCategoryChange: (category: ItemCategory.Meal | ItemCategory.Snack) => void;
+  onSelect: (item: ItemCatalogEntry) => void;
+}): React.JSX.Element {
+  const feedItems = lcdItemIconSet.manifest.items.filter(
+    (item) => item.category === activeCategory
+  );
+
+  return (
+    <section className="overlay-feed-picker" aria-label="Feed pet">
+      <div className="overlay-feed-tabs" role="tablist" aria-label="Feed category">
+        <FeedTab
+          active={activeCategory === ItemCategory.Meal}
+          label="Meal"
+          onClick={() => onCategoryChange(ItemCategory.Meal)}
+        />
+        <FeedTab
+          active={activeCategory === ItemCategory.Snack}
+          label="Snack"
+          onClick={() => onCategoryChange(ItemCategory.Snack)}
+        />
+      </div>
+      <div className="overlay-feed-list">
+        {feedItems.map((item) => (
+          <button
+            key={item.id}
+            className="overlay-feed-item"
+            type="button"
+            onClick={() => onSelect(item)}
+            title={describeEffects(item)}
+          >
+            <ItemIcon iconId={item.iconId} size={20} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FeedTab({
+  active,
+  label,
+  onClick
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      className={active ? "overlay-feed-tab overlay-feed-tab--active" : "overlay-feed-tab"}
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+function describeEffects(item: ItemCatalogEntry): string {
+  const effectLabels = Object.entries(item.effects).map(([stat, value]) =>
+    `${stat} ${value > 0 ? "+" : ""}${value}`
+  );
+  return effectLabels.join(", ");
 }
 
 function OverlayHealthCard({

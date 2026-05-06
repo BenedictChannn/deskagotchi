@@ -10,6 +10,7 @@ import type {
   PetPackage,
   ValidationIssue
 } from "./domain";
+import type { ItemCatalogEntry } from "./itemIcons";
 
 /** IPC channel names shared by preload, renderer, and Electron main process. */
 export enum IpcChannel {
@@ -76,13 +77,19 @@ export interface HatchDraftResult {
   issues: ValidationIssue[];
 }
 
+/** Care action request sent by renderer controls. */
+export interface CareActionRequest {
+  type: CareActionType;
+  itemId?: ItemCatalogEntry["id"];
+}
+
 /** Partial save-settings update accepted over IPC. */
 export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
 
 /** Renderer-facing API exposed by preload for desktop pet operations. */
 export interface DeskagotchiApi {
   getSnapshot: () => Promise<DeskagotchiSnapshot>;
-  performAction: (actionType: CareActionType) => Promise<DeskagotchiSnapshot>;
+  performAction: (request: CareActionRequest) => Promise<DeskagotchiSnapshot>;
   switchPet: (packageId: string) => Promise<DeskagotchiSnapshot>;
   updateSettings: (
     settings: UpdateSettingsInput

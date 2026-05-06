@@ -151,6 +151,7 @@ function item(id, label, category, iconId, effects) {
     label,
     category,
     iconId,
+    quantity: "unlimited",
     availability: "always",
     effects
   };

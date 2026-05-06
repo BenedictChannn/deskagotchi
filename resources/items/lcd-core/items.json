@@ -230,6 +230,7 @@
       "label": "Kibble Bowl",
       "category": "meal",
       "iconId": "bowl",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "hunger": 22,
@@ -241,6 +242,7 @@
       "label": "Rice Ball",
       "category": "meal",
       "iconId": "rice-ball",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "hunger": 18,
@@ -252,6 +254,7 @@
       "label": "Toast Plate",
       "category": "meal",
       "iconId": "bread-plate",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "hunger": 16
@@ -262,6 +265,7 @@
       "label": "Dumpling",
       "category": "meal",
       "iconId": "dumpling",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "hunger": 20,
@@ -273,6 +277,7 @@
       "label": "Biscuit",
       "category": "snack",
       "iconId": "biscuit",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 10,
@@ -285,6 +290,7 @@
       "label": "Candy",
       "category": "snack",
       "iconId": "candy",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 13,
@@ -297,6 +303,7 @@
       "label": "Cake",
       "category": "snack",
       "iconId": "cake",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 12,
@@ -310,6 +317,7 @@
       "label": "Ball",
       "category": "toy",
       "iconId": "ball",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 8,
@@ -322,6 +330,7 @@
       "label": "Rope",
       "category": "toy",
       "iconId": "rope",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 7,
@@ -334,6 +343,7 @@
       "label": "Cards",
       "category": "toy",
       "iconId": "card",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 5,
@@ -345,6 +355,7 @@
       "label": "Chase",
       "category": "toy",
       "iconId": "chase-spark",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "happiness": 9,
@@ -357,6 +368,7 @@
       "label": "Capsule",
       "category": "medicine",
       "iconId": "capsule",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "health": 25
@@ -367,6 +379,7 @@
       "label": "Tonic",
       "category": "medicine",
       "iconId": "bottle",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "health": 18,
@@ -378,6 +391,7 @@
       "label": "Sponge",
       "category": "clean",
       "iconId": "sponge",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "cleanliness": 28,
@@ -389,6 +403,7 @@
       "label": "Broom",
       "category": "clean",
       "iconId": "broom",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "cleanliness": 22
@@ -399,6 +414,7 @@
       "label": "Lights",
       "category": "sleep",
       "iconId": "crescent",
+      "quantity": "unlimited",
       "availability": "always",
       "effects": {
         "energy": 10

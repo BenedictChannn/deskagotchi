@@ -6,6 +6,7 @@ import {
   PetLifecycleStatus
 } from "./domain";
 import { createTestPetPackage } from "./fixtures";
+import { ItemCategory, type ItemCatalogEntry } from "./itemIcons";
 import {
   applyCareAction,
   createInitialPetState,
@@ -60,6 +61,59 @@ describe("simulation", () => {
     expect(result.state.ageHours).toBeCloseTo(2, 3);
     expect(result.state.stats.hunger).toBeGreaterThan(90);
     expect(result.state.mood).toBe(Mood.Eating);
+  });
+
+  it("applies selected meal effects instead of generic feeding", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        hunger: 40,
+        happiness: 50,
+        weight: 10
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.FeedMeal,
+      now: startedAt,
+      item: testItem("meal-rice-ball", ItemCategory.Meal, {
+        hunger: 18,
+        happiness: 2
+      })
+    });
+
+    expect(result.state.stats.hunger).toBe(58);
+    expect(result.state.stats.happiness).toBe(52);
+    expect(result.state.stats.weight).toBe(10);
+    expect(result.state.mood).toBe(Mood.Eating);
+  });
+
+  it("applies selected snack effects and tracks snack count", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        happiness: 40,
+        health: 80,
+        weight: 10
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.FeedSnack,
+      now: startedAt,
+      item: testItem("snack-candy", ItemCategory.Snack, {
+        happiness: 13,
+        health: -2,
+        weight: 1
+      })
+    });
+
+    expect(result.state.stats.happiness).toBe(53);
+    expect(result.state.stats.health).toBe(78);
+    expect(result.state.stats.weight).toBe(11);
+    expect(result.state.careHistory.snackCount).toBe(
+      state.careHistory.snackCount + 1
+    );
   });
 
   it("keeps immediate action moods visible for renderer feedback", () => {
@@ -171,3 +225,19 @@ describe("simulation", () => {
     expect(highCareResult.state.growthStageId).toBe("adult-star");
   });
 });
+
+function testItem(
+  id: string,
+  category: ItemCategory,
+  effects: ItemCatalogEntry["effects"]
+): ItemCatalogEntry {
+  return {
+    id,
+    label: id,
+    category,
+    iconId: "bowl",
+    quantity: "unlimited",
+    availability: "always",
+    effects
+  };
+}
