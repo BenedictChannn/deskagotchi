@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Baby Peanut",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child",
       "stage": "child",
       "label": "Little Peanut",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "teen",
       "stage": "teen",
       "label": "Sprout Peanut",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "adult",
       "stage": "adult",
       "label": "Peanut",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -269,9 +269,9 @@
   "favoritePlayStyle": "chase",
   "careModifiers": {
     "hungerDecayMultiplier": 0.95,
-    "happinessDecayMultiplier": 1.0,
+    "happinessDecayMultiplier": 1,
     "energyDecayMultiplier": 0.9,
-    "cleanlinessDecayMultiplier": 1.0,
+    "cleanlinessDecayMultiplier": 1,
     "affectionGainMultiplier": 1.1
   },
   "colorPalette": [

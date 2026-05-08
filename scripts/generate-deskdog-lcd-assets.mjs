@@ -35,6 +35,14 @@ const animations = [
   { id: "attention", fps: 6 }
 ];
 
+const stageThresholdHours = {
+  egg: 0,
+  baby: 24,
+  child: 72,
+  teen: 240,
+  adult: 504
+};
+
 /**
  * Generate the production Deskbit Dog monochrome LCD package assets.
  *
@@ -99,11 +107,11 @@ function createPetManifest() {
       ...(animation.id === "idle" ? {} : { fallback: "idle" })
     })),
     growthStages: [
-      stage("egg", "egg", "Egg", 0),
-      stage("baby", "baby", "Baby Deskbit Dog", 2),
-      stage("child", "child", "Child Deskbit Dog", 8),
-      stage("teen", "teen", "Teen Deskbit Dog", 30),
-      stage("adult", "adult", "Adult Deskbit Dog", 72)
+      stage("egg", "egg", "Egg", stageThresholdHours.egg),
+      stage("baby", "baby", "Baby Deskbit Dog", stageThresholdHours.baby),
+      stage("child", "child", "Child Deskbit Dog", stageThresholdHours.child),
+      stage("teen", "teen", "Teen Deskbit Dog", stageThresholdHours.teen),
+      stage("adult", "adult", "Adult Deskbit Dog", stageThresholdHours.adult)
     ],
     preferredFoods: ["kibble bowl", "chicken bite", "rice ball", "steamed bun", "apple slice"],
     dislikedFoods: ["candy"],

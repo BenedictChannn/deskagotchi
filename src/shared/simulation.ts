@@ -37,6 +37,17 @@ export interface SimulationConfig {
   stageThresholdHours: Record<LifeStage, number>;
 }
 
+const HOURS_PER_DAY = 24;
+
+/** Default long-term companion growth thresholds, stored as simulation hours. */
+export const DEFAULT_STAGE_THRESHOLD_HOURS: Record<LifeStage, number> = {
+  [LifeStage.Egg]: 0,
+  [LifeStage.Baby]: HOURS_PER_DAY,
+  [LifeStage.Child]: 3 * HOURS_PER_DAY,
+  [LifeStage.Teen]: 10 * HOURS_PER_DAY,
+  [LifeStage.Adult]: 21 * HOURS_PER_DAY
+};
+
 /** Domain event emitted when simulation detects a notable state transition. */
 export interface SimulationEvent {
   code: string;
@@ -67,13 +78,7 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   sleepRecoveryPerHour: 8,
   healthPenaltyPerHour: 3.2,
   careHistoryWindowHours: 72,
-  stageThresholdHours: {
-    [LifeStage.Egg]: 0,
-    [LifeStage.Baby]: 2,
-    [LifeStage.Child]: 8,
-    [LifeStage.Teen]: 30,
-    [LifeStage.Adult]: 72
-  }
+  stageThresholdHours: DEFAULT_STAGE_THRESHOLD_HOURS
 };
 
 /**

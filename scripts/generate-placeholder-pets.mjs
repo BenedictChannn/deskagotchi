@@ -33,6 +33,14 @@ const commonAnimationManifest = animations.map((id, row) => ({
   ...(id === "idle" ? {} : { fallback: "idle" })
 }));
 
+const stageThresholdHours = {
+  egg: 0,
+  baby: 24,
+  child: 72,
+  teen: 240,
+  adult: 504
+};
+
 const pets = [
   {
     packageId: "deskcat",
@@ -47,15 +55,15 @@ const pets = [
     foodPreferences: catFoodPreferences(),
     body: "cat",
     growthStages: [
-      stage("egg", "egg", "Egg", 0, 0, 100),
-      stage("baby", "baby", "Baby Deskcat", 2, 0, 100),
-      stage("child-calm", "child", "Calm Child", 8, 0, 59),
-      stage("child-bright", "child", "Bright Child", 8, 60, 100),
-      stage("teen-shy", "teen", "Shy Teen", 30, 0, 49),
-      stage("teen-spry", "teen", "Spry Teen", 30, 50, 100),
-      stage("adult-cozy", "adult", "Cozy Adult", 72, 0, 39),
-      stage("adult-pal", "adult", "Desk Pal", 72, 40, 74),
-      stage("adult-star", "adult", "Star Deskcat", 72, 75, 100)
+      stage("egg", "egg", "Egg", stageThresholdHours.egg, 0, 100),
+      stage("baby", "baby", "Baby Deskcat", stageThresholdHours.baby, 0, 100),
+      stage("child-calm", "child", "Calm Child", stageThresholdHours.child, 0, 59),
+      stage("child-bright", "child", "Bright Child", stageThresholdHours.child, 60, 100),
+      stage("teen-shy", "teen", "Shy Teen", stageThresholdHours.teen, 0, 49),
+      stage("teen-spry", "teen", "Spry Teen", stageThresholdHours.teen, 50, 100),
+      stage("adult-cozy", "adult", "Cozy Adult", stageThresholdHours.adult, 0, 39),
+      stage("adult-pal", "adult", "Desk Pal", stageThresholdHours.adult, 40, 74),
+      stage("adult-star", "adult", "Star Deskcat", stageThresholdHours.adult, 75, 100)
     ]
   },
   {
@@ -181,11 +189,11 @@ function toPackage(pet) {
 
 function basicGrowth(name) {
   return [
-    stage("egg", "egg", "Egg", 0, 0, 100),
-    stage("baby", "baby", `Baby ${name}`, 2, 0, 100),
-    stage("child", "child", `Child ${name}`, 8, 0, 100),
-    stage("teen", "teen", `Teen ${name}`, 30, 0, 100),
-    stage("adult", "adult", `Adult ${name}`, 72, 0, 100)
+    stage("egg", "egg", "Egg", stageThresholdHours.egg, 0, 100),
+    stage("baby", "baby", `Baby ${name}`, stageThresholdHours.baby, 0, 100),
+    stage("child", "child", `Child ${name}`, stageThresholdHours.child, 0, 100),
+    stage("teen", "teen", `Teen ${name}`, stageThresholdHours.teen, 0, 100),
+    stage("adult", "adult", `Adult ${name}`, stageThresholdHours.adult, 0, 100)
   ];
 }
 

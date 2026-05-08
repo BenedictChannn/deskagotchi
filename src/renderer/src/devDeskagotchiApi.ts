@@ -20,7 +20,11 @@ import {
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
-import { applyCareAction, createInitialPetState } from "@shared/simulation";
+import {
+  applyCareAction,
+  createInitialPetState,
+  DEFAULT_SIMULATION_CONFIG
+} from "@shared/simulation";
 import { ItemIconManifestSchema } from "@shared/itemIcons";
 
 import baoIconUrl from "../../../resources/pets/bao/icon.png?url";
@@ -604,15 +608,15 @@ function createDevPetPackage(overrides: {
       animation(AnimationId.Attention, 10, 6)
     ],
     growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", 0, 0, 100),
-      growthStage("baby", LifeStage.Baby, `Baby ${overrides.name}`, 2, 0, 100),
-      growthStage("child-calm", LifeStage.Child, "Calm Child", 8, 0, 59),
-      growthStage("child-bright", LifeStage.Child, "Bright Child", 8, 60, 100),
-      growthStage("teen-shy", LifeStage.Teen, "Shy Teen", 30, 0, 49),
-      growthStage("teen-spry", LifeStage.Teen, "Spry Teen", 30, 50, 100),
-      growthStage("adult-cozy", LifeStage.Adult, "Cozy Adult", 72, 0, 39),
-      growthStage("adult-pal", LifeStage.Adult, "Desk Pal", 72, 40, 74),
-      growthStage("adult-star", LifeStage.Adult, `Star ${overrides.name}`, 72, 75, 100)
+      growthStage("egg", LifeStage.Egg, "Egg", stageThreshold(LifeStage.Egg), 0, 100),
+      growthStage("baby", LifeStage.Baby, `Baby ${overrides.name}`, stageThreshold(LifeStage.Baby), 0, 100),
+      growthStage("child-calm", LifeStage.Child, "Calm Child", stageThreshold(LifeStage.Child), 0, 59),
+      growthStage("child-bright", LifeStage.Child, "Bright Child", stageThreshold(LifeStage.Child), 60, 100),
+      growthStage("teen-shy", LifeStage.Teen, "Shy Teen", stageThreshold(LifeStage.Teen), 0, 49),
+      growthStage("teen-spry", LifeStage.Teen, "Spry Teen", stageThreshold(LifeStage.Teen), 50, 100),
+      growthStage("adult-cozy", LifeStage.Adult, "Cozy Adult", stageThreshold(LifeStage.Adult), 0, 39),
+      growthStage("adult-pal", LifeStage.Adult, "Desk Pal", stageThreshold(LifeStage.Adult), 40, 74),
+      growthStage("adult-star", LifeStage.Adult, `Star ${overrides.name}`, stageThreshold(LifeStage.Adult), 75, 100)
     ],
     preferredFoods: ["warm rice", "fruit bite"],
     dislikedFoods: ["burnt toast"],
@@ -682,6 +686,10 @@ function animation(id: AnimationId, row: number, fps: number): PetPackage["anima
     loop: true,
     ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
   };
+}
+
+function stageThreshold(lifeStage: LifeStage): number {
+  return DEFAULT_SIMULATION_CONFIG.stageThresholdHours[lifeStage];
 }
 
 /**

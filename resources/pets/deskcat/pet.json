@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Baby Deskcat",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child-calm",
       "stage": "child",
       "label": "Calm Child",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 59,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "child-bright",
       "stage": "child",
       "label": "Bright Child",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 60,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "teen-shy",
       "stage": "teen",
       "label": "Shy Teen",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 49,
       "animationSet": [
@@ -236,7 +236,7 @@
       "id": "teen-spry",
       "stage": "teen",
       "label": "Spry Teen",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 50,
       "careScoreMax": 100,
       "animationSet": [
@@ -257,7 +257,7 @@
       "id": "adult-cozy",
       "stage": "adult",
       "label": "Cozy Adult",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 39,
       "animationSet": [
@@ -278,7 +278,7 @@
       "id": "adult-pal",
       "stage": "adult",
       "label": "Desk Pal",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 40,
       "careScoreMax": 74,
       "animationSet": [
@@ -299,7 +299,7 @@
       "id": "adult-star",
       "stage": "adult",
       "label": "Star Deskcat",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 75,
       "careScoreMax": 100,
       "animationSet": [

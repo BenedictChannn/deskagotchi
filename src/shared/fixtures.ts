@@ -101,7 +101,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         id: "baby",
         stage: LifeStage.Baby,
         label: "Baby",
-        minAgeHours: 2,
+        minAgeHours: 24,
         careScoreMin: 0,
         careScoreMax: 100,
         animationSet: [
@@ -116,7 +116,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         id: "adult",
         stage: LifeStage.Adult,
         label: "Adult",
-        minAgeHours: 72,
+        minAgeHours: 504,
         careScoreMin: 0,
         careScoreMax: 100,
         animationSet: [

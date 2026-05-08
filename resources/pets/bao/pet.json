@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Baby Bao",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child",
       "stage": "child",
       "label": "Little Bao",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "teen",
       "stage": "teen",
       "label": "Fluffy Bao",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "adult",
       "stage": "adult",
       "label": "Bao",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -267,9 +267,9 @@
   },
   "favoritePlayStyle": "chase",
   "careModifiers": {
-    "hungerDecayMultiplier": 1.0,
+    "hungerDecayMultiplier": 1,
     "happinessDecayMultiplier": 0.95,
-    "energyDecayMultiplier": 1.0,
+    "energyDecayMultiplier": 1,
     "cleanlinessDecayMultiplier": 1.05,
     "affectionGainMultiplier": 1.1
   },

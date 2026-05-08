@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Kitten Miso",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child",
       "stage": "child",
       "label": "Little Miso",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "teen",
       "stage": "teen",
       "label": "Spry Miso",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "adult",
       "stage": "adult",
       "label": "Miso",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -267,8 +267,8 @@
   },
   "favoritePlayStyle": "chase",
   "careModifiers": {
-    "hungerDecayMultiplier": 1.0,
-    "happinessDecayMultiplier": 1.0,
+    "hungerDecayMultiplier": 1,
+    "happinessDecayMultiplier": 1,
     "energyDecayMultiplier": 0.95,
     "cleanlinessDecayMultiplier": 0.9,
     "affectionGainMultiplier": 1.15

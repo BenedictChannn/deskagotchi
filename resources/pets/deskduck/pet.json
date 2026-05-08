@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Baby Deskduck",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child",
       "stage": "child",
       "label": "Child Deskduck",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "teen",
       "stage": "teen",
       "label": "Teen Deskduck",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "adult",
       "stage": "adult",
       "label": "Adult Deskduck",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [

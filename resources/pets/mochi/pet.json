@@ -152,7 +152,7 @@
       "id": "baby",
       "stage": "baby",
       "label": "Baby Mochi",
-      "minAgeHours": 2,
+      "minAgeHours": 24,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -173,7 +173,7 @@
       "id": "child",
       "stage": "child",
       "label": "Little Mochi",
-      "minAgeHours": 8,
+      "minAgeHours": 72,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -194,7 +194,7 @@
       "id": "teen",
       "stage": "teen",
       "label": "Spry Mochi",
-      "minAgeHours": 30,
+      "minAgeHours": 240,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -215,7 +215,7 @@
       "id": "adult",
       "stage": "adult",
       "label": "Mochi",
-      "minAgeHours": 72,
+      "minAgeHours": 504,
       "careScoreMin": 0,
       "careScoreMax": 100,
       "animationSet": [
@@ -270,7 +270,7 @@
     "hungerDecayMultiplier": 1.05,
     "happinessDecayMultiplier": 0.95,
     "energyDecayMultiplier": 1.05,
-    "cleanlinessDecayMultiplier": 1.0,
+    "cleanlinessDecayMultiplier": 1,
     "affectionGainMultiplier": 1.1
   },
   "colorPalette": [

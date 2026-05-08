@@ -838,11 +838,11 @@ function createHatchPackage(
       animation(AnimationId.Sick, 3, 4)
     ],
     growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", 0),
-      growthStage("baby", LifeStage.Baby, "Baby", 2),
-      growthStage("child", LifeStage.Child, "Child", 8),
-      growthStage("teen", LifeStage.Teen, "Teen", 30),
-      growthStage("adult", LifeStage.Adult, "Adult", 72)
+      growthStage("egg", LifeStage.Egg, "Egg", stageThreshold(LifeStage.Egg)),
+      growthStage("baby", LifeStage.Baby, "Baby", stageThreshold(LifeStage.Baby)),
+      growthStage("child", LifeStage.Child, "Child", stageThreshold(LifeStage.Child)),
+      growthStage("teen", LifeStage.Teen, "Teen", stageThreshold(LifeStage.Teen)),
+      growthStage("adult", LifeStage.Adult, "Adult", stageThreshold(LifeStage.Adult))
     ],
     preferredFoods: ["custom treat"],
     dislikedFoods: ["burnt snack"],
@@ -886,6 +886,10 @@ function animation(id: AnimationId, row: number, fps: number): PetPackage["anima
     loop: true,
     ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
   };
+}
+
+function stageThreshold(lifeStage: LifeStage): number {
+  return DEFAULT_SIMULATION_CONFIG.stageThresholdHours[lifeStage];
 }
 
 function growthStage(

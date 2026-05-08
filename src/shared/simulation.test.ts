@@ -267,6 +267,23 @@ describe("simulation", () => {
     expect(moodToAnimation(Mood.Walking)).toBe(AnimationId.Walking);
   });
 
+  it("uses long-term day-scale growth thresholds", () => {
+    const state = createInitialPetState(petPackage, "Miso", startedAt, "miso-1");
+    const babyResult = progressPetState(
+      state,
+      petPackage,
+      new Date("2026-05-06T00:00:00.000Z")
+    );
+    const adultResult = progressPetState(
+      state,
+      petPackage,
+      new Date("2026-05-26T00:00:00.000Z")
+    );
+
+    expect(babyResult.state.lifeStage).toBe(LifeStage.Baby);
+    expect(adultResult.state.lifeStage).toBe(LifeStage.Adult);
+  });
+
   it("selects competing growth branches by age and care score", () => {
     const adultAnimationSet = [
       AnimationId.Idle,
@@ -284,7 +301,7 @@ describe("simulation", () => {
           id: "adult-steady",
           stage: LifeStage.Adult,
           label: "Steady Adult",
-          minAgeHours: 72,
+          minAgeHours: 504,
           careScoreMin: 0,
           careScoreMax: 49,
           animationSet: adultAnimationSet
@@ -293,7 +310,7 @@ describe("simulation", () => {
           id: "adult-star",
           stage: LifeStage.Adult,
           label: "Star Adult",
-          minAgeHours: 72,
+          minAgeHours: 504,
           careScoreMin: 50,
           careScoreMax: 100,
           animationSet: adultAnimationSet
@@ -303,7 +320,7 @@ describe("simulation", () => {
     const simulationTime = new Date("2026-05-08T00:00:00.000Z");
     const adultState = {
       ...createInitialPetState(branchedPetPackage, "Miso", simulationTime, "miso-1"),
-      ageHours: 72
+      ageHours: 504
     };
     const lowCareResult = progressPetState(
       {
