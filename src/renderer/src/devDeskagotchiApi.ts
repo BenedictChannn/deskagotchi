@@ -40,6 +40,10 @@ import mochiIconUrl from "../../../resources/pets/mochi/icon.png?url";
 import mochiManifest from "../../../resources/pets/mochi/pet.json";
 import mochiPreviewUrl from "../../../resources/pets/mochi/preview.png?url";
 import mochiSpritesheetUrl from "../../../resources/pets/mochi/spritesheet.png?url";
+import peanutIconUrl from "../../../resources/pets/peanut/icon.png?url";
+import peanutManifest from "../../../resources/pets/peanut/pet.json";
+import peanutPreviewUrl from "../../../resources/pets/peanut/preview.png?url";
+import peanutSpritesheetUrl from "../../../resources/pets/peanut/spritesheet.png?url";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
@@ -409,6 +413,7 @@ function createDevPackages(): RuntimePetPackage[] {
     createBaoRuntimePackage(),
     createMisoRuntimePackage(),
     createMochiRuntimePackage(),
+    createPeanutRuntimePackage(),
     createDeskdogRuntimePackage(),
     ...placeholderPackages
   ];
@@ -462,6 +467,23 @@ function createMochiRuntimePackage(): RuntimePetPackage {
       spritesheet: mochiSpritesheetUrl,
       preview: mochiPreviewUrl,
       icon: mochiIconUrl
+    },
+    issues: []
+  };
+}
+
+/**
+ * Attach Peanut's imagegen-assisted elephant package to the browser adapter.
+ *
+ * @returns Runtime package using the same PNG files that Electron serves.
+ */
+function createPeanutRuntimePackage(): RuntimePetPackage {
+  return {
+    petPackage: PetPackageSchema.parse(peanutManifest),
+    assetUrls: {
+      spritesheet: peanutSpritesheetUrl,
+      preview: peanutPreviewUrl,
+      icon: peanutIconUrl
     },
     issues: []
   };

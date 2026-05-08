@@ -15,6 +15,7 @@ function main() {
     assertFile("docs/qa/deskdog-lcd-contact-sheet.png");
     assertFile("docs/qa/miso-contact-sheet.png");
     assertFile("docs/qa/mochi-contact-sheet.png");
+    assertFile("docs/qa/peanut-contact-sheet.png");
     assertBuiltInPetTheme();
     console.log("Pet asset QA passed.");
     return;
