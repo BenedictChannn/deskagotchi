@@ -13,8 +13,8 @@ describe("LCD item icon manifest", () => {
     const parsedManifest = ItemIconManifestSchema.parse(itemManifest);
 
     expect(parsedManifest.itemSetId).toBe("lcd-core");
-    expect(parsedManifest.icons).toHaveLength(26);
-    expect(parsedManifest.items.length).toBeGreaterThanOrEqual(16);
+    expect(parsedManifest.icons).toHaveLength(36);
+    expect(parsedManifest.items.length).toBeGreaterThanOrEqual(25);
   });
 
   it("contains the MVP item categories and unique icon ids", () => {
@@ -54,5 +54,18 @@ describe("LCD item icon manifest", () => {
     expect(width).toBe(parsedManifest.columns * parsedManifest.cellWidth);
     expect(height).toBe((maxRow + 1) * parsedManifest.cellHeight);
     expect(parsedManifest.items.every((item) => iconIds.has(item.iconId))).toBe(true);
+  });
+
+  it("marks shared and species-specific foods with taxonomy tags", () => {
+    const parsedManifest = ItemIconManifestSchema.parse(itemManifest);
+    const riceBall = parsedManifest.items.find((item) => item.id === "meal-rice-ball");
+    const fishBite = parsedManifest.items.find((item) => item.id === "meal-fish-bite");
+    const leafyBundle = parsedManifest.items.find(
+      (item) => item.id === "meal-leafy-bundle"
+    );
+
+    expect(riceBall?.tags).toContain("shared");
+    expect(fishBite?.tags).toContain("cat");
+    expect(leafyBundle?.tags).toContain("herbivore");
   });
 });

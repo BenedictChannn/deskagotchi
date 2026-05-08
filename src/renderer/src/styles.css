@@ -78,6 +78,7 @@ button {
 
 .pet-sprite {
   display: block;
+  position: relative;
   padding: 0;
   border: 0;
   background-color: transparent;
@@ -94,6 +95,16 @@ button {
 
 .pet-sprite--button:active {
   cursor: grabbing;
+}
+
+.pet-sprite__food-cue {
+  position: absolute;
+  left: var(--food-cue-x);
+  top: var(--food-cue-y);
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
 .item-icon {
@@ -268,7 +279,7 @@ button {
 
 .overlay-feed-item {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px;
   min-height: 32px;
@@ -282,6 +293,14 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.overlay-feed-preference {
+  max-width: 42px;
+  color: rgba(18, 55, 22, 0.7);
+  font-size: 8px;
+  font-weight: 840;
+  text-transform: uppercase;
 }
 
 .overlay-play-picker {

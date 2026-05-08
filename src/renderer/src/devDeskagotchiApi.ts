@@ -616,6 +616,13 @@ function createDevPetPackage(overrides: {
     ],
     preferredFoods: ["warm rice", "fruit bite"],
     dislikedFoods: ["burnt toast"],
+    foodPreferences: {
+      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
+      likedFoodIds: ["snack-apple-slice"],
+      favoriteFoodIds: ["meal-banana"],
+      dislikedFoodIds: ["snack-candy"],
+      eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+    },
     favoritePlayStyle: PlayStyle.Rhythm,
     careModifiers: {
       hungerDecayMultiplier: 1,

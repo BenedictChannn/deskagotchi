@@ -286,6 +286,28 @@ async function runOverlayScenario(run, app) {
   await assertOverlayActionLabelsFit(run, page);
   await assertPetIsNotCovered(run, page, "[data-testid='overlay-actions']", "action menu");
 
+  await page.locator("button[title='Feed']").click();
+  await page.waitForSelector("[data-testid='overlay-feed-picker']", { timeout: 5_000 });
+  const feedItemCount = await page.locator("[data-testid='overlay-feed-item']").count();
+  feedItemCount > 0 && feedItemCount <= 6
+    ? run.pass("feed picker shows scoped food choices", { feedItemCount })
+    : run.fail("feed picker shows scoped food choices", { feedItemCount });
+  await page.screenshot({ path: path.join(run.runDir, "overlay-feed.png") });
+  run.artifact("overlay-feed.png");
+  await assertPetIsNotCovered(
+    run,
+    page,
+    "[data-testid='overlay-feed-picker']",
+    "feed picker"
+  );
+  await page.locator("[data-testid='overlay-feed-item']").first().click();
+  await page.waitForSelector("[data-testid='pet-food-cue']", { timeout: 5_000 });
+  run.pass("eating feedback shows selected food cue");
+  await page.screenshot({ path: path.join(run.runDir, "overlay-eating.png") });
+  run.artifact("overlay-eating.png");
+  await page.locator("[data-testid='pet-sprite']").click();
+  await page.waitForSelector("[data-testid='overlay-actions']", { timeout: 5_000 });
+
   await page.locator("button[title='Health']").click();
   await page.waitForSelector("[data-testid='overlay-health-card']", { timeout: 5_000 });
   run.pass("health opens compact overlay card");

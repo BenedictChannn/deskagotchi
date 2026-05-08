@@ -88,6 +88,32 @@ describe("simulation", () => {
     expect(result.state.mood).toBe(Mood.Eating);
   });
 
+  it("adds small preference bonuses for favorite foods", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        hunger: 40,
+        happiness: 50,
+        affection: 20,
+        health: 80
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.FeedMeal,
+      now: startedAt,
+      item: testItem("meal-fish-bite", ItemCategory.Meal, {
+        hunger: 19,
+        happiness: 3
+      })
+    });
+
+    expect(result.state.stats.hunger).toBe(59);
+    expect(result.state.stats.happiness).toBe(57);
+    expect(result.state.stats.affection).toBe(23);
+    expect(result.state.stats.health).toBe(81);
+  });
+
   it("applies selected snack effects and tracks snack count", () => {
     const state = {
       ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
@@ -129,6 +155,28 @@ describe("simulation", () => {
 
     expect(playResult.state.mood).toBe(Mood.Playing);
     expect(cleanResult.state.mood).toBe(Mood.Cleaning);
+  });
+
+  it("preserves short action feedback through immediate snapshot refreshes", () => {
+    const state = createInitialPetState(petPackage, "Miso", startedAt, "miso-1");
+    const actionTime = new Date("2026-05-05T00:01:00.000Z");
+    const feedResult = applyCareAction(state, petPackage, {
+      type: CareActionType.FeedMeal,
+      now: actionTime
+    });
+    const immediateRefresh = progressPetState(
+      feedResult.state,
+      petPackage,
+      new Date("2026-05-05T00:01:02.000Z")
+    );
+    const laterRefresh = progressPetState(
+      feedResult.state,
+      petPackage,
+      new Date("2026-05-05T00:01:06.000Z")
+    );
+
+    expect(immediateRefresh.state.mood).toBe(Mood.Eating);
+    expect(laterRefresh.state.mood).not.toBe(Mood.Eating);
   });
 
   it("cleans messes and restores cleanliness", () => {
@@ -300,6 +348,7 @@ function testItem(
     iconId: "bowl",
     quantity: "unlimited",
     availability: "always",
+    tags: [],
     effects
   };
 }

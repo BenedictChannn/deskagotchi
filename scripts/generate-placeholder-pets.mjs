@@ -42,8 +42,9 @@ const pets = [
     personality: "Curious, alert, and fond of small desk rituals.",
     palette: lcdPalette,
     playStyle: "chase",
-    foods: ["fish biscuit", "warm rice"],
-    dislikes: ["burnt toast"],
+    foods: ["fish bite", "milk", "chicken bite", "rice ball", "steamed bun"],
+    dislikes: ["leafy bundle"],
+    foodPreferences: catFoodPreferences(),
     body: "cat",
     growthStages: [
       stage("egg", "egg", "Egg", 0, 0, 100),
@@ -65,8 +66,9 @@ const pets = [
     personality: "Cheerful, vocal, and secretly disciplined.",
     palette: lcdPalette,
     playStyle: "rhythm",
-    foods: ["seed mix", "tiny greens"],
-    dislikes: ["dry crackers"],
+    foods: ["rice ball", "steamed bun", "leafy bundle", "apple slice", "melon slice"],
+    dislikes: ["fish bite"],
+    foodPreferences: duckFoodPreferences(),
     body: "duck",
     growthStages: basicGrowth("Deskduck")
   },
@@ -78,8 +80,9 @@ const pets = [
     personality: "Soft, calm, and surprisingly expressive.",
     palette: lcdPalette,
     playStyle: "calm",
-    foods: ["jelly cube", "dew drop"],
-    dislikes: ["salt chip"],
+    foods: ["rice ball", "steamed bun", "biscuit", "apple slice", "melon slice"],
+    dislikes: ["chicken bite"],
+    foodPreferences: blobFoodPreferences(),
     body: "blob",
     growthStages: basicGrowth("Deskblob")
   }
@@ -97,6 +100,41 @@ for (const pet of pets) {
 }
 
 await generateDeskdogLcdAssets();
+
+function catFoodPreferences() {
+  return {
+    sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
+    likedFoodIds: ["meal-chicken-bite"],
+    favoriteFoodIds: ["meal-fish-bite", "snack-milk"],
+    dislikedFoodIds: ["meal-leafy-bundle"],
+    eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+  };
+}
+
+function duckFoodPreferences() {
+  return {
+    sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-apple-slice"],
+    likedFoodIds: ["snack-melon-slice"],
+    favoriteFoodIds: ["meal-leafy-bundle"],
+    dislikedFoodIds: ["meal-fish-bite"],
+    eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+  };
+}
+
+function blobFoodPreferences() {
+  return {
+    sharedFoodIds: [
+      "meal-rice-ball",
+      "meal-steamed-bun",
+      "snack-biscuit",
+      "snack-apple-slice"
+    ],
+    likedFoodIds: ["snack-melon-slice"],
+    favoriteFoodIds: [],
+    dislikedFoodIds: ["meal-chicken-bite"],
+    eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+  };
+}
 
 function toPackage(pet) {
   return {
@@ -120,6 +158,7 @@ function toPackage(pet) {
     growthStages: pet.growthStages,
     preferredFoods: pet.foods,
     dislikedFoods: pet.dislikes,
+    foodPreferences: pet.foodPreferences,
     favoritePlayStyle: pet.playStyle,
     careModifiers: {
       hungerDecayMultiplier: pet.body === "blob" ? 0.85 : 1,

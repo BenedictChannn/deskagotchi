@@ -234,13 +234,38 @@
     }
   ],
   "preferredFoods": [
-    "peanut biscuit",
     "leafy bundle",
+    "sugarcane",
+    "banana",
+    "melon slice",
     "rice ball"
   ],
   "dislikedFoods": [
-    "sour peel"
+    "chicken bite"
   ],
+  "foodPreferences": {
+    "sharedFoodIds": [
+      "meal-rice-ball",
+      "snack-apple-slice",
+      "snack-biscuit"
+    ],
+    "likedFoodIds": [
+      "meal-banana",
+      "snack-melon-slice"
+    ],
+    "favoriteFoodIds": [
+      "meal-leafy-bundle",
+      "meal-sugarcane"
+    ],
+    "dislikedFoodIds": [
+      "meal-chicken-bite"
+    ],
+    "eatingAnchor": {
+      "x": 0.54,
+      "y": 0.6,
+      "size": 22
+    }
+  },
   "favoritePlayStyle": "chase",
   "careModifiers": {
     "hungerDecayMultiplier": 0.95,

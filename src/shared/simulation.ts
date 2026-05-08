@@ -15,6 +15,7 @@ import {
   type PetStats,
   PetLifecycleStatus
 } from "./domain";
+import { applyFoodPreferenceModifiers } from "./food";
 import { ItemCategory, type ItemCatalogEntry } from "./itemIcons";
 
 /** Tunable constants that control offline catch-up, decay, and growth timing. */
@@ -22,6 +23,7 @@ export interface SimulationConfig {
   version: typeof CURRENT_SIMULATION_CONFIG_VERSION;
   tickMinutes: number;
   maxOfflineCatchupHours: number;
+  actionFeedbackDurationSeconds: number;
   maxMessCount: number;
   decayPerHour: {
     hunger: number;
@@ -54,6 +56,7 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   version: CURRENT_SIMULATION_CONFIG_VERSION,
   tickMinutes: 15,
   maxOfflineCatchupHours: 36,
+  actionFeedbackDurationSeconds: 4,
   maxMessCount: 5,
   decayPerHour: {
     hunger: 2.6,
@@ -219,7 +222,12 @@ export function progressPetState(
   }
 
   const growthState = applyGrowth(progressedState, petPackage, config);
-  const mood = deriveMood(growthState);
+  const mood = deriveProgressedMood(
+    state,
+    growthState,
+    elapsedMs,
+    config.actionFeedbackDurationSeconds
+  );
 
   return {
     state: {
@@ -355,6 +363,32 @@ function shouldUseAmbientWalkingMood(state: PetInstanceState): boolean {
   return Math.floor(state.ageHours * 4) % 4 === 1;
 }
 
+function deriveProgressedMood(
+  previousState: PetInstanceState,
+  progressedState: PetInstanceState,
+  elapsedMs: number,
+  actionFeedbackDurationSeconds: number
+): Mood {
+  const actionFeedbackDurationMs = actionFeedbackDurationSeconds * 1000;
+  if (
+    elapsedMs <= actionFeedbackDurationMs &&
+    isTransientActionMood(previousState.mood)
+  ) {
+    return previousState.mood;
+  }
+
+  return deriveMood(progressedState);
+}
+
+function isTransientActionMood(mood: Mood): boolean {
+  return (
+    mood === Mood.Eating ||
+    mood === Mood.Playing ||
+    mood === Mood.Cleaning ||
+    mood === Mood.Happy
+  );
+}
+
 function deriveActionMood(
   state: PetInstanceState,
   actionType: CareActionType
@@ -461,7 +495,7 @@ function applyActionEffects(
   switch (actionType) {
     case CareActionType.FeedMeal:
       if (item !== undefined) {
-        return applyFoodItem(state, item, false);
+        return applyFoodItem(state, petPackage, item, false);
       }
       return {
         ...state,
@@ -476,7 +510,7 @@ function applyActionEffects(
       };
     case CareActionType.FeedSnack:
       if (item !== undefined) {
-        return applyFoodItem(state, item, true);
+        return applyFoodItem(state, petPackage, item, true);
       }
       return {
         ...state,
@@ -560,6 +594,7 @@ function applyActionEffects(
 
 function applyFoodItem(
   state: PetInstanceState,
+  petPackage: PetPackage,
   item: ItemCatalogEntry,
   isSnack: boolean
 ): PetInstanceState {
@@ -573,7 +608,11 @@ function applyFoodItem(
   return {
     ...state,
     mood: Mood.Eating,
-    stats: applyItemEffects(state.stats, item),
+    stats: applyFoodPreferenceModifiers(
+      applyItemEffects(state.stats, item),
+      petPackage,
+      item.id
+    ),
     careHistory: {
       ...state.careHistory,
       snackCount: state.careHistory.snackCount + (isSnack ? 1 : 0)

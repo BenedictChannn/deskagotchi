@@ -234,12 +234,35 @@
     }
   ],
   "preferredFoods": [
-    "jelly cube",
-    "dew drop"
+    "rice ball",
+    "steamed bun",
+    "biscuit",
+    "apple slice",
+    "melon slice"
   ],
   "dislikedFoods": [
-    "salt chip"
+    "chicken bite"
   ],
+  "foodPreferences": {
+    "sharedFoodIds": [
+      "meal-rice-ball",
+      "meal-steamed-bun",
+      "snack-biscuit",
+      "snack-apple-slice"
+    ],
+    "likedFoodIds": [
+      "snack-melon-slice"
+    ],
+    "favoriteFoodIds": [],
+    "dislikedFoodIds": [
+      "meal-chicken-bite"
+    ],
+    "eatingAnchor": {
+      "x": 0.58,
+      "y": 0.58,
+      "size": 22
+    }
+  },
   "favoritePlayStyle": "calm",
   "careModifiers": {
     "hungerDecayMultiplier": 0.85,

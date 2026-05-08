@@ -16,6 +16,24 @@ export enum ItemCategory {
   Status = "status"
 }
 
+/** Lightweight food taxonomy used for filtering and pet preferences. */
+export enum ItemTag {
+  Shared = "shared",
+  Grain = "grain",
+  Fruit = "fruit",
+  Bakery = "bakery",
+  Meat = "meat",
+  Fish = "fish",
+  Dairy = "dairy",
+  Leafy = "leafy",
+  Plant = "plant",
+  Dog = "dog",
+  Cat = "cat",
+  Primate = "primate",
+  Herbivore = "herbivore",
+  Treat = "treat"
+}
+
 /** Stat deltas an item can apply when a later care flow consumes it. */
 export const ItemEffectsSchema = z
   .object({
@@ -51,6 +69,7 @@ export const ItemCatalogEntrySchema = z
     iconId: ItemIconEntrySchema.shape.id,
     quantity: z.literal("unlimited"),
     availability: z.enum(["always", "when_sick", "when_messy", "when_tired"]),
+    tags: z.array(z.nativeEnum(ItemTag)).default([]),
     effects: ItemEffectsSchema
   })
   .strict();

@@ -105,8 +105,15 @@ function createPetManifest() {
       stage("teen", "teen", "Teen Deskbit Dog", 30),
       stage("adult", "adult", "Adult Deskbit Dog", 72)
     ],
-    preferredFoods: ["crunchy kibble", "rice ball"],
-    dislikedFoods: ["lemon peel"],
+    preferredFoods: ["kibble bowl", "chicken bite", "rice ball", "steamed bun", "apple slice"],
+    dislikedFoods: ["candy"],
+    foodPreferences: {
+      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
+      likedFoodIds: ["snack-apple-slice"],
+      favoriteFoodIds: ["meal-kibble-bowl", "meal-chicken-bite"],
+      dislikedFoodIds: ["snack-candy"],
+      eatingAnchor: { x: 0.58, y: 0.6, size: 22 }
+    },
     favoritePlayStyle: "chase",
     careModifiers: {
       hungerDecayMultiplier: 1,

@@ -234,12 +234,36 @@
     }
   ],
   "preferredFoods": [
-    "seed mix",
-    "tiny greens"
+    "rice ball",
+    "steamed bun",
+    "leafy bundle",
+    "apple slice",
+    "melon slice"
   ],
   "dislikedFoods": [
-    "dry crackers"
+    "fish bite"
   ],
+  "foodPreferences": {
+    "sharedFoodIds": [
+      "meal-rice-ball",
+      "meal-steamed-bun",
+      "snack-apple-slice"
+    ],
+    "likedFoodIds": [
+      "snack-melon-slice"
+    ],
+    "favoriteFoodIds": [
+      "meal-leafy-bundle"
+    ],
+    "dislikedFoodIds": [
+      "meal-fish-bite"
+    ],
+    "eatingAnchor": {
+      "x": 0.58,
+      "y": 0.58,
+      "size": 22
+    }
+  },
   "favoritePlayStyle": "rhythm",
   "careModifiers": {
     "hungerDecayMultiplier": 1,

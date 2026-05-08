@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CareActionType, PetLifecycleStatus } from "@shared/domain";
+import { CareActionType, Mood, PetLifecycleStatus } from "@shared/domain";
+import {
+  FoodPreferenceKind,
+  feedItemsForPet,
+  foodPreferenceForPet
+} from "@shared/food";
 import { ItemCategory, type ItemCatalogEntry } from "@shared/itemIcons";
 import { PetWindowUiMode, type DeskagotchiSnapshot } from "@shared/ipc";
 
@@ -33,6 +38,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
     ItemCategory.Meal
   );
+  const [eatingCueItem, setEatingCueItem] = useState<ItemCatalogEntry | undefined>();
   const hasTrayOverlay = menuOpen || playOpen;
   const hasCardOverlay = healthOpen || feedOpen || careFlow !== null;
   const hasTransientOverlay = hasTrayOverlay || hasCardOverlay;
@@ -54,6 +60,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     totalDelta: number;
   }>();
   const suppressNextClick = useRef(false);
+  const eatingCueTimeout = useRef<number | undefined>();
+  const activeEatingItem =
+    snapshot.activeState.mood === Mood.Eating ? eatingCueItem : undefined;
 
   const performAction = async (
     actionType: CareActionType,
@@ -84,6 +93,14 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     void window.deskagotchi
       .exitPetWindowPlayMode()
       .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (eatingCueTimeout.current !== undefined) {
+        window.clearTimeout(eatingCueTimeout.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -319,6 +336,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           data-testid="pet-drag-plane"
         >
           <PetSprite
+            eatingItem={activeEatingItem}
             interactive
             snapshot={snapshot}
             size={petSpriteSize}
@@ -385,9 +403,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       {feedOpen ? (
         <FeedPicker
           activeCategory={feedCategory}
+          petPackage={snapshot.activePackage.petPackage}
           onCategoryChange={setFeedCategory}
           onCancel={() => setFeedOpen(false)}
           onSelect={(item) => {
+            setEatingCueItem(item);
+            if (eatingCueTimeout.current !== undefined) {
+              window.clearTimeout(eatingCueTimeout.current);
+            }
+            eatingCueTimeout.current = window.setTimeout(() => {
+              setEatingCueItem(undefined);
+            }, 2_800);
             const actionType =
               item.category === ItemCategory.Snack
                 ? CareActionType.FeedSnack
@@ -541,21 +567,28 @@ function PlayPicker({
 
 function FeedPicker({
   activeCategory,
+  petPackage,
   onCategoryChange,
   onCancel,
   onSelect
 }: {
   activeCategory: ItemCategory.Meal | ItemCategory.Snack;
+  petPackage: DeskagotchiSnapshot["activePackage"]["petPackage"];
   onCategoryChange: (category: ItemCategory.Meal | ItemCategory.Snack) => void;
   onCancel: () => void;
   onSelect: (item: ItemCatalogEntry) => void;
 }): React.JSX.Element {
-  const feedItems = lcdItemIconSet.manifest.items.filter(
-    (item) => item.category === activeCategory
+  const feedItems = useMemo(
+    () => feedItemsForPet(lcdItemIconSet.manifest.items, petPackage, activeCategory),
+    [activeCategory, petPackage]
   );
 
   return (
-    <section className="overlay-feed-picker" aria-label="Feed pet">
+    <section
+      className="overlay-feed-picker"
+      aria-label="Feed pet"
+      data-testid="overlay-feed-picker"
+    >
       <div className="overlay-popover-header">
         <div className="overlay-feed-tabs" role="tablist" aria-label="Feed category">
           <FeedTab
@@ -584,11 +617,15 @@ function FeedPicker({
             key={item.id}
             className="overlay-feed-item"
             type="button"
+            data-testid="overlay-feed-item"
             onClick={() => onSelect(item)}
-            title={describeEffects(item)}
+            title={describeFoodItem(item, petPackage)}
           >
             <ItemIcon iconId={item.iconId} size={20} />
             <span>{item.label}</span>
+            <span className="overlay-feed-preference">
+              {preferenceLabel(foodPreferenceForPet(petPackage, item.id))}
+            </span>
           </button>
         ))}
       </div>
@@ -618,11 +655,29 @@ function FeedTab({
   );
 }
 
-function describeEffects(item: ItemCatalogEntry): string {
+function describeFoodItem(
+  item: ItemCatalogEntry,
+  petPackage: DeskagotchiSnapshot["activePackage"]["petPackage"]
+): string {
   const effectLabels = Object.entries(item.effects).map(([stat, value]) =>
     `${stat} ${value > 0 ? "+" : ""}${value}`
   );
-  return effectLabels.join(", ");
+  const preference = preferenceLabel(foodPreferenceForPet(petPackage, item.id));
+  return [preference, ...effectLabels].filter(Boolean).join(", ");
+}
+
+function preferenceLabel(preference: FoodPreferenceKind): string {
+  switch (preference) {
+    case FoodPreferenceKind.Favorite:
+      return "Favorite";
+    case FoodPreferenceKind.Liked:
+      return "Likes";
+    case FoodPreferenceKind.Shared:
+      return "Pantry";
+    case FoodPreferenceKind.Disliked:
+    case FoodPreferenceKind.Neutral:
+      return "";
+  }
 }
 
 function OverlayHealthCard({

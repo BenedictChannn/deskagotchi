@@ -234,13 +234,37 @@
     }
   ],
   "preferredFoods": [
-    "tiny banana",
+    "banana",
+    "mango cube",
+    "melon slice",
     "rice ball",
     "steamed bun"
   ],
   "dislikedFoods": [
-    "bitter peel"
+    "fish bite"
   ],
+  "foodPreferences": {
+    "sharedFoodIds": [
+      "meal-rice-ball",
+      "meal-steamed-bun",
+      "snack-apple-slice"
+    ],
+    "likedFoodIds": [
+      "snack-melon-slice"
+    ],
+    "favoriteFoodIds": [
+      "meal-banana",
+      "snack-mango-cube"
+    ],
+    "dislikedFoodIds": [
+      "meal-fish-bite"
+    ],
+    "eatingAnchor": {
+      "x": 0.57,
+      "y": 0.59,
+      "size": 21
+    }
+  },
   "favoritePlayStyle": "chase",
   "careModifiers": {
     "hungerDecayMultiplier": 1.05,

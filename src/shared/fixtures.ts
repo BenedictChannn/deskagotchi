@@ -130,6 +130,13 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
     ],
     preferredFoods: ["fish biscuit", "warm rice"],
     dislikedFoods: ["burnt toast"],
+    foodPreferences: {
+      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
+      likedFoodIds: ["meal-chicken-bite"],
+      favoriteFoodIds: ["meal-fish-bite", "snack-milk"],
+      dislikedFoodIds: ["meal-leafy-bundle"],
+      eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+    },
     favoritePlayStyle: PlayStyle.Chase,
     careModifiers: {
       hungerDecayMultiplier: 1,

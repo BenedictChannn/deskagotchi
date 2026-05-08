@@ -46,43 +46,77 @@ const icons = [
   icon("heart", "Heart", "status", 3, 4, "Heart"),
   icon("meter", "Meter", "status", 3, 5, "Status meter"),
   icon("scale", "Scale", "status", 4, 0, "Weight scale"),
-  icon("face", "Face", "status", 4, 1, "Pet face")
+  icon("face", "Face", "status", 4, 1, "Pet face"),
+  icon("apple-slice", "Apple", "snack", 4, 2, "Apple slice"),
+  icon("fish-bite", "Fish", "meal", 4, 3, "Fish bite"),
+  icon("milk", "Milk", "snack", 4, 4, "Small milk bottle"),
+  icon("banana", "Banana", "meal", 4, 5, "Banana"),
+  icon("leafy-bundle", "Leaves", "meal", 5, 0, "Leafy bundle"),
+  icon("sugarcane", "Cane", "meal", 5, 1, "Sugarcane stick"),
+  icon("melon-slice", "Melon", "snack", 5, 2, "Melon slice"),
+  icon("chicken-bite", "Chicken", "meal", 5, 3, "Chicken bite"),
+  icon("steamed-bun", "Bun", "meal", 5, 4, "Steamed bun"),
+  icon("mango-cube", "Mango", "snack", 5, 5, "Mango cube")
 ];
 
 const items = [
-  item("meal-kibble-bowl", "Kibble Bowl", "meal", "bowl", { hunger: 22, weight: 1 }),
-  item("meal-rice-ball", "Rice Ball", "meal", "rice-ball", { hunger: 18, happiness: 2 }),
-  item("meal-toast-plate", "Toast Plate", "meal", "bread-plate", { hunger: 16 }),
-  item("meal-dumpling", "Dumpling", "meal", "dumpling", { hunger: 20, happiness: 1 }),
+  item("meal-kibble-bowl", "Kibble Bowl", "meal", "bowl", { hunger: 22, weight: 1 }, ["dog", "meat"]),
+  item("meal-rice-ball", "Rice Ball", "meal", "rice-ball", { hunger: 18, happiness: 2 }, ["shared", "grain"]),
+  item("meal-steamed-bun", "Steamed Bun", "meal", "steamed-bun", { hunger: 19, happiness: 1 }, ["shared", "bakery"]),
+  item("meal-dumpling", "Dumpling", "meal", "dumpling", { hunger: 20, happiness: 1 }, ["shared", "grain"]),
+  item("meal-chicken-bite", "Chicken Bite", "meal", "chicken-bite", { hunger: 20, happiness: 2 }, ["dog", "cat", "meat"]),
+  item("meal-fish-bite", "Fish Bite", "meal", "fish-bite", { hunger: 19, happiness: 3 }, ["cat", "fish"]),
+  item("meal-banana", "Banana", "meal", "banana", { hunger: 17, happiness: 3 }, ["primate", "herbivore", "fruit"]),
+  item("meal-leafy-bundle", "Leafy Bundle", "meal", "leafy-bundle", { hunger: 21, health: 2 }, ["herbivore", "leafy"]),
+  item("meal-sugarcane", "Sugarcane", "meal", "sugarcane", { hunger: 18, happiness: 2, energy: 2 }, ["herbivore", "plant"]),
   item("snack-biscuit", "Biscuit", "snack", "biscuit", {
     happiness: 10,
     hunger: 4,
     weight: 1
-  }),
+  }, ["shared", "bakery", "treat"]),
+  item("snack-apple-slice", "Apple Slice", "snack", "apple-slice", {
+    happiness: 7,
+    hunger: 5,
+    health: 1
+  }, ["shared", "fruit"]),
+  item("snack-milk", "Milk", "snack", "milk", {
+    happiness: 8,
+    hunger: 4,
+    health: 1
+  }, ["cat", "dairy"]),
+  item("snack-mango-cube", "Mango Cube", "snack", "mango-cube", {
+    happiness: 9,
+    hunger: 4
+  }, ["primate", "fruit"]),
+  item("snack-melon-slice", "Melon Slice", "snack", "melon-slice", {
+    happiness: 8,
+    hunger: 5,
+    health: 1
+  }, ["herbivore", "primate", "fruit"]),
   item("snack-candy", "Candy", "snack", "candy", {
     happiness: 13,
     health: -2,
     weight: 1
-  }),
+  }, ["treat"]),
   item("snack-cake", "Cake", "snack", "cake", {
     happiness: 12,
     hunger: 6,
     health: -1,
     weight: 2
-  }),
-  item("toy-ball", "Ball", "toy", "ball", { happiness: 8, affection: 4, energy: -5 }),
-  item("toy-rope", "Rope", "toy", "rope", { happiness: 7, affection: 4, energy: -4 }),
-  item("toy-card", "Cards", "toy", "card", { happiness: 5, affection: 3 }),
+  }, ["bakery", "treat"]),
+  item("toy-ball", "Ball", "toy", "ball", { happiness: 8, affection: 4, energy: -5 }, []),
+  item("toy-rope", "Rope", "toy", "rope", { happiness: 7, affection: 4, energy: -4 }, []),
+  item("toy-card", "Cards", "toy", "card", { happiness: 5, affection: 3 }, []),
   item("toy-chase", "Chase", "toy", "chase-spark", {
     happiness: 9,
     affection: 5,
     energy: -6
-  }),
-  item("medicine-capsule", "Capsule", "medicine", "capsule", { health: 25 }),
-  item("medicine-bottle", "Tonic", "medicine", "bottle", { health: 18, energy: 5 }),
-  item("clean-sponge", "Sponge", "clean", "sponge", { cleanliness: 28, health: 3 }),
-  item("clean-broom", "Broom", "clean", "broom", { cleanliness: 22 }),
-  item("sleep-moon", "Lights", "sleep", "crescent", { energy: 10 })
+  }, []),
+  item("medicine-capsule", "Capsule", "medicine", "capsule", { health: 25 }, []),
+  item("medicine-bottle", "Tonic", "medicine", "bottle", { health: 18, energy: 5 }, []),
+  item("clean-sponge", "Sponge", "clean", "sponge", { cleanliness: 28, health: 3 }, []),
+  item("clean-broom", "Broom", "clean", "broom", { cleanliness: 22 }, []),
+  item("sleep-moon", "Lights", "sleep", "crescent", { energy: 10 }, [])
 ];
 
 /**
@@ -145,7 +179,7 @@ function icon(id, label, category, row, column, alt) {
   return { id, label, category, row, column, alt };
 }
 
-function item(id, label, category, iconId, effects) {
+function item(id, label, category, iconId, effects, tags) {
   return {
     id,
     label,
@@ -153,6 +187,7 @@ function item(id, label, category, iconId, effects) {
     iconId,
     quantity: "unlimited",
     availability: "always",
+    tags,
     effects
   };
 }
@@ -242,6 +277,36 @@ function renderIcon(id) {
       break;
     case "face":
       face(draw);
+      break;
+    case "apple-slice":
+      appleSlice(draw);
+      break;
+    case "fish-bite":
+      fishBite(draw);
+      break;
+    case "milk":
+      milk(draw);
+      break;
+    case "banana":
+      banana(draw);
+      break;
+    case "leafy-bundle":
+      leafyBundle(draw);
+      break;
+    case "sugarcane":
+      sugarcane(draw);
+      break;
+    case "melon-slice":
+      melonSlice(draw);
+      break;
+    case "chicken-bite":
+      chickenBite(draw);
+      break;
+    case "steamed-bun":
+      steamedBun(draw);
+      break;
+    case "mango-cube":
+      mangoCube(draw);
       break;
     default:
       sparkle(draw, 10, 10);
@@ -457,6 +522,93 @@ function face(draw) {
   draw(colors.lcdInk, 10, 11, 1, 1);
   draw(colors.lcdInk, 14, 11, 1, 1);
   draw(colors.lcdInk, 11, 14, 3, 1);
+}
+
+function appleSlice(draw) {
+  draw(colors.lcdInk, 7, 7, 10, 10);
+  draw(colors.lcdInk, 11, 5, 4, 2);
+  draw(colors.lcdBg, 8, 8, 8, 8);
+  draw(colors.transparent, 13, 10, 3, 5);
+  draw(colors.lcdMid, 9, 12, 3, 2);
+  draw(colors.lcdInk, 9, 9, 1, 1);
+}
+
+function fishBite(draw) {
+  draw(colors.lcdInk, 5, 10, 11, 5);
+  draw(colors.lcdInk, 16, 8, 4, 9);
+  draw(colors.lcdBg, 7, 11, 8, 3);
+  draw(colors.lcdInk, 8, 11, 1, 1);
+  draw(colors.lcdMid, 12, 10, 2, 5);
+}
+
+function milk(draw) {
+  draw(colors.lcdInk, 9, 5, 6, 2);
+  draw(colors.lcdInk, 8, 7, 8, 13);
+  draw(colors.lcdBg, 9, 8, 6, 10);
+  draw(colors.lcdMid, 10, 11, 4, 4);
+  draw(colors.lcdInk, 10, 13, 4, 1);
+}
+
+function banana(draw) {
+  draw(colors.lcdInk, 6, 13, 3, 3);
+  draw(colors.lcdInk, 8, 10, 4, 5);
+  draw(colors.lcdInk, 12, 8, 5, 4);
+  draw(colors.lcdInk, 16, 7, 2, 2);
+  draw(colors.lcdBg, 9, 11, 4, 3);
+  draw(colors.lcdBg, 13, 9, 3, 2);
+  draw(colors.lcdMid, 10, 14, 5, 1);
+}
+
+function leafyBundle(draw) {
+  draw(colors.lcdInk, 6, 11, 6, 6);
+  draw(colors.lcdInk, 12, 8, 6, 8);
+  draw(colors.lcdInk, 8, 7, 5, 7);
+  draw(colors.lcdBg, 8, 12, 3, 3);
+  draw(colors.lcdBg, 13, 10, 3, 4);
+  draw(colors.lcdMid, 10, 15, 6, 2);
+}
+
+function sugarcane(draw) {
+  draw(colors.lcdInk, 8, 6, 3, 14);
+  draw(colors.lcdInk, 13, 5, 3, 14);
+  draw(colors.lcdBg, 9, 7, 1, 12);
+  draw(colors.lcdBg, 14, 6, 1, 12);
+  draw(colors.lcdMid, 7, 10, 5, 1);
+  draw(colors.lcdMid, 12, 14, 5, 1);
+}
+
+function melonSlice(draw) {
+  draw(colors.lcdInk, 5, 12, 14, 5);
+  draw(colors.lcdInk, 7, 9, 10, 3);
+  draw(colors.lcdBg, 7, 12, 10, 3);
+  draw(colors.lcdMid, 8, 10, 8, 2);
+  draw(colors.lcdInk, 10, 13, 1, 1);
+  draw(colors.lcdInk, 14, 13, 1, 1);
+}
+
+function chickenBite(draw) {
+  draw(colors.lcdInk, 7, 9, 10, 8);
+  draw(colors.lcdInk, 15, 7, 4, 3);
+  draw(colors.lcdBg, 8, 10, 8, 6);
+  draw(colors.lcdMid, 11, 9, 3, 2);
+  draw(colors.lcdInk, 9, 17, 6, 1);
+}
+
+function steamedBun(draw) {
+  draw(colors.lcdInk, 6, 11, 12, 7);
+  draw(colors.lcdInk, 8, 8, 8, 3);
+  draw(colors.lcdBg, 7, 12, 10, 5);
+  draw(colors.lcdMid, 9, 9, 1, 3);
+  draw(colors.lcdMid, 12, 8, 1, 3);
+  draw(colors.lcdMid, 15, 10, 1, 2);
+}
+
+function mangoCube(draw) {
+  draw(colors.lcdInk, 8, 8, 9, 9);
+  draw(colors.lcdBg, 9, 9, 7, 7);
+  draw(colors.lcdMid, 11, 9, 5, 2);
+  draw(colors.lcdInk, 7, 11, 2, 3);
+  draw(colors.lcdInk, 16, 13, 2, 3);
 }
 
 function sparkle(draw, x, y) {

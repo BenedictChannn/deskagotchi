@@ -149,6 +149,29 @@ export const GrowthStageManifestSchema = z.object({
 /** Growth branch metadata used to select package art as pets age. */
 export type GrowthStageManifest = z.infer<typeof GrowthStageManifestSchema>;
 
+/** Validates food item identifiers referenced by package-level preferences. */
+export const PetFoodIdSchema = z.string().min(1).max(80).regex(/^[a-z0-9][a-z0-9-]+$/);
+
+/** Sprite-relative anchor used for the selected food cue during eating. */
+export const EatingAnchorSchema = z
+  .object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    size: z.number().int().min(8).max(48).default(22)
+  })
+  .strict();
+
+/** Package-level diet metadata used by the feed picker and simulation modifiers. */
+export const FoodPreferencesSchema = z
+  .object({
+    sharedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    likedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    favoriteFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    dislikedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    eatingAnchor: EatingAnchorSchema.default({ x: 0.58, y: 0.58, size: 22 })
+  })
+  .strict();
+
 /** Validates installable pet package metadata, assets, growth, and modifiers. */
 export const PetPackageSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_PACKAGE_SCHEMA_VERSION),
@@ -171,6 +194,13 @@ export const PetPackageSchema = z.object({
   growthStages: z.array(GrowthStageManifestSchema).min(1),
   preferredFoods: z.array(z.string().min(1).max(40)).default([]),
   dislikedFoods: z.array(z.string().min(1).max(40)).default([]),
+  foodPreferences: FoodPreferencesSchema.default({
+    sharedFoodIds: [],
+    likedFoodIds: [],
+    favoriteFoodIds: [],
+    dislikedFoodIds: [],
+    eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+  }),
   favoritePlayStyle: z.nativeEnum(PlayStyle),
   careModifiers: z.object({
     hungerDecayMultiplier: z.number().min(0.25).max(3),
