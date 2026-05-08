@@ -194,52 +194,70 @@ function renderFrame(animation, frame, scale) {
   const face = faceState(animation, frame);
   const legs = legState(animation, frame);
 
-  drawDogBody(draw, wobble, bob, tail, legs, face);
+  drawDogBody(draw, wobble, bob, tail, legs, face, animation, frame);
   drawAnimationProp(draw, animation, frame, wobble, bob);
   return canvas;
 }
 
-function drawDogBody(draw, offsetX, offsetY, tail, legs, face) {
+function drawDogBody(draw, offsetX, offsetY, tail, legs, face, animation, frame) {
   const x = offsetX;
   const y = offsetY;
+  const isHappyPose = animation === "happy" || animation === "cleaning";
+  const isPlayingPose = animation === "playing";
+  const isEatingPose = animation === "hungry" || animation === "eating";
+  const headDrop = animation === "sad" || animation === "sick" ? 2 : isEatingPose ? 1 : 0;
+  const earBounce = isHappyPose && frame % 2 === 1 ? -1 : 0;
+  const headY = y + headDrop;
+  const bodyY = y + (isPlayingPose ? [0, -1, 0, 1][frame] : 0);
 
-  draw(colors.lcdInk, x + 6, y + 15, 17, 10);
-  draw(colors.lcdMid, x + 7, y + 16, 15, 8);
-  draw(colors.lcdInk, x + 8, y + 18, 13, 1);
+  draw(colors.lcdInk, x + 11, bodyY + 16, 9, 1);
+  draw(colors.lcdInk, x + 9, bodyY + 17, 13, 8);
+  draw(colors.lcdInk, x + 11, bodyY + 25, 9, 2);
+  draw(colors.lcdMid, x + 10, bodyY + 18, 11, 6);
+  draw(colors.lcdMid, x + 12, bodyY + 25, 7, 1);
 
   if (tail === "up") {
-    draw(colors.lcdInk, x + 22, y + 15, 3, 2);
-    draw(colors.lcdInk, x + 25, y + 13, 2, 3);
-    draw(colors.lcdMid, x + 23, y + 15, 2, 1);
+    draw(colors.lcdInk, x + 22, bodyY + 16, 3, 2);
+    draw(colors.lcdInk, x + 24, bodyY + 13, 2, 4);
+    draw(colors.lcdInk, x + 26, bodyY + 12, 2, 2);
+    draw(colors.lcdMid, x + 23, bodyY + 16, 1, 1);
   } else if (tail === "down") {
-    draw(colors.lcdInk, x + 22, y + 20, 3, 2);
-    draw(colors.lcdInk, x + 24, y + 22, 2, 2);
+    draw(colors.lcdInk, x + 22, bodyY + 21, 3, 2);
+    draw(colors.lcdInk, x + 24, bodyY + 23, 2, 2);
   } else {
-    draw(colors.lcdInk, x + 22, y + 17, 4, 2);
-    draw(colors.lcdMid, x + 23, y + 17, 2, 1);
+    draw(colors.lcdInk, x + 22, bodyY + 18, 5, 2);
+    draw(colors.lcdMid, x + 23, bodyY + 18, 2, 1);
   }
 
-  if (legs === "walk-a") {
-    drawLeg(draw, x + 8, y + 24, 3, "back");
-    drawLeg(draw, x + 17, y + 24, 5, "front");
+  if (isHappyPose) {
+    drawRaisedPaw(draw, x + 6, bodyY + 15, "left");
+    drawRaisedPaw(draw, x + 22, bodyY + 15, "right");
+  } else if (legs === "walk-a") {
+    drawLeg(draw, x + 8, bodyY + 24, 3, "back");
+    drawLeg(draw, x + 18, bodyY + 24, 5, "front");
   } else if (legs === "walk-b") {
-    drawLeg(draw, x + 9, y + 24, 5, "front");
-    drawLeg(draw, x + 18, y + 24, 3, "back");
+    drawLeg(draw, x + 9, bodyY + 24, 5, "front");
+    drawLeg(draw, x + 17, bodyY + 24, 3, "back");
   } else {
-    drawLeg(draw, x + 8, y + 24, 4, "still");
-    drawLeg(draw, x + 18, y + 24, 4, "still");
+    drawLeg(draw, x + 9, bodyY + 24, 4, "still");
+    drawLeg(draw, x + 18, bodyY + 24, 4, "still");
   }
 
-  draw(colors.lcdInk, x + 8, y + 5, 14, 14);
-  draw(colors.lcdMid, x + 9, y + 6, 12, 12);
-  draw(colors.lcdInk, x + 4, y + 9, 5, 9);
-  draw(colors.lcdMid, x + 5, y + 10, 3, 7);
-  draw(colors.lcdInk, x + 21, y + 9, 4, 9);
-  draw(colors.lcdMid, x + 22, y + 10, 2, 7);
-  draw(colors.lcdBg, x + 11, y + 10, 8, 6);
-  draw(colors.lcdInk, x + 14, y + 14, 3, 2);
+  draw(colors.lcdInk, x + 11, headY + 4, 7, 1);
+  draw(colors.lcdInk, x + 9, headY + 5, 11, 2);
+  draw(colors.lcdInk, x + 8, headY + 7, 13, 8);
+  draw(colors.lcdInk, x + 9, headY + 15, 11, 3);
+  draw(colors.lcdMid, x + 10, headY + 6, 9, 10);
+  draw(colors.lcdBg, x + 11, headY + 8, 7, 5);
 
-  drawFace(draw, x, y, face);
+  draw(colors.lcdInk, x + 4, headY + 7 + earBounce, 5, 8);
+  draw(colors.lcdInk, x + 5, headY + 15 + earBounce, 3, 3);
+  draw(colors.lcdMid, x + 5, headY + 8 + earBounce, 3, 7);
+  draw(colors.lcdInk, x + 21, headY + 7 + earBounce, 5, 8);
+  draw(colors.lcdInk, x + 22, headY + 15 + earBounce, 3, 3);
+  draw(colors.lcdMid, x + 22, headY + 8 + earBounce, 3, 7);
+
+  drawFace(draw, x, headY, face);
 }
 
 function drawLeg(draw, x, y, height, gait) {
@@ -252,38 +270,49 @@ function drawLeg(draw, x, y, height, gait) {
   }
 }
 
+function drawRaisedPaw(draw, x, y, side) {
+  const pawX = side === "left" ? x : x + 1;
+  draw(colors.lcdInk, pawX, y, 3, 7);
+  draw(colors.lcdMid, pawX + 1, y + 1, 1, 5);
+  draw(colors.lcdInk, pawX - (side === "left" ? 1 : 0), y + 6, 4, 2);
+}
+
 function drawFace(draw, x, y, face) {
   if (face === "blink") {
-    draw(colors.lcdInk, x + 12, y + 12, 2, 1);
-    draw(colors.lcdInk, x + 16, y + 12, 2, 1);
-    draw(colors.lcdInk, x + 14, y + 15, 2, 1);
+    draw(colors.lcdInk, x + 11, y + 11, 2, 1);
+    draw(colors.lcdInk, x + 17, y + 11, 2, 1);
+    draw(colors.lcdInk, x + 14, y + 13, 3, 2);
+    draw(colors.lcdInk, x + 14, y + 16, 3, 1);
     return;
   }
   if (face === "happy") {
-    draw(colors.lcdInk, x + 12, y + 11, 2, 2);
-    draw(colors.lcdInk, x + 16, y + 11, 2, 2);
-    draw(colors.lcdInk, x + 14, y + 14, 3, 2);
+    draw(colors.lcdInk, x + 11, y + 10, 2, 2);
+    draw(colors.lcdInk, x + 17, y + 10, 2, 2);
+    draw(colors.lcdInk, x + 14, y + 13, 3, 2);
     draw(colors.lcdInk, x + 13, y + 16, 5, 1);
+    draw(colors.lcdBg, x + 15, y + 14, 1, 1);
     return;
   }
   if (face === "sad") {
-    draw(colors.lcdInk, x + 12, y + 12, 2, 1);
-    draw(colors.lcdInk, x + 16, y + 12, 2, 1);
-    draw(colors.lcdInk, x + 13, y + 15, 4, 1);
-    draw(colors.lcdInk, x + 13, y + 14, 1, 1);
-    draw(colors.lcdInk, x + 16, y + 14, 1, 1);
+    draw(colors.lcdInk, x + 11, y + 11, 2, 1);
+    draw(colors.lcdInk, x + 17, y + 11, 2, 1);
+    draw(colors.lcdInk, x + 14, y + 13, 3, 2);
+    draw(colors.lcdInk, x + 13, y + 16, 5, 1);
+    draw(colors.lcdInk, x + 13, y + 15, 1, 1);
+    draw(colors.lcdInk, x + 17, y + 15, 1, 1);
     return;
   }
   if (face === "open") {
-    draw(colors.lcdInk, x + 12, y + 11, 2, 2);
-    draw(colors.lcdInk, x + 16, y + 11, 2, 2);
-    draw(colors.lcdInk, x + 14, y + 14, 3, 3);
+    draw(colors.lcdInk, x + 11, y + 10, 2, 2);
+    draw(colors.lcdInk, x + 17, y + 10, 2, 2);
+    draw(colors.lcdInk, x + 14, y + 13, 3, 2);
+    draw(colors.lcdInk, x + 14, y + 16, 3, 2);
     return;
   }
 
-  draw(colors.lcdInk, x + 12, y + 11, 2, 2);
-  draw(colors.lcdInk, x + 16, y + 11, 2, 2);
-  draw(colors.lcdInk, x + 14, y + 14, 3, 2);
+  draw(colors.lcdInk, x + 11, y + 10, 2, 2);
+  draw(colors.lcdInk, x + 17, y + 10, 2, 2);
+  draw(colors.lcdInk, x + 14, y + 13, 3, 2);
   draw(colors.lcdInk, x + 14, y + 16, 3, 1);
 }
 
