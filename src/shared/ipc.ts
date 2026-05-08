@@ -108,6 +108,12 @@ export interface CareActionRequest {
 /** Partial save-settings update accepted over IPC. */
 export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
 
+/** Screen-space pointer position used while dragging the native pet window. */
+export interface ScreenPointInput {
+  x: number;
+  y: number;
+}
+
 /** Renderer-facing API exposed by preload for desktop pet operations. */
 export interface DeskagotchiApi {
   getSnapshot: () => Promise<DeskagotchiSnapshot>;
@@ -119,7 +125,11 @@ export interface DeskagotchiApi {
   openPanel: (view: PanelView) => Promise<void>;
   hidePanel: () => Promise<void>;
   resetPetWindow: () => Promise<void>;
-  movePetWindow: (deltaX: number, deltaY: number) => Promise<void>;
+  movePetWindow: (
+    deltaX: number,
+    deltaY: number,
+    pointer?: ScreenPointInput
+  ) => Promise<void>;
   finishPetWindowDrag: () => Promise<void>;
   setPetWindowUiMode: (mode: PetWindowUiMode) => Promise<void>;
   enterPetWindowPlayMode: () => Promise<void>;

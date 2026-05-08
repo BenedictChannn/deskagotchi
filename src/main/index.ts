@@ -41,6 +41,10 @@ import {
 import { ItemCatalogEntrySchema } from "@shared/itemIcons";
 
 import { DeskagotchiRuntime } from "./runtime";
+import {
+  ensureVisibleBounds as ensureVisibleWindowBounds,
+  type ScreenPoint
+} from "./windowBounds";
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -77,9 +81,17 @@ const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
 const WindowDragDeltaInputSchema = z
   .object({
     deltaX: z.number().finite().min(-4096).max(4096),
-    deltaY: z.number().finite().min(-4096).max(4096)
+    deltaY: z.number().finite().min(-4096).max(4096),
+    pointer: z
+      .object({
+        x: z.number().finite().min(-100_000).max(100_000),
+        y: z.number().finite().min(-100_000).max(100_000)
+      })
+      .strict()
+      .optional()
   })
   .strict();
+type WindowDragDeltaInput = z.infer<typeof WindowDragDeltaInputSchema>;
 const OptionalHatchTextSchema = z.string().trim().max(120).optional();
 const HatchDraftInputSchema = z
   .object({
@@ -789,7 +801,7 @@ function setPetWindowUiMode(mode: PetWindowUiMode): void {
  *
  * @param delta - Screen-pixel movement since the previous pointer event.
  */
-function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
+function movePetWindow(delta: WindowDragDeltaInput): void {
   if (
     petWindow === undefined ||
     petWindow.isDestroyed() ||
@@ -803,7 +815,7 @@ function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
       ...bounds,
       x: bounds.x + Math.round(delta.deltaX),
       y: bounds.y + Math.round(delta.deltaY)
-    });
+    }, delta.pointer);
   petWindow.setBounds(nextBounds);
   recordQaEvent({
     event: "window:setBounds",
@@ -952,32 +964,24 @@ function boundsForUiMode(baseBounds: Rectangle, mode: PetWindowUiMode): Rectangl
  * @param bounds - Previously saved or default Electron bounds.
  * @returns Bounds with sane size limits and a visible origin.
  */
-function ensureVisibleBounds(bounds: Rectangle): Rectangle {
-  const displays = screen.getAllDisplays();
-  const matchingDisplay =
-    displays.find((display) => rectsIntersect(display.workArea, bounds)) ??
-    screen.getPrimaryDisplay();
-  const workArea = matchingDisplay.workArea;
-  const width = Math.min(Math.max(bounds.width, 96), 512);
-  const height = Math.min(Math.max(bounds.height, 96), 512);
-  const x = Math.min(
-    Math.max(bounds.x, workArea.x),
-    workArea.x + workArea.width - width
-  );
-  const y = Math.min(
-    Math.max(bounds.y, workArea.y),
-    workArea.y + workArea.height - height
-  );
+function ensureVisibleBounds(
+  bounds: Rectangle,
+  selectionPoint?: ScreenPoint
+): Rectangle {
+  const displays = screen.getAllDisplays().map((display) => ({
+    id: String(display.id),
+    workArea: display.workArea
+  }));
+  const primaryDisplay = screen.getPrimaryDisplay();
 
-  return { x, y, width, height };
-}
-
-function rectsIntersect(first: Rectangle, second: Rectangle): boolean {
-  return !(
-    second.x + second.width < first.x ||
-    second.x > first.x + first.width ||
-    second.y + second.height < first.y ||
-    second.y > first.y + first.height
+  return ensureVisibleWindowBounds(
+    bounds,
+    displays,
+    {
+      id: String(primaryDisplay.id),
+      workArea: primaryDisplay.workArea
+    },
+    selectionPoint
   );
 }
 

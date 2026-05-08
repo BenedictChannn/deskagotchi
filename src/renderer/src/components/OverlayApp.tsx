@@ -215,7 +215,10 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setPlayActive(false);
       setCareFlow(null);
     }
-    void window.deskagotchi.movePetWindow(windowDeltaX, windowDeltaY);
+    void window.deskagotchi.movePetWindow(windowDeltaX, windowDeltaY, {
+      x: event.screenX,
+      y: event.screenY
+    });
   };
 
   const finishDrag = (event: PointerEvent): void => {
