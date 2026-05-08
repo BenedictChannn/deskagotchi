@@ -80,6 +80,7 @@ async function main() {
 
   try {
     ensureBuild();
+    cleanupOrphanedQaProcesses(run);
     await assertNoExistingDeskagotchi(run);
     const app = await launchApp(run);
     try {
@@ -283,12 +284,19 @@ async function runOverlayScenario(run, app) {
     count > 0 ? run.pass(`menu includes ${title}`) : run.fail(`menu includes ${title}`);
   }
   await assertOverlayActionLabelsFit(run, page);
+  await assertPetIsNotCovered(run, page, "[data-testid='overlay-actions']", "action menu");
 
   await page.locator("button[title='Health']").click();
   await page.waitForSelector("[data-testid='overlay-health-card']", { timeout: 5_000 });
   run.pass("health opens compact overlay card");
   await page.screenshot({ path: path.join(run.runDir, "overlay-health.png") });
   run.artifact("overlay-health.png");
+  await assertPetIsNotCovered(
+    run,
+    page,
+    "[data-testid='overlay-health-card']",
+    "health card"
+  );
   const windows = await app.windows();
   windows.length === 1
     ? run.pass("overlay health did not open a panel window")
@@ -328,6 +336,53 @@ async function runPlayScenario(run, app) {
   restoredPassed
     ? run.pass("play exit restored compact overlay size", { restored: restored.bounds })
     : run.fail("play exit restored compact overlay size", { restored: restored.bounds });
+}
+
+async function assertPetIsNotCovered(run, page, overlaySelector, label) {
+  const metrics = await page.evaluate((selector) => {
+    const pet = globalThis.document.querySelector("[data-testid='pet-sprite']");
+    const overlay = globalThis.document.querySelector(selector);
+    const rectFor = (element) => {
+      const rect = element?.getBoundingClientRect();
+      return rect === undefined
+        ? undefined
+        : {
+            bottom: rect.bottom,
+            height: rect.height,
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            width: rect.width
+          };
+    };
+    const petRect = rectFor(pet);
+    const overlayRect = rectFor(overlay);
+    if (petRect === undefined || overlayRect === undefined) {
+      return { petRect, overlayRect, overlapRatio: 1 };
+    }
+    const overlapWidth = Math.max(
+      0,
+      Math.min(petRect.right, overlayRect.right) - Math.max(petRect.left, overlayRect.left)
+    );
+    const overlapHeight = Math.max(
+      0,
+      Math.min(petRect.bottom, overlayRect.bottom) - Math.max(petRect.top, overlayRect.top)
+    );
+    const petArea = Math.max(1, petRect.width * petRect.height);
+    return {
+      petRect,
+      overlayRect,
+      overlapRatio: (overlapWidth * overlapHeight) / petArea
+    };
+  }, overlaySelector);
+
+  const petVisible =
+    metrics.petRect !== undefined &&
+    metrics.overlayRect !== undefined &&
+    metrics.overlapRatio <= 0.18;
+  petVisible
+    ? run.pass(`${label} keeps pet visible`, metrics)
+    : run.fail(`${label} keeps pet visible`, metrics);
 }
 
 async function assertOverlayActionLabelsFit(run, page) {
@@ -616,6 +671,7 @@ Get-CimInstance Win32_Process |
     $_.ProcessId -ne $self -and
     $_.CommandLine -and
     ($_.CommandLine -like '*deskagotchi*') -and
+    ($_.CommandLine -notlike '*.qa-runs*') -and
     ($_.CommandLine -notlike '*scripts/qa/*') -and
     ($_.CommandLine -notlike '*scripts\\qa\\*') -and
     ($_.CommandLine -notlike '*scripts/qa/desktop-qa.mjs*') -and
@@ -633,6 +689,38 @@ Get-CimInstance Win32_Process |
     return;
   }
   throw new Error(`Existing Deskagotchi-like process detected: ${result}`);
+}
+
+function cleanupOrphanedQaProcesses(run) {
+  if (!IS_WINDOWS) {
+    return;
+  }
+  const qaRoot = QA_ROOT.replaceAll("'", "''");
+  const script = `
+$qaRoot = '${qaRoot}'
+$processes = Get-CimInstance Win32_Process |
+  Where-Object {
+    $_.CommandLine -and
+    ($_.Name -eq 'electron.exe') -and
+    ($_.CommandLine -like "*$qaRoot*")
+  }
+$count = @($processes).Count
+$processes | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Milliseconds 800
+Get-CimInstance Win32_Process |
+  Where-Object {
+    $_.CommandLine -and
+    ($_.Name -eq 'electron.exe') -and
+    ($_.CommandLine -like "*$qaRoot*")
+  } |
+  ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$count
+`;
+  const output = runPowerShell(script, { allowFailure: true }).trim();
+  const cleanedCount = Number.parseInt(output, 10);
+  if (Number.isFinite(cleanedCount) && cleanedCount > 0) {
+    run.pass("orphaned QA Electron processes cleaned up", { count: cleanedCount });
+  }
 }
 
 async function closeApp(app, run) {

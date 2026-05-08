@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CareActionType, PetLifecycleStatus } from "@shared/domain";
 import { ItemCategory, type ItemCatalogEntry } from "@shared/itemIcons";
-import type { DeskagotchiSnapshot } from "@shared/ipc";
+import { PetWindowUiMode, type DeskagotchiSnapshot } from "@shared/ipc";
 
 import { lcdItemIconSet } from "../itemIconAssets";
 import { ItemIcon } from "./ItemIcon";
@@ -33,6 +33,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
     ItemCategory.Meal
   );
+  const hasTrayOverlay = menuOpen || playOpen;
+  const hasCardOverlay = healthOpen || feedOpen || careFlow !== null;
+  const hasTransientOverlay = hasTrayOverlay || hasCardOverlay;
+  const petSpriteSize = 148;
+  const petDragPlaneClassName = [
+    "pet-drag-plane",
+    hasTrayOverlay ? "pet-drag-plane--tray-open" : "",
+    hasCardOverlay ? "pet-drag-plane--card-open" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
   const dragState = useRef<{
     pointerId: number;
     target: HTMLButtonElement;
@@ -105,6 +116,20 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
   }, [careFlow, closePlay, feedOpen, healthOpen, menuOpen, playActive, playOpen]);
+
+  useEffect(() => {
+    if (playActive) {
+      return undefined;
+    }
+
+    const mode = hasCardOverlay
+      ? PetWindowUiMode.Card
+      : hasTrayOverlay
+        ? PetWindowUiMode.Tray
+        : PetWindowUiMode.Compact;
+    void window.deskagotchi.setPetWindowUiMode(mode);
+    return undefined;
+  }, [hasCardOverlay, hasTrayOverlay, playActive]);
 
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
@@ -289,14 +314,14 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         />
       ) : (
         <section
-          className="pet-drag-plane"
+          className={petDragPlaneClassName}
           aria-label="Deskagotchi overlay"
           data-testid="pet-drag-plane"
         >
           <PetSprite
             interactive
             snapshot={snapshot}
-            size={148}
+            size={petSpriteSize}
             onClick={toggleMenu}
             onPointerDown={startDrag}
           />
@@ -351,11 +376,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         </nav>
       ) : null}
 
-      {healthOpen ? <OverlayHealthCard snapshot={snapshot} /> : null}
+      {healthOpen ? (
+        <OverlayHealthCard
+          snapshot={snapshot}
+          onClose={() => setHealthOpen(false)}
+        />
+      ) : null}
       {feedOpen ? (
         <FeedPicker
           activeCategory={feedCategory}
           onCategoryChange={setFeedCategory}
+          onCancel={() => setFeedOpen(false)}
           onSelect={(item) => {
             const actionType =
               item.category === ItemCategory.Snack
@@ -365,7 +396,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           }}
         />
       ) : null}
-      {playOpen ? <PlayPicker onStart={startPlay} /> : null}
+      {playOpen ? (
+        <PlayPicker
+          onCancel={() => setPlayOpen(false)}
+          onStart={startPlay}
+        />
+      ) : null}
       {careFlow !== null ? (
         <CareFlowCard
           flow={careFlow}
@@ -375,7 +411,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         />
       ) : null}
 
-      {!playActive ? (
+      {!playActive && !hasTransientOverlay ? (
         <div className="overlay-mood" aria-hidden="true">
           <ItemIcon iconId="heart" size={14} />
           <span>{snapshot.activeState.mood}</span>
@@ -479,12 +515,22 @@ function getCareFlowConfig(
 }
 
 function PlayPicker({
+  onCancel,
   onStart
 }: {
+  onCancel: () => void;
   onStart: () => void;
 }): React.JSX.Element {
   return (
     <section className="overlay-play-picker" aria-label="Play options">
+      <button
+        className="overlay-popover-close"
+        type="button"
+        aria-label="Close play menu"
+        onClick={onCancel}
+      >
+        X
+      </button>
       <button className="overlay-play-option" type="button" onClick={onStart}>
         <ItemIcon iconId="ball" size={22} />
         <span>Ball</span>
@@ -496,10 +542,12 @@ function PlayPicker({
 function FeedPicker({
   activeCategory,
   onCategoryChange,
+  onCancel,
   onSelect
 }: {
   activeCategory: ItemCategory.Meal | ItemCategory.Snack;
   onCategoryChange: (category: ItemCategory.Meal | ItemCategory.Snack) => void;
+  onCancel: () => void;
   onSelect: (item: ItemCatalogEntry) => void;
 }): React.JSX.Element {
   const feedItems = lcdItemIconSet.manifest.items.filter(
@@ -508,17 +556,27 @@ function FeedPicker({
 
   return (
     <section className="overlay-feed-picker" aria-label="Feed pet">
-      <div className="overlay-feed-tabs" role="tablist" aria-label="Feed category">
-        <FeedTab
-          active={activeCategory === ItemCategory.Meal}
-          label="Meal"
-          onClick={() => onCategoryChange(ItemCategory.Meal)}
-        />
-        <FeedTab
-          active={activeCategory === ItemCategory.Snack}
-          label="Snack"
-          onClick={() => onCategoryChange(ItemCategory.Snack)}
-        />
+      <div className="overlay-popover-header">
+        <div className="overlay-feed-tabs" role="tablist" aria-label="Feed category">
+          <FeedTab
+            active={activeCategory === ItemCategory.Meal}
+            label="Meal"
+            onClick={() => onCategoryChange(ItemCategory.Meal)}
+          />
+          <FeedTab
+            active={activeCategory === ItemCategory.Snack}
+            label="Snack"
+            onClick={() => onCategoryChange(ItemCategory.Snack)}
+          />
+        </div>
+        <button
+          className="overlay-popover-close"
+          type="button"
+          aria-label="Close feed menu"
+          onClick={onCancel}
+        >
+          X
+        </button>
       </div>
       <div className="overlay-feed-list">
         {feedItems.map((item) => (
@@ -568,9 +626,11 @@ function describeEffects(item: ItemCatalogEntry): string {
 }
 
 function OverlayHealthCard({
-  snapshot
+  snapshot,
+  onClose
 }: {
   snapshot: DeskagotchiSnapshot;
+  onClose: () => void;
 }): React.JSX.Element {
   const stats = snapshot.activeState.stats;
   return (
@@ -579,6 +639,17 @@ function OverlayHealthCard({
       aria-label="Pet health"
       data-testid="overlay-health-card"
     >
+      <div className="overlay-popover-header">
+        <span className="overlay-popover-title">Status</span>
+        <button
+          className="overlay-popover-close"
+          type="button"
+          aria-label="Close health panel"
+          onClick={onClose}
+        >
+          X
+        </button>
+      </div>
       <HealthStat label="Hunger" value={stats.hunger} />
       <HealthStat label="Happy" value={stats.happiness} />
       <HealthStat label="Energy" value={stats.energy} />

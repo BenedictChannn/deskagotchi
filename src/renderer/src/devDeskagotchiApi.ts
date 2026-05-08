@@ -75,6 +75,7 @@ class DevDeskagotchiApi {
       resetPetWindow: async () => undefined,
       movePetWindow: async () => undefined,
       finishPetWindowDrag: async () => undefined,
+      setPetWindowUiMode: async () => undefined,
       enterPetWindowPlayMode: async () => undefined,
       exitPetWindowPlayMode: async () => undefined,
       setClickThrough: async () => undefined,

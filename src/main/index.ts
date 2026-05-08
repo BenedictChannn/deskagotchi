@@ -34,6 +34,7 @@ import {
 import {
   IpcChannel,
   PanelView,
+  PetWindowUiMode,
   type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
@@ -55,6 +56,8 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const PET_WINDOW_DEFAULT_SIZE = 240;
+const PET_WINDOW_TRAY_HEIGHT = 336;
+const PET_WINDOW_CARD_HEIGHT = 372;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
 const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
@@ -66,6 +69,7 @@ const CareActionInputSchema = z
   .strict();
 const PanelViewInputSchema = z.nativeEnum(PanelView);
 const BooleanInputSchema = z.boolean();
+const PetWindowUiModeInputSchema = z.nativeEnum(PetWindowUiMode);
 const PackageIdInputSchema = PetPackageSchema.shape.packageId;
 const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
   .partial()
@@ -117,6 +121,7 @@ let tray: Tray | undefined;
 let isQuitting = false;
 let simulationTimer: NodeJS.Timeout | undefined;
 let playModePreviousBounds: Rectangle | undefined;
+let uiModePreviousBounds: Rectangle | undefined;
 let suppressPetWindowBoundsPersistence = false;
 let petWindowStartupMetadata: Record<string, unknown> = {};
 
@@ -512,6 +517,12 @@ function registerIpcHandlers(): void {
     validateIpcSender(event);
     await persistPetWindowBounds();
   });
+  ipcMain.handle(IpcChannel.SetPetWindowUiMode, (event, mode: unknown) => {
+    validateIpcSender(event);
+    setPetWindowUiMode(
+      parseIpcInput(PetWindowUiModeInputSchema, mode, "pet window UI mode")
+    );
+  });
   ipcMain.handle(IpcChannel.EnterPetWindowPlayMode, (event) => {
     validateIpcSender(event);
     enterPetWindowPlayMode();
@@ -699,6 +710,7 @@ function resetPetWindow(): void {
   const { x, y } = defaultPetWindowBounds();
   const previousBounds = petWindow?.getBounds();
   playModePreviousBounds = undefined;
+  uiModePreviousBounds = undefined;
   petWindow?.setBounds({
     x,
     y,
@@ -716,6 +728,60 @@ function resetPetWindow(): void {
   });
   petWindow?.show();
   petWindow?.moveTop();
+}
+
+/**
+ * Temporarily expand or restore the overlay while compact controls are visible.
+ *
+ * @param mode - Transient UI layout requested by the renderer.
+ */
+function setPetWindowUiMode(mode: PetWindowUiMode): void {
+  if (
+    petWindow === undefined ||
+    petWindow.isDestroyed() ||
+    playModePreviousBounds !== undefined
+  ) {
+    return;
+  }
+
+  if (mode === PetWindowUiMode.Compact) {
+    if (uiModePreviousBounds !== undefined) {
+      const previousBounds = petWindow.getBounds();
+      setPetWindowBoundsWithoutPersistence(ensureVisibleBounds(uiModePreviousBounds));
+      recordQaEvent({
+        event: "window:setBounds",
+        windowRole: "overlay",
+        payload: {
+          from: previousBounds,
+          to: petWindow.getBounds(),
+          reason: "ui-compact"
+        }
+      });
+    }
+    uiModePreviousBounds = undefined;
+    petWindow.show();
+    petWindow.moveTop();
+    return;
+  }
+
+  if (uiModePreviousBounds === undefined) {
+    uiModePreviousBounds = petWindow.getBounds();
+  }
+
+  const previousBounds = petWindow.getBounds();
+  const expandedBounds = boundsForUiMode(uiModePreviousBounds, mode);
+  setPetWindowBoundsWithoutPersistence(ensureVisibleBounds(expandedBounds));
+  recordQaEvent({
+    event: "window:setBounds",
+    windowRole: "overlay",
+    payload: {
+      from: previousBounds,
+      to: petWindow.getBounds(),
+      reason: `ui-${mode}`
+    }
+  });
+  petWindow.show();
+  petWindow.moveTop();
 }
 
 /**
@@ -759,8 +825,9 @@ function enterPetWindowPlayMode(): void {
   }
 
   if (playModePreviousBounds === undefined) {
-    playModePreviousBounds = petWindow.getBounds();
+    playModePreviousBounds = uiModePreviousBounds ?? petWindow.getBounds();
   }
+  uiModePreviousBounds = undefined;
 
   const display = screen.getDisplayMatching(petWindow.getBounds());
   const previousBounds = petWindow.getBounds();
@@ -860,6 +927,23 @@ function setPetWindowBoundsWithoutPersistence(bounds: Rectangle): void {
   setTimeout(() => {
     suppressPetWindowBoundsPersistence = false;
   }, 250);
+}
+
+/**
+ * Calculate a temporary overlay size while keeping the pet anchored horizontally.
+ *
+ * @param baseBounds - Compact pet window bounds to restore later.
+ * @param mode - Requested transient UI mode.
+ * @returns Expanded bounds for the current overlay UI.
+ */
+function boundsForUiMode(baseBounds: Rectangle, mode: PetWindowUiMode): Rectangle {
+  const nextHeight =
+    mode === PetWindowUiMode.Card ? PET_WINDOW_CARD_HEIGHT : PET_WINDOW_TRAY_HEIGHT;
+  return {
+    ...baseBounds,
+    width: PET_WINDOW_DEFAULT_SIZE,
+    height: nextHeight
+  };
 }
 
 /**

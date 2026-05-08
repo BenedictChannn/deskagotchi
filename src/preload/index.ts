@@ -7,6 +7,7 @@ import {
   type HatchDraftInput,
   IpcChannel,
   type PanelView,
+  type PetWindowUiMode,
   type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
@@ -30,6 +31,8 @@ const api: DeskagotchiApi = {
   movePetWindow: (deltaX: number, deltaY: number) =>
     ipcRenderer.invoke(IpcChannel.MovePetWindow, { deltaX, deltaY }),
   finishPetWindowDrag: () => ipcRenderer.invoke(IpcChannel.FinishPetWindowDrag),
+  setPetWindowUiMode: (mode: PetWindowUiMode) =>
+    ipcRenderer.invoke(IpcChannel.SetPetWindowUiMode, mode),
   enterPetWindowPlayMode: () =>
     ipcRenderer.invoke(IpcChannel.EnterPetWindowPlayMode),
   exitPetWindowPlayMode: () =>

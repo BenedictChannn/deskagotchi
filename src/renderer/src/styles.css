@@ -63,6 +63,17 @@ button {
   inset: 0;
   display: grid;
   place-items: center;
+  transition: padding 140ms ease;
+}
+
+.pet-drag-plane--tray-open {
+  align-items: start;
+  padding-top: 20px;
+}
+
+.pet-drag-plane--card-open {
+  align-items: start;
+  padding-top: 20px;
 }
 
 .pet-sprite {
@@ -72,6 +83,7 @@ button {
   background-color: transparent;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  transition: height 140ms ease, width 140ms ease;
 }
 
 .pet-sprite--button {
@@ -99,6 +111,7 @@ button {
 .overlay-action-button:focus-visible,
 .overlay-feed-tab:focus-visible,
 .overlay-feed-item:focus-visible,
+.overlay-popover-close:focus-visible,
 .overlay-play-option:focus-visible,
 .overlay-play-ball:focus-visible,
 .overlay-play-close:focus-visible,
@@ -201,6 +214,32 @@ button {
   gap: 4px;
 }
 
+.overlay-popover-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 6px;
+}
+
+.overlay-popover-title {
+  color: #123716;
+  font-size: 12px;
+  font-weight: 860;
+}
+
+.overlay-popover-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(18, 55, 22, 0.5);
+  background: #f7f8e7;
+  color: #123716;
+  font-size: 11px;
+  font-weight: 860;
+}
+
 .overlay-feed-tab,
 .overlay-feed-item {
   border: 1px solid rgba(18, 55, 22, 0.5);
@@ -256,6 +295,11 @@ button {
   border: 2px solid rgba(18, 55, 22, 0.78);
   background: rgba(247, 248, 231, 0.95);
   box-shadow: 0 10px 22px rgba(18, 55, 22, 0.2);
+}
+
+.overlay-play-picker .overlay-popover-close {
+  justify-self: end;
+  margin-bottom: 6px;
 }
 
 .overlay-play-option {

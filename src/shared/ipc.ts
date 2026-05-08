@@ -23,6 +23,7 @@ export enum IpcChannel {
   ResetPetWindow = "deskagotchi:resetPetWindow",
   MovePetWindow = "deskagotchi:movePetWindow",
   FinishPetWindowDrag = "deskagotchi:finishPetWindowDrag",
+  SetPetWindowUiMode = "deskagotchi:setPetWindowUiMode",
   EnterPetWindowPlayMode = "deskagotchi:enterPetWindowPlayMode",
   ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
@@ -31,6 +32,13 @@ export enum IpcChannel {
   ExportPet = "deskagotchi:exportPet",
   ImportPet = "deskagotchi:importPet",
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
+}
+
+/** Transient overlay size modes used while compact pet controls are open. */
+export enum PetWindowUiMode {
+  Compact = "compact",
+  Tray = "tray",
+  Card = "card"
 }
 
 /** Panel routes the main process can ask the renderer shell to display. */
@@ -113,6 +121,7 @@ export interface DeskagotchiApi {
   resetPetWindow: () => Promise<void>;
   movePetWindow: (deltaX: number, deltaY: number) => Promise<void>;
   finishPetWindowDrag: () => Promise<void>;
+  setPetWindowUiMode: (mode: PetWindowUiMode) => Promise<void>;
   enterPetWindowPlayMode: () => Promise<void>;
   exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
