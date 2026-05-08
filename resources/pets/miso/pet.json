@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "packageId": "miso",
+  "packageVersion": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "name": "Miso",
+  "description": "A tiny curious cat desk companion with cozy retro-LCD sprite animations.",
+  "source": "built-in",
+  "species": "Cat-like desk companion",
+  "personality": "Curious, cozy, alert, and fond of tiny desk rituals.",
+  "createdAt": "2026-05-08T00:00:00.000Z",
+  "assetVersion": "0.1.0",
+  "assets": {
+    "spritesheet": "spritesheet.png",
+    "preview": "preview.png",
+    "icon": "icon.png"
+  },
+  "animations": [
+    {
+      "id": "idle",
+      "row": 0,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true
+    },
+    {
+      "id": "happy",
+      "row": 1,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sad",
+      "row": 2,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 4,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "hungry",
+      "row": 3,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "eating",
+      "row": 4,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "playing",
+      "row": 5,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sleeping",
+      "row": 6,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 2,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sick",
+      "row": 7,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "cleaning",
+      "row": 8,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "walking",
+      "row": 9,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 8,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "attention",
+      "row": 10,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    }
+  ],
+  "growthStages": [
+    {
+      "id": "egg",
+      "stage": "egg",
+      "label": "Miso Egg",
+      "minAgeHours": 0,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "baby",
+      "stage": "baby",
+      "label": "Kitten Miso",
+      "minAgeHours": 2,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "child",
+      "stage": "child",
+      "label": "Little Miso",
+      "minAgeHours": 8,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "teen",
+      "stage": "teen",
+      "label": "Spry Miso",
+      "minAgeHours": 30,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult",
+      "stage": "adult",
+      "label": "Miso",
+      "minAgeHours": 72,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    }
+  ],
+  "preferredFoods": [
+    "fish biscuit",
+    "warm rice",
+    "tiny tuna bun"
+  ],
+  "dislikedFoods": [
+    "burnt toast"
+  ],
+  "favoritePlayStyle": "chase",
+  "careModifiers": {
+    "hungerDecayMultiplier": 1.0,
+    "happinessDecayMultiplier": 1.0,
+    "energyDecayMultiplier": 0.95,
+    "cleanlinessDecayMultiplier": 0.9,
+    "affectionGainMultiplier": 1.15
+  },
+  "colorPalette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "author": "Deskagotchi",
+  "license": "Original Deskagotchi imagegen-assisted retro-LCD pixel asset",
+  "capabilities": [
+    "mvp-animation",
+    "growth-v1",
+    "retro-lcd",
+    "imagegen-art",
+    "cat"
+  ],
+  "validationStatus": "passed",
+  "assetHash": "476a64f0b72fd568b0123d5e7c8f6cd5232f682c55751bac924f77859b36b36e",
+  "generation": {
+    "mode": "imagegen",
+    "prompt": "Miso is an original tiny chibi cat virtual pet with triangular ears, a curled tail, cozy curious expressions, and compact retro-LCD sprite animations.",
+    "referenceImageStored": false
+  }
+}
