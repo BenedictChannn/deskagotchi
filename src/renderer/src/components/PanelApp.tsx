@@ -16,9 +16,16 @@ import {
 } from "lucide-react";
 
 import { CareActionType, PetSource, type PetStats } from "@shared/domain";
+import {
+  HATCH_DESCRIPTION_MAX_LENGTH,
+  HATCH_NAME_MAX_LENGTH,
+  HATCH_OPTIONAL_TEXT_MAX_LENGTH,
+  HATCH_PERSONALITY_MAX_LENGTH,
+  HATCH_SPECIES_MAX_LENGTH,
+  type HatchDraftInput
+} from "@shared/hatch";
 import type {
   DeskagotchiSnapshot,
-  HatchDraftInput,
   RuntimePetPackage,
   UpdateSettingsInput
 } from "@shared/ipc";
@@ -344,7 +351,7 @@ function HatchView(): React.JSX.Element {
             <input
               value={form.name}
               onChange={(event) => setForm({ ...form, name: event.target.value })}
-              maxLength={40}
+              maxLength={HATCH_NAME_MAX_LENGTH}
             />
           </label>
           <label>
@@ -354,6 +361,7 @@ function HatchView(): React.JSX.Element {
               onChange={(event) =>
                 setForm({ ...form, species: event.target.value })
               }
+              maxLength={HATCH_SPECIES_MAX_LENGTH}
             />
           </label>
           <label>
@@ -363,6 +371,7 @@ function HatchView(): React.JSX.Element {
               onChange={(event) =>
                 setForm({ ...form, personality: event.target.value })
               }
+              maxLength={HATCH_PERSONALITY_MAX_LENGTH}
             />
           </label>
           <label>
@@ -372,6 +381,7 @@ function HatchView(): React.JSX.Element {
               onChange={(event) =>
                 setForm({ ...form, description: event.target.value })
               }
+              maxLength={HATCH_DESCRIPTION_MAX_LENGTH}
             />
           </label>
           <label>
@@ -381,6 +391,7 @@ function HatchView(): React.JSX.Element {
               onChange={(event) =>
                 setForm({ ...form, accessory: event.target.value })
               }
+              maxLength={HATCH_OPTIONAL_TEXT_MAX_LENGTH}
             />
           </label>
           <label>
@@ -388,6 +399,7 @@ function HatchView(): React.JSX.Element {
             <input
               value={form.theme}
               onChange={(event) => setForm({ ...form, theme: event.target.value })}
+              maxLength={HATCH_OPTIONAL_TEXT_MAX_LENGTH}
             />
           </label>
           <div className="color-row" aria-label="Preferred colors">

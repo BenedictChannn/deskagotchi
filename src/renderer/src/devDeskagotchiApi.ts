@@ -6,17 +6,19 @@ import {
   DeskagotchiSaveSchema,
   PlayStyle,
   PetPackageSchema,
-  ValidationSeverity,
   type DeskagotchiSave,
   type PetInstanceState,
   type PetPackage,
   type ValidationIssue
 } from "@shared/domain";
 import {
+  type HatchDraftInput,
+  validateHatchDraftInput
+} from "@shared/hatch";
+import {
   type CareActionRequest,
   type DeskagotchiApi,
   type DeskagotchiSnapshot,
-  type HatchDraftInput,
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
@@ -188,7 +190,7 @@ class DevDeskagotchiApi {
   private async hatchCreateDraft(
     input: HatchDraftInput
   ): Promise<{ packageId: string; installed: boolean; issues: ValidationIssue[] }> {
-    const issues = validateHatchInput(input);
+    const issues = validateHatchDraftInput(input);
     if (issues.length > 0) {
       return {
         packageId: "",
@@ -823,25 +825,6 @@ function createPetMarkup(
     : "";
 
   return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/>${eyes}${mouth}${patch}${call}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
-}
-
-/**
- * Validate browser hatch input before installing a generated package.
- *
- * @param input - Hatch form values from the panel.
- * @returns Validation issues blocking installation, or an empty array.
- */
-function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
-  if (input.name.trim().length > 0) {
-    return [];
-  }
-  return [
-    {
-      severity: ValidationSeverity.Error,
-      code: "hatch_name_invalid",
-      message: "Pet name is required."
-    }
-  ];
 }
 
 /**

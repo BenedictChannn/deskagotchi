@@ -27,10 +27,10 @@ import { z } from "zod";
 
 import {
   CareActionType,
-  ColorHexSchema,
   DeskagotchiSaveSchema,
   PetPackageSchema
 } from "@shared/domain";
+import { HatchDraftInputSchema } from "@shared/hatch";
 import {
   IpcChannel,
   PanelView,
@@ -92,18 +92,6 @@ const WindowDragDeltaInputSchema = z
   })
   .strict();
 type WindowDragDeltaInput = z.infer<typeof WindowDragDeltaInputSchema>;
-const OptionalHatchTextSchema = z.string().trim().max(120).optional();
-const HatchDraftInputSchema = z
-  .object({
-    name: z.string().trim().min(1).max(40),
-    description: z.string().trim().min(1).max(280),
-    species: z.string().trim().min(1).max(80),
-    personality: z.string().trim().min(1).max(120),
-    preferredColors: z.array(ColorHexSchema).min(2).max(8),
-    accessory: OptionalHatchTextSchema,
-    theme: OptionalHatchTextSchema
-  })
-  .strict();
 const QaTelemetryInputSchema = z
   .object({
     event: z.string().trim().min(1).max(100),

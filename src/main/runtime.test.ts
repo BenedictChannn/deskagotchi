@@ -100,6 +100,26 @@ describe("runtime import and hatch safety", () => {
     );
     await expectCustomPets(userDataDir, []);
   });
+
+  it("installs hatch drafts that satisfy the package animation contract", async () => {
+    const { runtime, userDataDir } = await createInitializedRuntime();
+
+    const result = await runtime.hatchCreateDraft({
+      name: "Momo",
+      description: "A small calm test companion.",
+      species: "Round desk pet",
+      personality: "Gentle and curious",
+      preferredColors: ["#4ecdc4", "#fff4d6"]
+    });
+    const snapshot = await runtime.getSnapshot();
+
+    expect(result.installed).toBe(true);
+    expect(result.issues).toEqual([]);
+    expect(snapshot.activePackage.petPackage.packageId).toBe(result.packageId);
+    expect(snapshot.activePackage.petPackage.animations.map((animation) => animation.id))
+      .toEqual(expect.arrayContaining(["idle", "happy", "walking", "sleeping", "sick"]));
+    await expectCustomPets(userDataDir, [result.packageId]);
+  });
 });
 
 describe("asset URLs", () => {

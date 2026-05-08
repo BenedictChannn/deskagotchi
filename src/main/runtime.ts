@@ -19,13 +19,15 @@ import {
   type PetPackage,
   PetSource,
   PlayStyle,
-  type ValidationIssue,
-  ValidationSeverity
+  type ValidationIssue
 } from "@shared/domain";
+import {
+  type HatchDraftInput,
+  validateHatchDraftInput
+} from "@shared/hatch";
 import {
   type CareActionRequest,
   type DeskagotchiSnapshot,
-  type HatchDraftInput,
   type HatchDraftResult,
   type RuntimePetPackage,
   type UpdateSettingsInput
@@ -62,7 +64,13 @@ const IMAGEGEN_PLACEHOLDER_NOTE =
   "This local draft is ready for replacement by the approved imagegen pipeline.";
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
 const MAX_IMPORTED_PACKAGE_ENTRIES = 128;
-const MAX_HATCH_DESCRIPTION_LENGTH = 200;
+const HATCH_PLACEHOLDER_ANIMATION_IDS = [
+  AnimationId.Idle,
+  AnimationId.Happy,
+  AnimationId.Walking,
+  AnimationId.Sleeping,
+  AnimationId.Sick
+];
 
 /**
  * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
@@ -301,7 +309,7 @@ export class DeskagotchiRuntime {
    * @returns Installation result and package validation issues.
    */
   async hatchCreateDraft(input: HatchDraftInput): Promise<HatchDraftResult> {
-    const safetyIssues = validateHatchInput(input);
+    const safetyIssues = validateHatchDraftInput(input);
     if (hasBlockingIssues(safetyIssues)) {
       return {
         packageId: "",
@@ -729,79 +737,6 @@ export function createAssetUrl(
 }
 
 /**
- * Validate hatch prompt input before creating local package files.
- *
- * @param input - Hatch prompt details from the renderer.
- * @returns Package-style validation issues for blocked or invalid input.
- */
-function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const combinedText = `${input.name} ${input.description} ${input.species} ${input.personality} ${input.accessory ?? ""} ${input.theme ?? ""}`.toLowerCase();
-  const blockedTerms = [
-    "tamagotchi",
-    "bandai",
-    "codex",
-    "pokemon",
-    "pikachu",
-    "disney",
-    "mario",
-    "sonic",
-    "hateful",
-    "sexual"
-  ];
-
-  for (const blockedTerm of blockedTerms) {
-    if (combinedText.includes(blockedTerm)) {
-      issues.push({
-        severity: ValidationSeverity.Error,
-        code: "hatch_prompt_blocked_term",
-        message: `Hatch prompts cannot request protected, unsafe, or confusingly similar content: '${blockedTerm}'.`
-      });
-    }
-  }
-
-  if (input.name.trim().length < 1 || input.name.trim().length > 40) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_name_invalid",
-      message: "Pet name must be between 1 and 40 characters."
-    });
-  }
-
-  if (
-    input.description.trim().length < 1 ||
-    input.description.trim().length > MAX_HATCH_DESCRIPTION_LENGTH
-  ) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_description_invalid",
-      message: `Pet description must be between 1 and ${MAX_HATCH_DESCRIPTION_LENGTH} characters.`
-    });
-  }
-
-  if (input.species.trim().length < 1 || input.species.trim().length > 80) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_species_invalid",
-      message: "Pet species must be between 1 and 80 characters."
-    });
-  }
-
-  if (
-    input.personality.trim().length < 1 ||
-    input.personality.trim().length > 120
-  ) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_personality_invalid",
-      message: "Pet personality must be between 1 and 120 characters."
-    });
-  }
-
-  return issues;
-}
-
-/**
  * Build the placeholder pet manifest used before generated art is approved.
  *
  * @param input - Hatch prompt details from the renderer.
@@ -834,8 +769,9 @@ function createHatchPackage(
     animations: [
       animation(AnimationId.Idle, 0, 6),
       animation(AnimationId.Happy, 1, 8),
-      animation(AnimationId.Sleeping, 2, 2),
-      animation(AnimationId.Sick, 3, 4)
+      animation(AnimationId.Walking, 2, 7),
+      animation(AnimationId.Sleeping, 3, 2),
+      animation(AnimationId.Sick, 4, 4)
     ],
     growthStages: [
       growthStage("egg", LifeStage.Egg, "Egg", stageThreshold(LifeStage.Egg)),
@@ -905,12 +841,7 @@ function growthStage(
     minAgeHours,
     careScoreMin: 0,
     careScoreMax: 100,
-    animationSet: [
-      AnimationId.Idle,
-      AnimationId.Happy,
-      AnimationId.Sleeping,
-      AnimationId.Sick
-    ]
+    animationSet: [...HATCH_PLACEHOLDER_ANIMATION_IDS]
   };
 }
 
@@ -922,14 +853,14 @@ function growthStage(
  * @returns Complete SVG document for the placeholder spritesheet.
  */
 function createHatchSpriteSheet(input: HatchDraftInput, palette: string[]): string {
-  const rows = [AnimationId.Idle, AnimationId.Happy, AnimationId.Sleeping, AnimationId.Sick];
-  const frames = rows.flatMap((animationId, rowIndex) =>
+  const frames = HATCH_PLACEHOLDER_ANIMATION_IDS.flatMap((animationId, rowIndex) =>
     [0, 1, 2, 3].map(
       (frame) =>
         `<g transform="translate(${frame * 96} ${rowIndex * 96})">${hatchPetMarkup(input, palette, animationId, frame)}</g>`
     )
   );
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="384" viewBox="0 0 384 384">${frames.join("")}</svg>\n`;
+  const height = HATCH_PLACEHOLDER_ANIMATION_IDS.length * 96;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="${height}" viewBox="0 0 384 ${height}">${frames.join("")}</svg>\n`;
 }
 
 function createHatchPreview(

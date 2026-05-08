@@ -4,13 +4,13 @@ import { contextBridge, ipcRenderer } from "electron";
 import {
   type CareActionRequest,
   type DeskagotchiApi,
-  type HatchDraftInput,
   IpcChannel,
   type PanelView,
   type PetWindowUiMode,
   type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
+import type { HatchDraftInput } from "@shared/hatch";
 
 /**
  * Narrow IPC facade exposed to the renderer process.

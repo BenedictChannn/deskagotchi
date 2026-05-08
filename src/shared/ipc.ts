@@ -10,6 +10,7 @@ import type {
   PetPackage,
   ValidationIssue
 } from "./domain";
+import type { HatchDraftInput } from "./hatch";
 import type { ItemCatalogEntry } from "./itemIcons";
 
 /** IPC channel names shared by preload, renderer, and Electron main process. */
@@ -68,17 +69,6 @@ export interface DeskagotchiSnapshot {
   packages: RuntimePetPackage[];
   appVersion: string;
   userDataPath: string;
-}
-
-/** Input collected by Hatch before generating or installing a draft pet package. */
-export interface HatchDraftInput {
-  name: string;
-  description: string;
-  species: string;
-  personality: string;
-  preferredColors: string[];
-  accessory?: string;
-  theme?: string;
 }
 
 /** Result of creating and installing a Hatch draft package. */
