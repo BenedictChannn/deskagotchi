@@ -12,6 +12,7 @@ function main() {
   if (MODE === "pets") {
     run("npm.cmd", ["run", "validate:pets"]);
     assertFile("docs/qa/deskdog-lcd-contact-sheet.png");
+    assertBuiltInPetTheme();
     console.log("Pet asset QA passed.");
     return;
   }
@@ -30,6 +31,36 @@ function assertFile(relativePath) {
   const absolutePath = path.join(ROOT_DIR, relativePath);
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`Expected QA artifact is missing: ${relativePath}`);
+  }
+}
+
+function assertBuiltInPetTheme() {
+  const petsRoot = path.join(ROOT_DIR, "resources", "pets");
+  const packageDirs = fs
+    .readdirSync(petsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(petsRoot, entry.name));
+
+  for (const packageDir of packageDirs) {
+    const manifestPath = path.join(packageDir, "pet.json");
+    if (!fs.existsSync(manifestPath)) {
+      continue;
+    }
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    if (manifest.source !== "built-in") {
+      continue;
+    }
+    if (!Array.isArray(manifest.capabilities) || !manifest.capabilities.includes("retro-lcd")) {
+      throw new Error(
+        `Built-in pet is missing retro-LCD capability: ${manifest.packageId}`
+      );
+    }
+    if (!Array.isArray(manifest.colorPalette) || manifest.colorPalette.length > 4) {
+      throw new Error(
+        `Built-in pet must keep a 1-4 color palette: ${manifest.packageId}`
+      );
+    }
   }
 }
 

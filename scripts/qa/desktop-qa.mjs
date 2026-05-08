@@ -197,7 +197,7 @@ async function runDragScenario(run, app) {
   });
   run.pass("click without movement closed care menu");
 
-  const start = pointForOverlayCenter(before);
+  const start = await pointForPetSpriteCenter(page, before);
   const end = {
     x: start.x + Math.round(DRAG_DELTA_DIP * before.display.scaleFactor),
     y: start.y
@@ -282,6 +282,7 @@ async function runOverlayScenario(run, app) {
     const count = await page.locator(`button[title='${title}']`).count();
     count > 0 ? run.pass(`menu includes ${title}`) : run.fail(`menu includes ${title}`);
   }
+  await assertOverlayActionLabelsFit(run, page);
 
   await page.locator("button[title='Health']").click();
   await page.waitForSelector("[data-testid='overlay-health-card']", { timeout: 5_000 });
@@ -317,6 +318,7 @@ async function runPlayScenario(run, app) {
       });
   await page.screenshot({ path: path.join(run.runDir, "play-stage.png") });
   run.artifact("play-stage.png");
+  await assertPlaySurfaceLooksUsable(run, page);
   await page.locator("[data-testid='overlay-play-close']").click();
   await page.waitForSelector("[data-testid='pet-sprite']", { timeout: 5_000 });
   const restored = await getOverlayWindowInfo(app);
@@ -326,6 +328,90 @@ async function runPlayScenario(run, app) {
   restoredPassed
     ? run.pass("play exit restored compact overlay size", { restored: restored.bounds })
     : run.fail("play exit restored compact overlay size", { restored: restored.bounds });
+}
+
+async function assertOverlayActionLabelsFit(run, page) {
+  const labelMetrics = await page.evaluate(() =>
+    Array.from(globalThis.document.querySelectorAll(".overlay-action-button")).map((button) => {
+      const label = button.getAttribute("data-action-label") ?? button.textContent ?? "";
+      const span = button.querySelector(".overlay-action-label");
+      const spanRect = span?.getBoundingClientRect();
+      const spanStyle = span === null ? undefined : globalThis.getComputedStyle(span);
+      return {
+        label,
+        accessibleLabel: button.getAttribute("aria-label") ?? "",
+        buttonClientWidth: button.clientWidth,
+        buttonScrollWidth: button.scrollWidth,
+        hiddenLabel:
+          spanStyle?.position === "absolute" &&
+          (spanRect?.width ?? 0) <= 1 &&
+          (spanRect?.height ?? 0) <= 1,
+        spanClientWidth: span?.clientWidth ?? 0,
+        spanScrollWidth: span?.scrollWidth ?? 0
+      };
+    })
+  );
+  const clippedLabels = labelMetrics.filter(
+    (metric) =>
+      metric.hiddenLabel !== true &&
+      (metric.buttonScrollWidth > metric.buttonClientWidth + 1 ||
+        metric.spanScrollWidth > metric.spanClientWidth + 1)
+  );
+  const unlabeledButtons = labelMetrics.filter(
+    (metric) => metric.accessibleLabel.trim().length === 0
+  );
+  if (clippedLabels.length === 0 && unlabeledButtons.length === 0) {
+    run.pass("overlay action buttons avoid visible label truncation", { labelMetrics });
+    return;
+  }
+  run.fail("overlay action buttons avoid visible label truncation", {
+    clippedLabels,
+    unlabeledButtons
+  });
+}
+
+async function assertPlaySurfaceLooksUsable(run, page) {
+  const metrics = await page.evaluate(() => {
+    const stage = globalThis.document.querySelector("[data-testid='overlay-play-stage']");
+    const close = globalThis.document.querySelector("[data-testid='overlay-play-close']");
+    const ball = globalThis.document.querySelector("[data-testid='overlay-play-ball']");
+    const pet = globalThis.document.querySelector(".overlay-play-pet .pet-sprite");
+    const rectFor = (element) => {
+      const rect = element?.getBoundingClientRect();
+      return rect === undefined
+        ? undefined
+        : {
+            width: rect.width,
+            height: rect.height
+          };
+    };
+    const stageStyle = stage === null ? undefined : globalThis.getComputedStyle(stage);
+    return {
+      stageBackground: stageStyle?.backgroundColor,
+      stageBorderTopWidth: stageStyle?.borderTopWidth,
+      closeRect: rectFor(close),
+      ballRect: rectFor(ball),
+      petRect: rectFor(pet)
+    };
+  });
+
+  const stageIsTransparent =
+    metrics.stageBackground === "rgba(0, 0, 0, 0)" &&
+    metrics.stageBorderTopWidth === "0px";
+  stageIsTransparent
+    ? run.pass("play stage has no visible boundary", metrics)
+    : run.fail("play stage has no visible boundary", metrics);
+
+  const controlsAreLargeEnough =
+    (metrics.closeRect?.width ?? 0) >= 40 &&
+    (metrics.closeRect?.height ?? 0) >= 40 &&
+    (metrics.ballRect?.width ?? 0) >= 36 &&
+    (metrics.ballRect?.height ?? 0) >= 36 &&
+    (metrics.petRect?.width ?? 0) >= 88 &&
+    (metrics.petRect?.height ?? 0) >= 88;
+  controlsAreLargeEnough
+    ? run.pass("play controls and sprites are desktop-readable", metrics)
+    : run.fail("play controls and sprites are desktop-readable", metrics);
 }
 
 async function runLifecycleScenario(run, app) {
@@ -430,11 +516,18 @@ function validateStartupInvariants(run, metadata) {
     : run.fail("overlay window role detected", { windows: metadata.windows });
 }
 
-function pointForOverlayCenter(info) {
+async function pointForPetSpriteCenter(page, info) {
+  const spriteCenter = await page.locator("[data-testid='pet-sprite']").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  });
   const scaleFactor = info.display.scaleFactor;
   return {
-    x: Math.round((info.bounds.x + info.bounds.width / 2) * scaleFactor),
-    y: Math.round((info.bounds.y + info.bounds.height / 2) * scaleFactor)
+    x: Math.round((info.bounds.x + spriteCenter.x) * scaleFactor),
+    y: Math.round((info.bounds.y + spriteCenter.y) * scaleFactor)
   };
 }
 
