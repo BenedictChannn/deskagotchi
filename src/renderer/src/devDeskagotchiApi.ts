@@ -23,11 +23,23 @@ import {
 import { applyCareAction, createInitialPetState } from "@shared/simulation";
 import { ItemIconManifestSchema } from "@shared/itemIcons";
 
+import baoIconUrl from "../../../resources/pets/bao/icon.png?url";
+import baoManifest from "../../../resources/pets/bao/pet.json";
+import baoPreviewUrl from "../../../resources/pets/bao/preview.png?url";
+import baoSpritesheetUrl from "../../../resources/pets/bao/spritesheet.png?url";
 import deskdogIconUrl from "../../../resources/pets/deskdog/icon.png?url";
 import deskdogManifest from "../../../resources/pets/deskdog/pet.json";
 import deskdogPreviewUrl from "../../../resources/pets/deskdog/preview.png?url";
 import deskdogSpritesheetUrl from "../../../resources/pets/deskdog/spritesheet.png?url";
 import itemManifestData from "../../../resources/items/lcd-core/items.json";
+import misoIconUrl from "../../../resources/pets/miso/icon.png?url";
+import misoManifest from "../../../resources/pets/miso/pet.json";
+import misoPreviewUrl from "../../../resources/pets/miso/preview.png?url";
+import misoSpritesheetUrl from "../../../resources/pets/miso/spritesheet.png?url";
+import mochiIconUrl from "../../../resources/pets/mochi/icon.png?url";
+import mochiManifest from "../../../resources/pets/mochi/pet.json";
+import mochiPreviewUrl from "../../../resources/pets/mochi/preview.png?url";
+import mochiSpritesheetUrl from "../../../resources/pets/mochi/spritesheet.png?url";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
@@ -394,11 +406,65 @@ function createDevPackages(): RuntimePetPackage[] {
   ].map(toRuntimePackage);
 
   const builtInPackages = [
+    createBaoRuntimePackage(),
+    createMisoRuntimePackage(),
+    createMochiRuntimePackage(),
     createDeskdogRuntimePackage(),
     ...placeholderPackages
   ];
 
   return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
+}
+
+/**
+ * Attach Bao's imagegen-assisted shih tzu package to the browser adapter.
+ *
+ * @returns Runtime package using the same PNG files that Electron serves.
+ */
+function createBaoRuntimePackage(): RuntimePetPackage {
+  return {
+    petPackage: PetPackageSchema.parse(baoManifest),
+    assetUrls: {
+      spritesheet: baoSpritesheetUrl,
+      preview: baoPreviewUrl,
+      icon: baoIconUrl
+    },
+    issues: []
+  };
+}
+
+/**
+ * Attach Miso's imagegen-assisted cat package to the browser adapter.
+ *
+ * @returns Runtime package using the same PNG files that Electron serves.
+ */
+function createMisoRuntimePackage(): RuntimePetPackage {
+  return {
+    petPackage: PetPackageSchema.parse(misoManifest),
+    assetUrls: {
+      spritesheet: misoSpritesheetUrl,
+      preview: misoPreviewUrl,
+      icon: misoIconUrl
+    },
+    issues: []
+  };
+}
+
+/**
+ * Attach Mochi's imagegen-assisted monkey package to the browser adapter.
+ *
+ * @returns Runtime package using the same PNG files that Electron serves.
+ */
+function createMochiRuntimePackage(): RuntimePetPackage {
+  return {
+    petPackage: PetPackageSchema.parse(mochiManifest),
+    assetUrls: {
+      spritesheet: mochiSpritesheetUrl,
+      preview: mochiPreviewUrl,
+      icon: mochiIconUrl
+    },
+    issues: []
+  };
 }
 
 /**
