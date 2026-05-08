@@ -499,7 +499,10 @@ function SettingsView({
           onClick={() => void window.deskagotchi.resetPetWindow()}
         />
       </div>
-      <p className="data-location">Data: {snapshot.userDataPath}</p>
+      <details className="settings-advanced">
+        <summary>Storage</summary>
+        <p className="data-location">Data folder: {snapshot.userDataPath}</p>
+      </details>
     </div>
   );
 }

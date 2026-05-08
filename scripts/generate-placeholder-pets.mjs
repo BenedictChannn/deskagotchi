@@ -6,6 +6,7 @@ import { generateDeskdogLcdAssets } from "./generate-deskdog-lcd-assets.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const petsRoot = path.join(projectRoot, "resources", "pets");
+const lcdPalette = ["#dceca8", "#7d9d58", "#123716", "#f7f8e7"];
 
 const animations = [
   "idle",
@@ -36,10 +37,10 @@ const pets = [
   {
     packageId: "deskcat",
     name: "Deskcat",
-    description: "A tiny original cat-like desk companion with bright keyboard-patrol energy.",
+    description: "A tiny retro-LCD cat-like desk companion with keyboard-patrol energy.",
     species: "Cat-like desk companion",
     personality: "Curious, alert, and fond of small desk rituals.",
-    palette: ["#f7b267", "#f79d65", "#2f243a", "#fefae0"],
+    palette: lcdPalette,
     playStyle: "chase",
     foods: ["fish biscuit", "warm rice"],
     dislikes: ["burnt toast"],
@@ -59,10 +60,10 @@ const pets = [
   {
     packageId: "deskduck",
     name: "Deskduck",
-    description: "A small original duck-like companion with a determined little waddle.",
+    description: "A small retro-LCD duck-like companion with a determined little waddle.",
     species: "Duck-like desk companion",
     personality: "Cheerful, vocal, and secretly disciplined.",
-    palette: ["#ffd166", "#f4a261", "#2a9d8f", "#073b4c"],
+    palette: lcdPalette,
     playStyle: "rhythm",
     foods: ["seed mix", "tiny greens"],
     dislikes: ["dry crackers"],
@@ -72,10 +73,10 @@ const pets = [
   {
     packageId: "deskblob",
     name: "Deskblob",
-    description: "An abstract original blob companion that squishes into every mood.",
+    description: "An abstract retro-LCD blob companion that squishes into every mood.",
     species: "Abstract blob companion",
     personality: "Soft, calm, and surprisingly expressive.",
-    palette: ["#9bdbd4", "#4ecdc4", "#24404a", "#f7fff7"],
+    palette: lcdPalette,
     playStyle: "calm",
     foods: ["jelly cube", "dew drop"],
     dislikes: ["salt chip"],
@@ -129,8 +130,8 @@ function toPackage(pet) {
     },
     colorPalette: pet.palette,
     author: "Deskagotchi",
-    license: "Original Deskagotchi placeholder asset",
-    capabilities: ["mvp-animation", "growth-v1", "placeholder-art"],
+    license: "Original Deskagotchi retro-LCD placeholder asset",
+    capabilities: ["mvp-animation", "growth-v1", "retro-lcd", "placeholder-art"],
     validationStatus: "passed",
     assetHash: `${pet.packageId}-placeholder-v1`,
     generation: {
@@ -178,7 +179,7 @@ function singleFrameSvg(pet, animation, frame, size) {
 }
 
 function defs() {
-  return `<defs><filter id="soft"><feDropShadow dx="0" dy="1" stdDeviation="0.2" flood-color="#000000" flood-opacity="0.18"/></filter></defs>`;
+  return "";
 }
 
 function petMarkup(pet, animation, frame) {
@@ -195,7 +196,7 @@ function petMarkup(pet, animation, frame) {
   const cleanSparkle = animation === "cleaning" ? `<path d="M24 26 L27 34 L35 37 L27 40 L24 48 L21 40 L13 37 L21 34 Z" fill="${highlight}" stroke="${outline}" stroke-width="1.5"/>` : "";
   const base = bodyMarkup(pet.body, primary, secondary, outline, highlight, bob, squash, sadTilt);
 
-  return `<g filter="url(#soft)">${base}<g transform="translate(0 ${bob + sadTilt})">${typeof eye === "string" && eye.startsWith("<") ? eye : `<path d="${eye}" fill="none" stroke="${outline}" stroke-width="2" stroke-linecap="round"/>`}${typeof rightEye === "string" && rightEye.startsWith("<") ? rightEye : `<path d="${rightEye}" fill="none" stroke="${outline}" stroke-width="2" stroke-linecap="round"/>`}<path d="${mouth}" fill="none" stroke="${outline}" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="29" cy="52" rx="4" ry="2.5" fill="${secondary}" opacity="0.6"/><ellipse cx="67" cy="52" rx="4" ry="2.5" fill="${secondary}" opacity="0.6"/></g>${accessory}${moodItem}${sickMark}${cleanSparkle}</g>`;
+  return `<g>${base}<g transform="translate(0 ${bob + sadTilt})">${typeof eye === "string" && eye.startsWith("<") ? eye : `<path d="${eye}" fill="none" stroke="${outline}" stroke-width="2" stroke-linecap="round"/>`}${typeof rightEye === "string" && rightEye.startsWith("<") ? rightEye : `<path d="${rightEye}" fill="none" stroke="${outline}" stroke-width="2" stroke-linecap="round"/>`}<path d="${mouth}" fill="none" stroke="${outline}" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="29" cy="52" rx="4" ry="2.5" fill="${secondary}" opacity="0.6"/><ellipse cx="67" cy="52" rx="4" ry="2.5" fill="${secondary}" opacity="0.6"/></g>${accessory}${moodItem}${sickMark}${cleanSparkle}</g>`;
 }
 
 function bodyMarkup(body, primary, secondary, outline, highlight, bob, squash, sadTilt) {

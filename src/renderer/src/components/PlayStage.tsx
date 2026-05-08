@@ -5,9 +5,9 @@ import type { DeskagotchiSnapshot } from "@shared/ipc";
 import { ItemIcon } from "./ItemIcon";
 import { PetSprite } from "./PetSprite";
 
-const BALL_SIZE = 24;
-const PET_SIZE = 64;
-const CATCH_DISTANCE = 28;
+const BALL_SIZE = 42;
+const PET_SIZE = 96;
+const CATCH_DISTANCE = 48;
 
 interface Point {
   x: number;
@@ -249,7 +249,11 @@ export function PlayStage({
       <button
         className="overlay-play-ball"
         type="button"
-        style={{ transform: `translate(${ball.x}px, ${ball.y}px)` }}
+        style={{
+          height: BALL_SIZE,
+          transform: `translate(${ball.x}px, ${ball.y}px)`,
+          width: BALL_SIZE
+        }}
         onPointerDown={startBallDrag}
         onPointerMove={moveBallDrag}
         onPointerUp={finishBallDrag}
@@ -277,7 +281,7 @@ function getStageBounds(stage: HTMLElement | null): StageBounds {
 function createInitialBall(bounds: StageBounds): BallState {
   return {
     x: clamp(bounds.width * 0.58, 20, bounds.width - BALL_SIZE - 20),
-    y: clamp(bounds.height * 0.24, 20, bounds.height - BALL_SIZE - 20),
+    y: clamp(bounds.height * 0.58, 20, bounds.height - BALL_SIZE - 20),
     vx: 1.2,
     vy: 0,
     dragging: false
@@ -286,8 +290,8 @@ function createInitialBall(bounds: StageBounds): BallState {
 
 function createInitialPet(bounds: StageBounds): Point {
   return {
-    x: clamp(bounds.width * 0.45, 0, bounds.width - PET_SIZE),
-    y: clamp(bounds.height * 0.72, 0, bounds.height - PET_SIZE)
+    x: clamp(bounds.width * 0.47, 0, bounds.width - PET_SIZE),
+    y: clamp(bounds.height * 0.68, 0, bounds.height - PET_SIZE)
   };
 }
 

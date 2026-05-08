@@ -615,9 +615,16 @@ function ActionButton({
   onClick
 }: ActionButtonProps): React.JSX.Element {
   return (
-    <button className="overlay-action-button" type="button" onClick={onClick} title={label}>
+    <button
+      className="overlay-action-button"
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      data-action-label={label}
+    >
       {children}
-      <span>{label}</span>
+      <span className="overlay-action-label">{label}</span>
     </button>
   );
 }

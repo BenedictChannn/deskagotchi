@@ -4,7 +4,7 @@
   "packageVersion": "0.1.0",
   "minAppVersion": "0.1.0",
   "name": "Deskcat",
-  "description": "A tiny original cat-like desk companion with bright keyboard-patrol energy.",
+  "description": "A tiny retro-LCD cat-like desk companion with keyboard-patrol energy.",
   "source": "built-in",
   "species": "Cat-like desk companion",
   "personality": "Curious, alert, and fond of small desk rituals.",
@@ -333,16 +333,17 @@
     "affectionGainMultiplier": 1.15
   },
   "colorPalette": [
-    "#f7b267",
-    "#f79d65",
-    "#2f243a",
-    "#fefae0"
+    "#dceca8",
+    "#7d9d58",
+    "#123716",
+    "#f7f8e7"
   ],
   "author": "Deskagotchi",
-  "license": "Original Deskagotchi placeholder asset",
+  "license": "Original Deskagotchi retro-LCD placeholder asset",
   "capabilities": [
     "mvp-animation",
     "growth-v1",
+    "retro-lcd",
     "placeholder-art"
   ],
   "validationStatus": "passed",

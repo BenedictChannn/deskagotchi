@@ -4,7 +4,7 @@
   "packageVersion": "0.1.0",
   "minAppVersion": "0.1.0",
   "name": "Deskblob",
-  "description": "An abstract original blob companion that squishes into every mood.",
+  "description": "An abstract retro-LCD blob companion that squishes into every mood.",
   "source": "built-in",
   "species": "Abstract blob companion",
   "personality": "Soft, calm, and surprisingly expressive.",
@@ -249,16 +249,17 @@
     "affectionGainMultiplier": 1
   },
   "colorPalette": [
-    "#9bdbd4",
-    "#4ecdc4",
-    "#24404a",
-    "#f7fff7"
+    "#dceca8",
+    "#7d9d58",
+    "#123716",
+    "#f7f8e7"
   ],
   "author": "Deskagotchi",
-  "license": "Original Deskagotchi placeholder asset",
+  "license": "Original Deskagotchi retro-LCD placeholder asset",
   "capabilities": [
     "mvp-animation",
     "growth-v1",
+    "retro-lcd",
     "placeholder-art"
   ],
   "validationStatus": "passed",

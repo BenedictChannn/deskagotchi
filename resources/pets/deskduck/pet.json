@@ -4,7 +4,7 @@
   "packageVersion": "0.1.0",
   "minAppVersion": "0.1.0",
   "name": "Deskduck",
-  "description": "A small original duck-like companion with a determined little waddle.",
+  "description": "A small retro-LCD duck-like companion with a determined little waddle.",
   "source": "built-in",
   "species": "Duck-like desk companion",
   "personality": "Cheerful, vocal, and secretly disciplined.",
@@ -249,16 +249,17 @@
     "affectionGainMultiplier": 1
   },
   "colorPalette": [
-    "#ffd166",
-    "#f4a261",
-    "#2a9d8f",
-    "#073b4c"
+    "#dceca8",
+    "#7d9d58",
+    "#123716",
+    "#f7f8e7"
   ],
   "author": "Deskagotchi",
-  "license": "Original Deskagotchi placeholder asset",
+  "license": "Original Deskagotchi retro-LCD placeholder asset",
   "capabilities": [
     "mvp-animation",
     "growth-v1",
+    "retro-lcd",
     "placeholder-art"
   ],
   "validationStatus": "passed",
