@@ -154,12 +154,21 @@ export class DeskagotchiRuntime {
   }
 
   /**
-   * Progress the active pet and return a renderer-ready snapshot.
+   * Return a renderer-ready snapshot without mutating simulation state.
+   *
+   * @returns Current save, active pet state, loaded packages, and app metadata.
+   */
+  async getSnapshot(): Promise<DeskagotchiSnapshot> {
+    return this.createSnapshot();
+  }
+
+  /**
+   * Progress the active pet, persist changes, and return a renderer-ready snapshot.
    *
    * @param now - Clock value used for simulation progress.
    * @returns Current save, active pet state, loaded packages, and app metadata.
    */
-  async getSnapshot(now = new Date()): Promise<DeskagotchiSnapshot> {
+  async progressAndGetSnapshot(now = new Date()): Promise<DeskagotchiSnapshot> {
     await this.progressActivePet(now);
     return this.createSnapshot();
   }
@@ -729,6 +738,7 @@ function parseClockMinutes(value: string): number {
  *
  * @param packageId - Pet package identifier.
  * @param relativeAssetPath - Slash-delimited asset path inside the package.
+ * @param assetVersion - Optional asset hash or version used for renderer cache busting.
  * @returns Encoded deskagotchi protocol URL.
  */
 export function createAssetUrl(

@@ -146,6 +146,21 @@ describe("runtime import and hatch safety", () => {
       .toEqual(expect.arrayContaining(["idle", "happy", "walking", "sleeping", "sick"]));
     await expectCustomPets(userDataDir, [result.packageId]);
   });
+
+  it("keeps snapshot reads separate from simulation progression", async () => {
+    const { runtime } = await createInitializedRuntime();
+    const initialSnapshot = await runtime.getSnapshot();
+    const progressedSnapshot = await runtime.progressAndGetSnapshot(
+      new Date("2026-05-07T00:00:00.000Z")
+    );
+    const readOnlySnapshot = await runtime.getSnapshot();
+
+    expect(initialSnapshot.activeState.ageHours).toBe(0);
+    expect(progressedSnapshot.activeState.ageHours).toBeCloseTo(24, 3);
+    expect(readOnlySnapshot.activeState.ageHours).toBe(
+      progressedSnapshot.activeState.ageHours
+    );
+  });
 });
 
 describe("asset URLs", () => {

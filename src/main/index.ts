@@ -568,6 +568,12 @@ function registerIpcHandlers(): void {
   });
 }
 
+/**
+ * Reject IPC sent by anything other than the packaged renderer or local dev server.
+ *
+ * @param event - Electron IPC invocation metadata.
+ * @throws Error when the sender URL is outside the trusted renderer set.
+ */
 function validateIpcSender(event: IpcMainInvokeEvent): void {
   const senderUrl = event.senderFrame?.url ?? event.sender.getURL();
   if (!isTrustedRendererUrl(senderUrl)) {
@@ -575,6 +581,15 @@ function validateIpcSender(event: IpcMainInvokeEvent): void {
   }
 }
 
+/**
+ * Check whether a renderer URL is allowed to use the preload IPC bridge.
+ *
+ * File URLs must resolve to the packaged renderer entrypoint. HTTP(S) URLs are
+ * accepted only in unpackaged development and only for loopback hostnames.
+ *
+ * @param rawUrl - Renderer frame URL reported by Electron.
+ * @returns True when the URL belongs to the Deskagotchi renderer surface.
+ */
 function isTrustedRendererUrl(rawUrl: string): boolean {
   let url: URL;
   try {
@@ -598,6 +613,15 @@ function isTrustedRendererUrl(rawUrl: string): boolean {
   );
 }
 
+/**
+ * Parse untrusted renderer payloads at the IPC boundary.
+ *
+ * @param schema - Zod schema for the expected payload shape.
+ * @param value - Raw renderer-provided value.
+ * @param inputName - Human-readable input name for error messages.
+ * @returns Parsed and typed IPC payload.
+ * @throws Error when the payload does not match the expected schema.
+ */
 function parseIpcInput<T>(
   schema: z.ZodType<T>,
   value: unknown,
@@ -981,7 +1005,7 @@ function startSimulationTimer(): void {
  * Progress the simulation and notify renderers that a fresh snapshot is available.
  */
 async function tickSimulation(): Promise<void> {
-  await runtime.getSnapshot();
+  await runtime.progressAndGetSnapshot();
   runtime.maybeNotifyAttention();
   broadcastSnapshotUpdated();
 }
