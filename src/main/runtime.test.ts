@@ -5,6 +5,9 @@ import path from "node:path";
 import AdmZip from "adm-zip";
 import { vi } from "vitest";
 
+import { PetSource } from "@shared/domain";
+import { createTestPetPackage } from "@shared/fixtures";
+
 import { createAssetUrl, DeskagotchiRuntime } from "./runtime";
 
 const electronMocks = vi.hoisted(() => ({
@@ -74,6 +77,29 @@ describe("runtime import and hatch safety", () => {
     });
 
     await expect(runtime.importPet()).rejects.toThrow("failed validation");
+
+    await expectCustomPets(userDataDir, []);
+  });
+
+  it("rejects imported custom packages that reuse an existing package id", async () => {
+    const { runtime, userDataDir } = await createInitializedRuntime();
+    const duplicatePackage = createTestPetPackage({
+      packageId: "deskcat",
+      source: PetSource.Custom,
+      name: "Duplicate Deskcat"
+    });
+    const archivePath = await writeArchive("duplicate-deskcat", (archive) => {
+      archive.addFile("pet.json", Buffer.from(JSON.stringify(duplicatePackage)));
+      archive.addFile("spritesheet.svg", Buffer.from("<svg />"));
+      archive.addFile("preview.svg", Buffer.from("<svg />"));
+      archive.addFile("icon.svg", Buffer.from("<svg />"));
+    });
+    electronMocks.showOpenDialog.mockResolvedValueOnce({
+      canceled: false,
+      filePaths: [archivePath]
+    });
+
+    await expect(runtime.importPet()).rejects.toThrow("existing package id");
 
     await expectCustomPets(userDataDir, []);
   });

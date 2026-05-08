@@ -480,6 +480,11 @@ export class DeskagotchiRuntime {
       if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
         throw new Error("Imported pet pack failed validation.");
       }
+      if (this.hasLoadedPackageId(loadedPackage.petPackage.packageId)) {
+        throw new Error(
+          `Imported pet pack uses existing package id '${loadedPackage.petPackage.packageId}'.`
+        );
+      }
     } catch (error) {
       await rm(destination, { recursive: true, force: true });
       throw error;
@@ -616,6 +621,12 @@ export class DeskagotchiRuntime {
       throw new Error(`Unknown pet package '${packageId}'.`);
     }
     return petPackage;
+  }
+
+  private hasLoadedPackageId(packageId: string): boolean {
+    return this.loadedPackages.some(
+      (loadedPackage) => loadedPackage.petPackage.packageId === packageId
+    );
   }
 
   private getActiveState(save: DeskagotchiSave): PetInstanceState {
