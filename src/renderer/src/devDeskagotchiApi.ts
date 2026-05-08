@@ -12,6 +12,7 @@ import {
   type ValidationIssue
 } from "@shared/domain";
 import {
+  createHatchPetPackage,
   type HatchDraftInput,
   validateHatchDraftInput
 } from "@shared/hatch";
@@ -206,14 +207,15 @@ class DevDeskagotchiApi {
     }
 
     const packageId = slugify(`${input.name}-${Date.now().toString(36)}`);
-    const petPackage = createDevPetPackage({
+    const petPackage = createHatchPetPackage({
+      input,
       packageId,
-      name: input.name.trim(),
-      description: input.description.trim() || "A locally hatched browser-test pet.",
-      source: PetSource.Custom,
-      species: input.species.trim() || "Custom companion",
-      personality: input.personality.trim() || "Curious and steady.",
-      colorPalette: normalizeColors(input.preferredColors)
+      colorPalette: normalizeColors(input.preferredColors),
+      stageThresholdHours: DEFAULT_SIMULATION_CONFIG.stageThresholdHours,
+      createdAt: new Date().toISOString(),
+      assetHash: `${packageId}-browser-dev`,
+      author: "Local user",
+      license: "Local custom Deskagotchi pet"
     });
     this.packages = [...this.packages, toRuntimePackage(petPackage)];
     this.persistCustomPackages();

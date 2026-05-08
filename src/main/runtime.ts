@@ -13,16 +13,15 @@ import {
   CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
-  LifeStage,
-  PackageValidationStatus,
   type PetInstanceState,
   type PetPackage,
   PetSource,
-  PlayStyle,
   type ValidationIssue
 } from "@shared/domain";
 import {
+  createHatchPetPackage,
   type HatchDraftInput,
+  HATCH_PLACEHOLDER_ANIMATION_IDS,
   validateHatchDraftInput
 } from "@shared/hatch";
 import {
@@ -60,17 +59,8 @@ import {
   writeJsonAtomic
 } from "./storage";
 
-const IMAGEGEN_PLACEHOLDER_NOTE =
-  "This local draft is ready for replacement by the approved imagegen pipeline.";
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
 const MAX_IMPORTED_PACKAGE_ENTRIES = 128;
-const HATCH_PLACEHOLDER_ANIMATION_IDS = [
-  AnimationId.Idle,
-  AnimationId.Happy,
-  AnimationId.Walking,
-  AnimationId.Sleeping,
-  AnimationId.Sick
-];
 
 /**
  * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
@@ -323,7 +313,16 @@ export class DeskagotchiRuntime {
     try {
       await mkdir(packageRoot, { recursive: true });
       const colorPalette = normalizePalette(input.preferredColors);
-      const petPackage = createHatchPackage(input, packageId, colorPalette);
+      const petPackage = createHatchPetPackage({
+        input,
+        packageId,
+        colorPalette,
+        stageThresholdHours: DEFAULT_SIMULATION_CONFIG.stageThresholdHours,
+        createdAt: new Date().toISOString(),
+        assetHash: `${packageId}-local-placeholder`,
+        author: "Local user",
+        license: "Local custom Deskagotchi pet"
+      });
       await writeJsonAtomic(path.join(packageRoot, "pet.json"), petPackage);
       await writeFile(
         path.join(packageRoot, "spritesheet.svg"),
@@ -774,115 +773,6 @@ export function createAssetUrl(
   }
 
   return `${assetPath}?v=${encodeURIComponent(assetVersion)}`;
-}
-
-/**
- * Build the placeholder pet manifest used before generated art is approved.
- *
- * @param input - Hatch prompt details from the renderer.
- * @param packageId - Generated package identifier.
- * @param colorPalette - Normalized package color palette.
- * @returns Pet package manifest for the local draft.
- */
-function createHatchPackage(
-  input: HatchDraftInput,
-  packageId: string,
-  colorPalette: string[]
-): PetPackage {
-  return {
-    schemaVersion: 1,
-    packageId,
-    packageVersion: "0.1.0",
-    minAppVersion: "0.1.0",
-    name: input.name.trim(),
-    description: `${input.description.trim()} ${IMAGEGEN_PLACEHOLDER_NOTE}`.trim(),
-    source: PetSource.Custom,
-    species: input.species.trim(),
-    personality: input.personality.trim(),
-    createdAt: new Date().toISOString(),
-    assetVersion: "0.1.0",
-    assets: {
-      spritesheet: "spritesheet.svg",
-      preview: "preview.svg",
-      icon: "icon.svg"
-    },
-    animations: [
-      animation(AnimationId.Idle, 0, 6),
-      animation(AnimationId.Happy, 1, 8),
-      animation(AnimationId.Walking, 2, 7),
-      animation(AnimationId.Sleeping, 3, 2),
-      animation(AnimationId.Sick, 4, 4)
-    ],
-    growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", stageThreshold(LifeStage.Egg)),
-      growthStage("baby", LifeStage.Baby, "Baby", stageThreshold(LifeStage.Baby)),
-      growthStage("child", LifeStage.Child, "Child", stageThreshold(LifeStage.Child)),
-      growthStage("teen", LifeStage.Teen, "Teen", stageThreshold(LifeStage.Teen)),
-      growthStage("adult", LifeStage.Adult, "Adult", stageThreshold(LifeStage.Adult))
-    ],
-    preferredFoods: ["custom treat"],
-    dislikedFoods: ["burnt snack"],
-    foodPreferences: {
-      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
-      likedFoodIds: ["snack-apple-slice"],
-      favoriteFoodIds: ["meal-banana"],
-      dislikedFoodIds: ["snack-candy"],
-      eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
-    },
-    favoritePlayStyle: PlayStyle.Calm,
-    careModifiers: {
-      hungerDecayMultiplier: 1,
-      happinessDecayMultiplier: 1,
-      energyDecayMultiplier: 1,
-      cleanlinessDecayMultiplier: 1,
-      affectionGainMultiplier: 1
-    },
-    colorPalette,
-    author: "Local user",
-    license: "Local custom Deskagotchi pet",
-    capabilities: ["hatch-mvp", "placeholder-art"],
-    validationStatus: PackageValidationStatus.Passed,
-    assetHash: `${packageId}-local-placeholder`,
-    generation: {
-      mode: "local-placeholder",
-      prompt: JSON.stringify(input),
-      referenceImageStored: false
-    }
-  };
-}
-
-function animation(id: AnimationId, row: number, fps: number): PetPackage["animations"][number] {
-  return {
-    id,
-    row,
-    frames: 4,
-    frameWidth: 96,
-    frameHeight: 96,
-    fps,
-    loop: true,
-    ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
-  };
-}
-
-function stageThreshold(lifeStage: LifeStage): number {
-  return DEFAULT_SIMULATION_CONFIG.stageThresholdHours[lifeStage];
-}
-
-function growthStage(
-  id: string,
-  lifeStage: LifeStage,
-  label: string,
-  minAgeHours: number
-): PetPackage["growthStages"][number] {
-  return {
-    id,
-    stage: lifeStage,
-    label,
-    minAgeHours,
-    careScoreMin: 0,
-    careScoreMax: 100,
-    animationSet: [...HATCH_PLACEHOLDER_ANIMATION_IDS]
-  };
 }
 
 /**
