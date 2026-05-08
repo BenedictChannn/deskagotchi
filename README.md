@@ -73,6 +73,17 @@ Validate committed pet packages:
 npm.cmd run validate:pets
 ```
 
+Run the full local QA gate:
+
+```powershell
+npm.cmd run qa
+```
+
+The QA gate launches Deskagotchi with an isolated profile, exercises desktop
+and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
+`docs/qa/using-qa.md` for when to run each targeted QA command and how to
+interpret the reports.
+
 Regenerate built-in pet assets:
 
 ```powershell
