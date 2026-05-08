@@ -615,17 +615,15 @@ function FeedPicker({
         {feedItems.map((item) => (
           <button
             key={item.id}
-            className="overlay-feed-item"
+            className={feedItemClassName(foodPreferenceForPet(petPackage, item.id))}
             type="button"
             data-testid="overlay-feed-item"
             onClick={() => onSelect(item)}
-            title={describeFoodItem(item, petPackage)}
+            title={describeFoodItem(item)}
           >
             <ItemIcon iconId={item.iconId} size={20} />
-            <span>{item.label}</span>
-            <span className="overlay-feed-preference">
-              {preferenceLabel(foodPreferenceForPet(petPackage, item.id))}
-            </span>
+            <span className="overlay-feed-name">{item.label}</span>
+            <PreferenceMarker preference={foodPreferenceForPet(petPackage, item.id)} />
           </button>
         ))}
       </div>
@@ -655,29 +653,42 @@ function FeedTab({
   );
 }
 
-function describeFoodItem(
-  item: ItemCatalogEntry,
-  petPackage: DeskagotchiSnapshot["activePackage"]["petPackage"]
-): string {
+function describeFoodItem(item: ItemCatalogEntry): string {
   const effectLabels = Object.entries(item.effects).map(([stat, value]) =>
     `${stat} ${value > 0 ? "+" : ""}${value}`
   );
-  const preference = preferenceLabel(foodPreferenceForPet(petPackage, item.id));
-  return [preference, ...effectLabels].filter(Boolean).join(", ");
+  return effectLabels.join(", ");
 }
 
-function preferenceLabel(preference: FoodPreferenceKind): string {
-  switch (preference) {
-    case FoodPreferenceKind.Favorite:
-      return "Favorite";
-    case FoodPreferenceKind.Liked:
-      return "Likes";
-    case FoodPreferenceKind.Shared:
-      return "Pantry";
-    case FoodPreferenceKind.Disliked:
-    case FoodPreferenceKind.Neutral:
-      return "";
+function feedItemClassName(preference: FoodPreferenceKind): string {
+  const modifier =
+    preference === FoodPreferenceKind.Favorite
+      ? "overlay-feed-item--favorite"
+      : preference === FoodPreferenceKind.Liked
+        ? "overlay-feed-item--liked"
+        : "";
+
+  return ["overlay-feed-item", modifier].filter(Boolean).join(" ");
+}
+
+function PreferenceMarker({
+  preference
+}: {
+  preference: FoodPreferenceKind;
+}): React.JSX.Element | null {
+  if (preference === FoodPreferenceKind.Favorite) {
+    return (
+      <span className="overlay-feed-marker" aria-hidden="true">
+        <ItemIcon iconId="heart" size={9} />
+      </span>
+    );
   }
+
+  if (preference === FoodPreferenceKind.Liked) {
+    return <span className="overlay-feed-marker overlay-feed-marker--dot" aria-hidden="true" />;
+  }
+
+  return null;
 }
 
 function OverlayHealthCard({

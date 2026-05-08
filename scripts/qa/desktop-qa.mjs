@@ -292,6 +292,11 @@ async function runOverlayScenario(run, app) {
   feedItemCount > 0 && feedItemCount <= 6
     ? run.pass("feed picker shows scoped food choices", { feedItemCount })
     : run.fail("feed picker shows scoped food choices", { feedItemCount });
+  const feedPickerText = await page.locator("[data-testid='overlay-feed-picker']").innerText();
+  const clutterWords = feedPickerText.match(/\b(favorite|likes|pantry)\b/gi) ?? [];
+  clutterWords.length === 0
+    ? run.pass("feed picker avoids visible preference labels")
+    : run.fail("feed picker avoids visible preference labels", { clutterWords });
   await page.screenshot({ path: path.join(run.runDir, "overlay-feed.png") });
   run.artifact("overlay-feed.png");
   await assertPetIsNotCovered(
