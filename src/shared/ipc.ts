@@ -26,6 +26,7 @@ export enum IpcChannel {
   EnterPetWindowPlayMode = "deskagotchi:enterPetWindowPlayMode",
   ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
+  RecordQaEvent = "deskagotchi:recordQaEvent",
   HatchCreateDraft = "deskagotchi:hatchCreateDraft",
   ExportPet = "deskagotchi:exportPet",
   ImportPet = "deskagotchi:importPet",
@@ -79,6 +80,17 @@ export interface HatchDraftResult {
   issues: ValidationIssue[];
 }
 
+/** Renderer-originated QA telemetry event passed through the preload bridge. */
+export interface QaTelemetryInput {
+  event: string;
+  source?: string;
+  windowRole?: string;
+  displayId?: string;
+  scaleFactor?: number;
+  payload?: Record<string, unknown>;
+  error?: string;
+}
+
 /** Care action request sent by renderer controls. */
 export interface CareActionRequest {
   type: CareActionType;
@@ -104,6 +116,7 @@ export interface DeskagotchiApi {
   enterPetWindowPlayMode: () => Promise<void>;
   exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
+  recordQaEvent: (event: QaTelemetryInput) => Promise<void>;
   hatchCreateDraft: (input: HatchDraftInput) => Promise<HatchDraftResult>;
   exportPet: (packageId: string) => Promise<string | undefined>;
   importPet: () => Promise<DeskagotchiSnapshot>;

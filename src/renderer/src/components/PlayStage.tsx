@@ -65,6 +65,14 @@ export function PlayStage({
   const [catchCount, setCatchCount] = useState(0);
 
   useEffect(() => {
+    void window.deskagotchi.recordQaEvent({
+      event: "play:active",
+      source: "renderer",
+      windowRole: "play-overlay"
+    });
+  }, []);
+
+  useEffect(() => {
     let animationFrame = 0;
 
     const tick = (now: number): void => {
@@ -217,12 +225,18 @@ export function PlayStage({
   };
 
   return (
-    <section ref={stageRef} className="overlay-play-stage" aria-label="Ball play">
+    <section
+      ref={stageRef}
+      className="overlay-play-stage"
+      aria-label="Ball play"
+      data-testid="overlay-play-stage"
+    >
       <button
         className="overlay-play-close"
         type="button"
         onClick={onClose}
         aria-label="Close play"
+        data-testid="overlay-play-close"
       >
         X
       </button>
@@ -241,6 +255,7 @@ export function PlayStage({
         onPointerUp={finishBallDrag}
         onPointerCancel={finishBallDrag}
         aria-label="Drag ball"
+        data-testid="overlay-play-ball"
       >
         <ItemIcon iconId="ball" size={BALL_SIZE} />
       </button>

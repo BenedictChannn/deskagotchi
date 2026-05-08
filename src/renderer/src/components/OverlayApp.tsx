@@ -36,6 +36,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const dragState = useRef<{
     pointerId: number;
     target: HTMLButtonElement;
+    originScreenX: number;
+    originScreenY: number;
     lastScreenX: number;
     lastScreenY: number;
     totalDelta: number;
@@ -52,6 +54,18 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setFeedOpen(false);
     setPlayOpen(false);
     setCareFlow(null);
+  };
+
+  const recordQaEvent = (
+    event: string,
+    payload: Record<string, unknown> = {}
+  ): void => {
+    void window.deskagotchi.recordQaEvent({
+      event,
+      source: "renderer",
+      windowRole: playActive ? "play-overlay" : "overlay",
+      payload
+    });
   };
 
   const closePlay = useCallback((): void => {
@@ -98,9 +112,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     }
 
     event.currentTarget.setPointerCapture(event.pointerId);
+    recordQaEvent("drag:start", {
+      pointer: {
+        x: event.screenX,
+        y: event.screenY
+      }
+    });
     dragState.current = {
       pointerId: event.pointerId,
       target: event.currentTarget,
+      originScreenX: event.screenX,
+      originScreenY: event.screenY,
       lastScreenX: event.screenX,
       lastScreenY: event.screenY,
       totalDelta: 0
@@ -125,6 +147,23 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     currentDrag.lastScreenX = event.screenX;
     currentDrag.lastScreenY = event.screenY;
     currentDrag.totalDelta += Math.abs(deltaX) + Math.abs(deltaY);
+    const scaleFactor = window.devicePixelRatio || 1;
+    const windowDeltaX = deltaX / scaleFactor;
+    const windowDeltaY = deltaY / scaleFactor;
+    recordQaEvent("drag:move", {
+      delta: {
+        x: deltaX,
+        y: deltaY
+      },
+      windowDelta: {
+        x: windowDeltaX,
+        y: windowDeltaY
+      },
+      pointer: {
+        x: event.screenX,
+        y: event.screenY
+      }
+    });
     if (currentDrag.totalDelta > 4) {
       suppressNextClick.current = true;
       setMenuOpen(false);
@@ -134,7 +173,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setPlayActive(false);
       setCareFlow(null);
     }
-    void window.deskagotchi.movePetWindow(deltaX, deltaY);
+    void window.deskagotchi.movePetWindow(windowDeltaX, windowDeltaY);
   };
 
   const finishDrag = (event: PointerEvent): void => {
@@ -149,6 +188,14 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     if (currentDrag.target.hasPointerCapture(event.pointerId)) {
       currentDrag.target.releasePointerCapture(event.pointerId);
     }
+    recordQaEvent("drag:end", {
+      totalDelta: {
+        x: event.screenX - currentDrag.originScreenX,
+        y: event.screenY - currentDrag.originScreenY,
+        absolute: currentDrag.totalDelta
+      },
+      menuOpen
+    });
     dragState.current = undefined;
     void window.deskagotchi.finishPetWindowDrag();
   };
@@ -165,6 +212,10 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         setFeedOpen(false);
         setPlayOpen(false);
         setCareFlow(null);
+        recordQaEvent("menu:open", {
+          reason: "pet-click",
+          duringDrag: false
+        });
       }
       return !current;
     });
@@ -176,6 +227,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setPlayOpen(false);
     setPlayActive(false);
     setCareFlow(null);
+    recordQaEvent("overlay:feed-open");
     setFeedOpen(true);
   };
 
@@ -184,6 +236,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setHealthOpen(false);
     setFeedOpen(false);
     setCareFlow(null);
+    recordQaEvent("overlay:play-open");
     setPlayOpen(true);
   };
 
@@ -193,6 +246,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setFeedOpen(false);
     setPlayOpen(false);
     setCareFlow(null);
+    recordQaEvent("play:enter");
     void window.deskagotchi
       .enterPetWindowPlayMode()
       .then(() => setPlayActive(true))
@@ -208,6 +262,9 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setFeedOpen(false);
     setPlayOpen(false);
     setCareFlow(null);
+    recordQaEvent("overlay:health-open", {
+      nextOpen: !healthOpen
+    });
     setHealthOpen((current) => !current);
   };
 
@@ -216,11 +273,14 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setHealthOpen(false);
     setFeedOpen(false);
     setPlayOpen(false);
+    recordQaEvent("overlay:care-flow-open", {
+      flow
+    });
     setCareFlow(flow);
   };
 
   return (
-    <main className="overlay-window">
+    <main className="overlay-window" data-testid="overlay-window">
       {playActive ? (
         <PlayStage
           snapshot={snapshot}
@@ -228,7 +288,11 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           onClose={closePlay}
         />
       ) : (
-        <section className="pet-drag-plane" aria-label="Deskagotchi overlay">
+        <section
+          className="pet-drag-plane"
+          aria-label="Deskagotchi overlay"
+          data-testid="pet-drag-plane"
+        >
           <PetSprite
             interactive
             snapshot={snapshot}
@@ -243,7 +307,11 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       ) : null}
 
       {menuOpen ? (
-        <nav className="overlay-actions" aria-label="Pet actions">
+        <nav
+          className="overlay-actions"
+          aria-label="Pet actions"
+          data-testid="overlay-actions"
+        >
           <ActionButton
             label="Feed"
             onClick={openFeed}
@@ -506,7 +574,11 @@ function OverlayHealthCard({
 }): React.JSX.Element {
   const stats = snapshot.activeState.stats;
   return (
-    <section className="overlay-health-card" aria-label="Pet health">
+    <section
+      className="overlay-health-card"
+      aria-label="Pet health"
+      data-testid="overlay-health-card"
+    >
       <HealthStat label="Hunger" value={stats.hunger} />
       <HealthStat label="Happy" value={stats.happiness} />
       <HealthStat label="Energy" value={stats.energy} />

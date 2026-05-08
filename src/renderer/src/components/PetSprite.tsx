@@ -63,6 +63,7 @@ export function PetSprite({
       className={interactive ? "pet-sprite pet-sprite--button" : "pet-sprite"}
       onClick={onClick}
       onPointerDown={onPointerDown}
+      data-testid={interactive ? "pet-sprite" : undefined}
       aria-label={`${snapshot.activeState.nickname} is ${snapshot.activeState.mood}`}
       style={{
         width: size,

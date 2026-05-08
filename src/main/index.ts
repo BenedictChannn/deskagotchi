@@ -4,12 +4,14 @@
  * Owns single-instance startup, privileged asset protocol registration, native
  * windows, tray actions, and the background simulation timer.
  */
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   app,
   BrowserWindow,
+  type BrowserWindowConstructorOptions,
   type IpcMainInvokeEvent,
   ipcMain,
   Menu,
@@ -32,6 +34,7 @@ import {
 import {
   IpcChannel,
   PanelView,
+  type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
 import { ItemCatalogEntrySchema } from "@shared/itemIcons";
@@ -85,6 +88,27 @@ const HatchDraftInputSchema = z
     theme: OptionalHatchTextSchema
   })
   .strict();
+const QaTelemetryInputSchema = z
+  .object({
+    event: z.string().trim().min(1).max(100),
+    source: z.string().trim().min(1).max(80).optional(),
+    windowRole: z.string().trim().min(1).max(80).optional(),
+    displayId: z.string().trim().min(1).max(120).optional(),
+    scaleFactor: z.number().finite().positive().optional(),
+    payload: z.record(z.unknown()).optional(),
+    error: z.string().trim().min(1).max(2000).optional()
+  })
+  .strict();
+
+interface QaConfig {
+  enabled: boolean;
+  runId: string;
+  runDir?: string;
+  userDataDir?: string;
+}
+
+const qaConfig = loadQaConfig();
+configureQaUserData(qaConfig);
 
 let runtime: DeskagotchiRuntime;
 let petWindow: BrowserWindow | undefined;
@@ -94,6 +118,7 @@ let isQuitting = false;
 let simulationTimer: NodeJS.Timeout | undefined;
 let playModePreviousBounds: Rectangle | undefined;
 let suppressPetWindowBoundsPersistence = false;
+let petWindowStartupMetadata: Record<string, unknown> = {};
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -107,6 +132,13 @@ if (!app.requestSingleInstanceLock()) {
     .whenReady()
     .then(async () => {
       app.setAppUserModelId("app.deskagotchi.desktop");
+      recordQaEvent({
+        event: "app:startup",
+        payload: {
+          appVersion: app.getVersion(),
+          userDataPath: app.getPath("userData")
+        }
+      });
       runtime = new DeskagotchiRuntime(getResourceRoot(), app.getPath("userData"));
       await runtime.initialize();
       const startupSnapshot = await runtime.getSnapshot();
@@ -118,6 +150,7 @@ if (!app.requestSingleInstanceLock()) {
       startSimulationTimer();
       powerMonitor.on("resume", () => void tickSimulation());
       powerMonitor.on("unlock-screen", () => void tickSimulation());
+      writeQaMetadata();
     })
     .catch((error: unknown) => {
       console.error(error);
@@ -133,6 +166,85 @@ app.on("window-all-closed", () => {
   // Keep the companion alive in the tray until the explicit quit command.
 });
 
+function loadQaConfig(): QaConfig {
+  const enabled = process.env.DESKAGOTCHI_QA === "1";
+  return {
+    enabled,
+    runId: process.env.DESKAGOTCHI_QA_RUN_ID ?? "manual-qa-run",
+    runDir: process.env.DESKAGOTCHI_QA_RUN_DIR,
+    userDataDir: process.env.DESKAGOTCHI_QA_USER_DATA_DIR
+  };
+}
+
+function configureQaUserData(config: QaConfig): void {
+  if (!config.enabled || config.userDataDir === undefined) {
+    return;
+  }
+  fs.mkdirSync(config.userDataDir, { recursive: true });
+  app.setPath("userData", config.userDataDir);
+}
+
+function recordQaEvent(input: QaTelemetryInput): void {
+  if (!qaConfig.enabled) {
+    return;
+  }
+
+  const event = {
+    runId: qaConfig.runId,
+    timestamp: new Date().toISOString(),
+    source: input.source ?? "main",
+    ...input
+  };
+
+  writeQaJsonLine("events.jsonl", event);
+}
+
+function writeQaJsonLine(filename: string, value: unknown): void {
+  if (qaConfig.runDir === undefined) {
+    return;
+  }
+  fs.mkdirSync(qaConfig.runDir, { recursive: true });
+  fs.appendFileSync(
+    path.join(qaConfig.runDir, filename),
+    `${JSON.stringify(value)}\n`,
+    "utf8"
+  );
+}
+
+function writeQaMetadata(): void {
+  if (!qaConfig.enabled || qaConfig.runDir === undefined) {
+    return;
+  }
+
+  fs.mkdirSync(qaConfig.runDir, { recursive: true });
+  const metadata = {
+    runId: qaConfig.runId,
+    timestamp: new Date().toISOString(),
+    appVersion: app.getVersion(),
+    platform: process.platform,
+    pid: process.pid,
+    runDir: qaConfig.runDir,
+    requestedUserDataDir: qaConfig.userDataDir,
+    resolvedUserDataPath: app.getPath("userData"),
+    savePath: path.join(app.getPath("userData"), "deskagotchi-save.json"),
+    rendererFilePath: getRendererFilePath(),
+    preloadPath: getPreloadPath(),
+    displays: screen.getAllDisplays().map((display) => ({
+      id: String(display.id),
+      bounds: display.bounds,
+      workArea: display.workArea,
+      scaleFactor: display.scaleFactor
+    })),
+    petWindow: petWindowStartupMetadata
+  };
+
+  fs.writeFileSync(
+    path.join(qaConfig.runDir, "metadata.json"),
+    `${JSON.stringify(metadata, null, 2)}\n`,
+    "utf8"
+  );
+}
+
 /**
  * Resolve the packaged or development resource directory.
  *
@@ -145,7 +257,7 @@ function getResourceRoot(): string {
 }
 
 function getPreloadPath(): string {
-  return path.join(__dirname, "../preload/index.mjs");
+  return path.join(__dirname, "../preload/index.cjs");
 }
 
 function getRendererFilePath(): string {
@@ -171,7 +283,8 @@ function createPetWindow(): void {
         }
       );
 
-      petWindow = new BrowserWindow({
+      const rendererUrl = createRendererUrl("overlay");
+      const petWindowOptions: BrowserWindowConstructorOptions = {
         x: bounds.x,
         y: bounds.y,
         width: bounds.width,
@@ -189,7 +302,27 @@ function createPetWindow(): void {
           nodeIntegration: false,
           sandbox: true
         }
+      };
+
+      petWindowStartupMetadata = {
+        role: "overlay",
+        initialBounds: bounds,
+        rendererUrl,
+        flags: {
+          frame: petWindowOptions.frame,
+          transparent: petWindowOptions.transparent,
+          resizable: petWindowOptions.resizable,
+          alwaysOnTop: petWindowOptions.alwaysOnTop,
+          skipTaskbar: petWindowOptions.skipTaskbar
+        }
+      };
+      recordQaEvent({
+        event: "window:create",
+        windowRole: "overlay",
+        payload: petWindowStartupMetadata
       });
+
+      petWindow = new BrowserWindow(petWindowOptions);
 
       petWindow.setMenu(null);
       petWindow.setVisibleOnAllWorkspaces(false);
@@ -204,8 +337,17 @@ function createPetWindow(): void {
       petWindow.webContents.on("did-finish-load", () => {
         petWindow?.show();
         petWindow?.moveTop();
+        recordQaEvent({
+          event: "window:ready",
+          windowRole: "overlay",
+          payload: {
+            bounds: petWindow?.getBounds(),
+            route: rendererUrl
+          }
+        });
+        writeQaMetadata();
       });
-      void petWindow.loadURL(createRendererUrl("overlay"));
+      void petWindow.loadURL(rendererUrl);
     })
     .catch((error) => {
       console.error(error);
@@ -385,6 +527,12 @@ function registerIpcHandlers(): void {
       { forward: true }
     );
   });
+  ipcMain.handle(IpcChannel.RecordQaEvent, (event, input: unknown) => {
+    validateIpcSender(event);
+    recordQaEvent(
+      parseIpcInput(QaTelemetryInputSchema, input, "QA telemetry event")
+    );
+  });
   ipcMain.handle(IpcChannel.HatchCreateDraft, async (event, input: unknown) => {
     validateIpcSender(event);
     const result = await runtime.hatchCreateDraft(
@@ -549,12 +697,22 @@ function showPetWindow(): void {
  */
 function resetPetWindow(): void {
   const { x, y } = defaultPetWindowBounds();
+  const previousBounds = petWindow?.getBounds();
   playModePreviousBounds = undefined;
   petWindow?.setBounds({
     x,
     y,
     width: PET_WINDOW_DEFAULT_SIZE,
     height: PET_WINDOW_DEFAULT_SIZE
+  });
+  recordQaEvent({
+    event: "window:setBounds",
+    windowRole: "overlay",
+    payload: {
+      from: previousBounds,
+      to: petWindow?.getBounds(),
+      reason: "reset"
+    }
   });
   petWindow?.show();
   petWindow?.moveTop();
@@ -575,13 +733,21 @@ function movePetWindow(delta: { deltaX: number; deltaY: number }): void {
   }
 
   const bounds = petWindow.getBounds();
-  petWindow.setBounds(
-    ensureVisibleBounds({
+  const nextBounds = ensureVisibleBounds({
       ...bounds,
       x: bounds.x + Math.round(delta.deltaX),
       y: bounds.y + Math.round(delta.deltaY)
-    })
-  );
+    });
+  petWindow.setBounds(nextBounds);
+  recordQaEvent({
+    event: "window:setBounds",
+    windowRole: "overlay",
+    payload: {
+      from: bounds,
+      to: nextBounds,
+      reason: "drag"
+    }
+  });
 }
 
 /**
@@ -597,7 +763,19 @@ function enterPetWindowPlayMode(): void {
   }
 
   const display = screen.getDisplayMatching(petWindow.getBounds());
+  const previousBounds = petWindow.getBounds();
   setPetWindowBoundsWithoutPersistence(display.workArea);
+  recordQaEvent({
+    event: "window:setBounds",
+    windowRole: "play-overlay",
+    displayId: String(display.id),
+    scaleFactor: display.scaleFactor,
+    payload: {
+      from: previousBounds,
+      to: display.workArea,
+      reason: "play-enter"
+    }
+  });
   petWindow.setIgnoreMouseEvents(false);
   petWindow.show();
   petWindow.moveTop();
@@ -614,7 +792,17 @@ async function exitPetWindowPlayMode(): Promise<void> {
 
   const restoreBounds = playModePreviousBounds;
   if (restoreBounds !== undefined) {
+    const previousBounds = petWindow.getBounds();
     setPetWindowBoundsWithoutPersistence(ensureVisibleBounds(restoreBounds));
+    recordQaEvent({
+      event: "window:setBounds",
+      windowRole: "overlay",
+      payload: {
+        from: previousBounds,
+        to: petWindow.getBounds(),
+        reason: "play-exit"
+      }
+    });
   }
   playModePreviousBounds = undefined;
   petWindow.show();
@@ -650,6 +838,15 @@ async function persistPetWindowBounds(options: { force?: boolean } = {}): Promis
   }
   const bounds = petWindow.getBounds();
   await runtime.updatePetWindowBounds(bounds);
+  recordQaEvent({
+    event: "window:persistBounds",
+    windowRole: "overlay",
+    payload: {
+      bounds,
+      profilePath: app.getPath("userData"),
+      savePath: path.join(app.getPath("userData"), "deskagotchi-save.json")
+    }
+  });
 }
 
 /**
@@ -719,6 +916,12 @@ function broadcastSnapshotUpdated(): void {
 }
 
 app.on("will-quit", () => {
+  recordQaEvent({
+    event: "app:quitForTest",
+    payload: {
+      pid: process.pid
+    }
+  });
   if (simulationTimer !== undefined) {
     clearInterval(simulationTimer);
   }

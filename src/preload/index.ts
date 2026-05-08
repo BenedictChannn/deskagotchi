@@ -7,6 +7,7 @@ import {
   type HatchDraftInput,
   IpcChannel,
   type PanelView,
+  type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
 
@@ -35,6 +36,8 @@ const api: DeskagotchiApi = {
     ipcRenderer.invoke(IpcChannel.ExitPetWindowPlayMode),
   setClickThrough: (enabled: boolean) =>
     ipcRenderer.invoke(IpcChannel.SetClickThrough, enabled),
+  recordQaEvent: (event: QaTelemetryInput) =>
+    ipcRenderer.invoke(IpcChannel.RecordQaEvent, event),
   hatchCreateDraft: (input: HatchDraftInput) =>
     ipcRenderer.invoke(IpcChannel.HatchCreateDraft, input),
   exportPet: (packageId: string) => ipcRenderer.invoke(IpcChannel.ExportPet, packageId),
