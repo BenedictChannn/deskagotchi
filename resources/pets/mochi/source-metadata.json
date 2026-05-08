@@ -1,0 +1,72 @@
+{
+  "petId": "mochi",
+  "assetHash": "4a4a4d6679c7b4109f89966d066188f7adfae74309a4c430206e1e5c035cedcf",
+  "chromaKey": "#FF00FF",
+  "palette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "frameSize": 96,
+  "baseSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbb65dcd081919b2ae8ceac123c50.png",
+  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbbf7ffb88191b0cc686a0f47eefb.png",
+  "cleaningSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbcc9909c8191b8e5c8fa95c9fcb2.png",
+  "rows": {
+    "idle": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Calm sit, blink, and tail-curl frames."
+    },
+    "happy": {
+      "frames": 6,
+      "fps": 7,
+      "qaNote": "Cheerful bounce, raised paw, and grin frames."
+    },
+    "sad": {
+      "frames": 6,
+      "fps": 4,
+      "qaNote": "Droopy lowered-head sad frames."
+    },
+    "hungry": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Hungry belly-hold frames."
+    },
+    "eating": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Tiny snack nibble frames."
+    },
+    "playing": {
+      "frames": 6,
+      "fps": 7,
+      "qaNote": "Playful paw and jump frames."
+    },
+    "sleeping": {
+      "frames": 6,
+      "fps": 2,
+      "qaNote": "Closed-eye curled sleeping frames."
+    },
+    "sick": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Droopy sick frames with small sweat details."
+    },
+    "cleaning": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Clean and recovered grooming frames."
+    },
+    "walking": {
+      "frames": 6,
+      "fps": 8,
+      "qaNote": "Side-facing walk cycle frames."
+    },
+    "attention": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Alert attention frames with a small open mouth."
+    }
+  }
+}

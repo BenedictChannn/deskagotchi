@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "packageId": "mochi",
+  "packageVersion": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "name": "Mochi",
+  "description": "A tiny playful monkey desk companion with retro-LCD sprite animations.",
+  "source": "built-in",
+  "species": "Monkey-like desk companion",
+  "personality": "Playful, curious, energetic, and quick to call for attention.",
+  "createdAt": "2026-05-08T00:00:00.000Z",
+  "assetVersion": "0.1.0",
+  "assets": {
+    "spritesheet": "spritesheet.png",
+    "preview": "preview.png",
+    "icon": "icon.png"
+  },
+  "animations": [
+    {
+      "id": "idle",
+      "row": 0,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true
+    },
+    {
+      "id": "happy",
+      "row": 1,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sad",
+      "row": 2,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 4,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "hungry",
+      "row": 3,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "eating",
+      "row": 4,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "playing",
+      "row": 5,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sleeping",
+      "row": 6,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 2,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sick",
+      "row": 7,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "cleaning",
+      "row": 8,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "walking",
+      "row": 9,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 8,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "attention",
+      "row": 10,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    }
+  ],
+  "growthStages": [
+    {
+      "id": "egg",
+      "stage": "egg",
+      "label": "Mochi Egg",
+      "minAgeHours": 0,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "baby",
+      "stage": "baby",
+      "label": "Baby Mochi",
+      "minAgeHours": 2,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "child",
+      "stage": "child",
+      "label": "Little Mochi",
+      "minAgeHours": 8,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "teen",
+      "stage": "teen",
+      "label": "Spry Mochi",
+      "minAgeHours": 30,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult",
+      "stage": "adult",
+      "label": "Mochi",
+      "minAgeHours": 72,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    }
+  ],
+  "preferredFoods": [
+    "tiny banana",
+    "rice ball",
+    "steamed bun"
+  ],
+  "dislikedFoods": [
+    "bitter peel"
+  ],
+  "favoritePlayStyle": "chase",
+  "careModifiers": {
+    "hungerDecayMultiplier": 1.05,
+    "happinessDecayMultiplier": 0.95,
+    "energyDecayMultiplier": 1.05,
+    "cleanlinessDecayMultiplier": 1.0,
+    "affectionGainMultiplier": 1.1
+  },
+  "colorPalette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "author": "Deskagotchi",
+  "license": "Original Deskagotchi imagegen-assisted retro-LCD pixel asset",
+  "capabilities": [
+    "mvp-animation",
+    "growth-v1",
+    "retro-lcd",
+    "imagegen-art",
+    "monkey"
+  ],
+  "validationStatus": "passed",
+  "assetHash": "4a4a4d6679c7b4109f89966d066188f7adfae74309a4c430206e1e5c035cedcf",
+  "generation": {
+    "mode": "imagegen",
+    "prompt": "Mochi is an original tiny monkey virtual pet with a round face, round ears, curled tail, playful retro Japanese mascot energy, and compact retro-LCD sprite animations. It does not copy Punch the Monkey characters, markings, proportions, poses, logos, or names.",
+    "referenceImageStored": false
+  }
+}
