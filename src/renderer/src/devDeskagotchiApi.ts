@@ -50,18 +50,24 @@ import peanutIconUrl from "../../../resources/pets/peanut/icon.png?url";
 import peanutManifest from "../../../resources/pets/peanut/pet.json";
 import peanutPreviewUrl from "../../../resources/pets/peanut/preview.png?url";
 import peanutSpritesheetUrl from "../../../resources/pets/peanut/spritesheet.png?url";
+import { shouldInstallDevDeskagotchiApi } from "./devBridgeGate";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
-const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const ITEM_MANIFEST = ItemIconManifestSchema.parse(itemManifestData);
 
 /**
  * Install a browser-only Deskagotchi bridge for Vite development.
  */
 export function installDevDeskagotchiApi(): void {
-  if (window.deskagotchi !== undefined || !DEV_HOSTS.has(window.location.hostname)) {
+  if (
+    !shouldInstallDevDeskagotchiApi(
+      window.location.hostname,
+      window.deskagotchi !== undefined,
+      window.navigator.userAgent
+    )
+  ) {
     return;
   }
 
