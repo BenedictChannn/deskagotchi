@@ -126,31 +126,21 @@ export class DeskagotchiRuntime {
   }
 
   /**
-   * Resolve the root directory for a loaded package.
-   *
-   * @param packageId - Pet package identifier.
-   * @returns Absolute package root, or undefined when the package is not loaded.
-   */
-  getPackageRoot(packageId: string): string | undefined {
-    return this.loadedPackages.find(
-      (loadedPackage) => loadedPackage.petPackage.packageId === packageId
-    )?.packageRoot;
-  }
-
-  /**
    * Resolve a package asset path after verifying the package is loaded.
    *
    * @param packageId - Pet package identifier.
    * @param relativeAssetPath - Asset path declared by the package manifest.
    * @returns Absolute file path to the asset.
-   * @throws Error when the package is unknown or the asset escapes its package root.
+   * @throws Error when the package is unknown, undeclared, or escapes its package root.
    */
   resolveAsset(packageId: string, relativeAssetPath: string): string {
-    const packageRoot = this.getPackageRoot(packageId);
-    if (packageRoot === undefined) {
-      throw new Error(`Unknown pet package '${packageId}'.`);
+    const loadedPackage = this.getPetPackage(packageId);
+    if (!isDeclaredPackageAsset(loadedPackage.petPackage, relativeAssetPath)) {
+      throw new Error(
+        `Asset path is not declared by package '${packageId}': ${relativeAssetPath}`
+      );
     }
-    return resolvePackageAssetPath(packageRoot, relativeAssetPath);
+    return resolvePackageAssetPath(loadedPackage.packageRoot, relativeAssetPath);
   }
 
   /**
@@ -694,6 +684,35 @@ function createRuntimeSimulationConfig(save: DeskagotchiSave): typeof DEFAULT_SI
     },
     healthPenaltyPerHour: DEFAULT_SIMULATION_CONFIG.healthPenaltyPerHour * 0.5
   };
+}
+
+/**
+ * Check whether a requested protocol asset is one of the package's declared files.
+ *
+ * @param petPackage - Package manifest that owns the asset declarations.
+ * @param relativeAssetPath - Requested package-relative asset path.
+ * @returns True when the path matches spritesheet, preview, or icon.
+ */
+function isDeclaredPackageAsset(
+  petPackage: PetPackage,
+  relativeAssetPath: string
+): boolean {
+  const normalizedPath = normalizeManifestAssetPath(relativeAssetPath);
+  return [
+    petPackage.assets.spritesheet,
+    petPackage.assets.preview,
+    petPackage.assets.icon
+  ].some((assetPath) => normalizeManifestAssetPath(assetPath) === normalizedPath);
+}
+
+/**
+ * Normalize package asset paths to match manifest paths across OS separators.
+ *
+ * @param relativeAssetPath - Package-relative asset path.
+ * @returns Slash-delimited path for manifest comparisons.
+ */
+function normalizeManifestAssetPath(relativeAssetPath: string): string {
+  return relativeAssetPath.replaceAll("\\", "/");
 }
 
 /**

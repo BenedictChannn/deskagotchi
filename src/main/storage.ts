@@ -23,12 +23,8 @@ export interface StoragePaths {
   backupSaveFile: string;
   /** Directory containing installed custom pet packages. */
   customPetsDir: string;
-  /** Directory reserved for generated hatch drafts. */
-  hatchDraftsDir: string;
   /** Directory where exported pet archives are written. */
   exportsDir: string;
-  /** Directory for temporary files created by storage operations. */
-  tempDir: string;
 }
 
 /**
@@ -43,9 +39,7 @@ export function createStoragePaths(userDataDir: string): StoragePaths {
     saveFile: path.join(userDataDir, "deskagotchi-save.json"),
     backupSaveFile: path.join(userDataDir, "deskagotchi-save.backup.json"),
     customPetsDir: path.join(userDataDir, "custom-pets"),
-    hatchDraftsDir: path.join(userDataDir, "hatch-drafts"),
-    exportsDir: path.join(userDataDir, "exports"),
-    tempDir: path.join(userDataDir, "tmp")
+    exportsDir: path.join(userDataDir, "exports")
   };
 }
 
@@ -58,9 +52,7 @@ export async function ensureStorageDirectories(paths: StoragePaths): Promise<voi
   await Promise.all([
     mkdir(paths.userDataDir, { recursive: true }),
     mkdir(paths.customPetsDir, { recursive: true }),
-    mkdir(paths.hatchDraftsDir, { recursive: true }),
-    mkdir(paths.exportsDir, { recursive: true }),
-    mkdir(paths.tempDir, { recursive: true })
+    mkdir(paths.exportsDir, { recursive: true })
   ]);
 }
 

@@ -119,21 +119,27 @@ option inside React components.
 The current renderer consumes this through `src/renderer/src/itemIconAssets.ts`
 and `src/renderer/src/components/ItemIcon.tsx`.
 
-## Lightweight Validation Plan
+## Lightweight Validation
 
-The current validator checks package paths and manifest shape. Production asset
-work should extend validation with these checks:
+The current package validator already enforces:
 
-- Referenced asset file exists.
+- Referenced package asset files exist.
 - File extension is allowed: `.png`, `.webp`, or `.svg` for legacy placeholders.
+- Package asset paths cannot escape the package root.
+- Package files cannot include executable/script payloads.
+- Package assets stay under the current file-size safety limit.
+- Required MVP animation ids exist: `idle`, `happy`, `walking`, `sleeping`, and `sick`.
+- Animation fallbacks reference declared animations.
+- Each growth-stage animation set references only declared animations.
+- Growth-stage care-score ranges are not inverted.
+
+Production asset QA should still add visual and atlas checks:
+
 - Atlas dimensions divide cleanly by frame or cell size.
 - Animation rows fit inside the atlas height.
 - Frame counts fit inside the atlas width.
 - Transparent corners remain transparent for pet sprites and icons.
-- File sizes stay under the current budget or emit a warning.
-- Required MVP animation ids exist: `idle`, `happy`, `sleeping`, `sick`, and
-  `walking` once walking mood/runtime behavior is enabled.
-- Each growth-stage animation set references only declared animations.
+- Contact sheets match the current committed assets and are nonblank.
 
 ## Built-In Versus Hatch Assets
 

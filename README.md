@@ -13,12 +13,13 @@ The app runs as a small transparent frameless pet window with tray controls, loc
 - Crash-safe local save file with backup recovery.
 - Deterministic simulation with offline progression caps.
 - Stats for hunger, happiness, energy, cleanliness, health, affection, discipline, age, weight, mood, care history, illness, and messes.
-- Built-in original placeholder roster:
-  - Deskcat
-  - Deskdog
-  - Deskduck
-  - Deskblob
-- Deskcat includes multiple care-based growth variants.
+- Built-in original pet roster:
+  - Bao, a shih tzu companion
+  - Miso, a cat companion
+  - Mochi, a monkey companion
+  - Peanut, an elephant companion
+  - Deskcat, Deskdog, Deskduck, and Deskblob legacy placeholder companions
+- Deskcat includes multiple care-based growth variants; imagegen-assisted pets ship with the full MVP animation row set.
 - Shared package schema for built-in and custom pets.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
 - Local Hatch draft creator with prompt/IP guardrails.
@@ -125,9 +126,7 @@ The app stores:
 - `deskagotchi-save.json`
 - `deskagotchi-save.backup.json`
 - `custom-pets/`
-- `hatch-drafts/`
 - `exports/`
-- `tmp/`
 
 The settings panel displays the resolved local data path.
 
@@ -157,20 +156,25 @@ Important `pet.json` fields:
 - `source`
 - `species`
 - `personality`
+- `createdAt`
+- `assetVersion`
 - `assets`
 - `animations`
 - `growthStages`
 - `preferredFoods`
 - `dislikedFoods`
+- `foodPreferences`
 - `favoritePlayStyle`
 - `careModifiers`
 - `colorPalette`
+- `author`
+- `license`
 - `capabilities`
 - `validationStatus`
 - `assetHash`
 - `generation`
 
-Imported packages are treated as untrusted. Archives are rejected if they contain unsafe paths, oversized entries, executable/script files, invalid manifests, missing assets, or wrong package source metadata.
+Imported packages are treated as untrusted. Archives are rejected if they contain unsafe paths, oversized entries, executable/script files, invalid manifests, missing assets, duplicate package ids, or wrong package source metadata.
 
 ## Hatch MVP
 
@@ -210,7 +214,7 @@ Preferred flow:
 For a fully featured built-in pet, include:
 
 - Egg, baby, child, teen, and adult growth stages.
-- At least idle, happy, sleeping, and sick animations.
+- At least idle, happy, walking, sleeping, and sick animations.
 - Prefer the full animation set:
   - idle
   - happy
@@ -229,7 +233,7 @@ For a fully featured built-in pet, include:
 - `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, Hatch draft creation.
 - `src/preload/`: Typed IPC bridge.
 - `src/renderer/`: Overlay and panel React UI.
-- `src/shared/`: Domain schemas, package validation, IPC types, deterministic simulation.
+- `src/shared/`: Domain schemas, Hatch validation, package validation, IPC types, deterministic simulation.
 - `resources/pets/`: Built-in pet packages.
 - `resources/items/`: Built-in item icon atlases and care item manifests.
 - `scripts/`: Reproducible placeholder asset generation.

@@ -169,6 +169,14 @@ describe("asset URLs", () => {
       "deskagotchi://pet-asset/deskdog/spritesheet.png?v=hash%20v3"
     );
   });
+
+  it("rejects package-root files that are not declared assets", async () => {
+    const { runtime } = await createInitializedRuntime();
+
+    expect(() => runtime.resolveAsset("deskcat", "pet.json")).toThrow(
+      "not declared"
+    );
+  });
 });
 
 async function createInitializedRuntime(): Promise<{
