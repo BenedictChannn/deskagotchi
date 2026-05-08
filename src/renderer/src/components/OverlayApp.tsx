@@ -618,6 +618,8 @@ function FeedPicker({
             className={feedItemClassName(foodPreferenceForPet(petPackage, item.id))}
             type="button"
             data-testid="overlay-feed-item"
+            data-icon-id={item.iconId}
+            data-item-id={item.id}
             onClick={() => onSelect(item)}
             title={describeFoodItem(item)}
           >

@@ -86,6 +86,8 @@ export function PetSprite({
         <span
           className="pet-sprite__food-cue"
           data-testid="pet-food-cue"
+          data-icon-id={eatingItem.iconId}
+          data-item-id={eatingItem.id}
           aria-hidden="true"
           style={{
             "--food-cue-x": `${eatingAnchor.x * 100}%`,

@@ -11,6 +11,7 @@ const LOGICAL_SIZE = 24;
 const SCALE = 2;
 const CELL_SIZE = LOGICAL_SIZE * SCALE;
 const COLUMNS = 6;
+const FOOD_CONTACT_COLUMNS = 4;
 
 const colors = {
   transparent: [0, 0, 0, 0],
@@ -147,6 +148,33 @@ export async function generateLcdItemIcons() {
     blit(renderIcon(entry.id), contactSheet, x, y);
   }
 
+  const foodItems = items.filter(
+    (entry) => entry.category === "meal" || entry.category === "snack"
+  );
+  const foodContactRows = Math.ceil(foodItems.length / FOOD_CONTACT_COLUMNS);
+  const foodContactSheet = createCanvas(
+    4 + FOOD_CONTACT_COLUMNS * (CELL_SIZE + 4),
+    4 + foodContactRows * (CELL_SIZE + 4)
+  );
+  fillRect(
+    foodContactSheet,
+    colors.paperBg,
+    0,
+    0,
+    foodContactSheet.width,
+    foodContactSheet.height
+  );
+  for (const [index, entry] of foodItems.entries()) {
+    const iconEntry = icons.find((candidate) => candidate.id === entry.iconId);
+    if (iconEntry === undefined) {
+      continue;
+    }
+    const x = 4 + (index % FOOD_CONTACT_COLUMNS) * (CELL_SIZE + 4);
+    const y = 4 + Math.floor(index / FOOD_CONTACT_COLUMNS) * (CELL_SIZE + 4);
+    fillRect(foodContactSheet, colors.lcdBg, x, y, CELL_SIZE, CELL_SIZE);
+    blit(renderIcon(iconEntry.id), foodContactSheet, x, y);
+  }
+
   await writeFile(path.join(itemRoot, "items.png"), encodePng(atlas));
   await writeFile(
     path.join(itemRoot, "items.json"),
@@ -156,6 +184,10 @@ export async function generateLcdItemIcons() {
     path.join(qaRoot, "lcd-item-icons-contact-sheet.png"),
     encodePng(contactSheet)
   );
+  await writeFile(
+    path.join(qaRoot, "lcd-food-icons-contact-sheet.png"),
+    encodePng(foodContactSheet)
+  );
 }
 
 function createManifest() {
@@ -164,7 +196,7 @@ function createManifest() {
     itemSetId: "lcd-core",
     name: "Deskagotchi LCD Core Items",
     description: "Original monochrome LCD item icons for MVP care interactions.",
-    assetVersion: "0.1.0",
+    assetVersion: "0.2.0",
     atlas: "items.png",
     cellWidth: CELL_SIZE,
     cellHeight: CELL_SIZE,
@@ -317,21 +349,29 @@ function renderIcon(id) {
 }
 
 function bowl(draw) {
-  draw(colors.lcdInk, 5, 14, 14, 2);
-  draw(colors.lcdInk, 6, 16, 12, 2);
-  draw(colors.lcdInk, 8, 18, 8, 2);
-  draw(colors.lcdBg, 7, 13, 10, 1);
-  draw(colors.lcdMid, 8, 12, 2, 1);
-  draw(colors.lcdMid, 12, 12, 2, 1);
+  draw(colors.lcdInk, 4, 12, 16, 2);
+  draw(colors.lcdInk, 5, 14, 14, 3);
+  draw(colors.lcdInk, 7, 17, 10, 2);
+  draw(colors.lcdBg, 6, 13, 12, 1);
+  draw(colors.lcdMid, 7, 10, 2, 2);
+  draw(colors.lcdMid, 11, 9, 2, 2);
+  draw(colors.lcdMid, 15, 10, 2, 2);
+  draw(colors.lcdInk, 8, 11, 1, 1);
+  draw(colors.lcdInk, 13, 10, 1, 1);
+  draw(colors.lcdInk, 16, 11, 1, 1);
 }
 
 function riceBall(draw) {
   draw(colors.lcdInk, 10, 5, 4, 1);
-  draw(colors.lcdInk, 8, 6, 8, 2);
-  draw(colors.lcdInk, 7, 8, 10, 7);
+  draw(colors.lcdInk, 9, 6, 6, 1);
+  draw(colors.lcdInk, 8, 7, 8, 2);
+  draw(colors.lcdInk, 7, 9, 10, 6);
   draw(colors.lcdInk, 8, 15, 8, 2);
   draw(colors.lcdBg, 9, 7, 6, 8);
-  draw(colors.lcdMid, 11, 11, 2, 2);
+  draw(colors.lcdInk, 10, 9, 1, 1);
+  draw(colors.lcdMid, 13, 10, 1, 1);
+  draw(colors.lcdInk, 12, 13, 1, 1);
+  draw(colors.lcdInk, 9, 15, 6, 3);
 }
 
 function breadPlate(draw) {
@@ -344,36 +384,45 @@ function breadPlate(draw) {
 }
 
 function dumpling(draw) {
-  draw(colors.lcdInk, 6, 12, 12, 5);
-  draw(colors.lcdInk, 8, 9, 8, 3);
+  draw(colors.lcdInk, 5, 12, 14, 5);
+  draw(colors.lcdInk, 7, 9, 10, 3);
+  draw(colors.lcdInk, 9, 7, 6, 2);
   draw(colors.lcdBg, 7, 13, 10, 3);
-  draw(colors.lcdMid, 9, 10, 1, 2);
-  draw(colors.lcdMid, 12, 10, 1, 2);
-  draw(colors.lcdMid, 15, 11, 1, 1);
+  draw(colors.lcdMid, 8, 11, 1, 2);
+  draw(colors.lcdMid, 11, 9, 1, 3);
+  draw(colors.lcdMid, 14, 9, 1, 3);
+  draw(colors.lcdMid, 17, 12, 1, 1);
 }
 
 function biscuit(draw) {
   draw(colors.lcdInk, 7, 7, 10, 10);
+  draw(colors.lcdInk, 6, 9, 1, 6);
+  draw(colors.lcdInk, 17, 9, 1, 6);
   draw(colors.lcdBg, 8, 8, 8, 8);
-  draw(colors.lcdInk, 10, 10, 1, 1);
+  draw(colors.lcdInk, 9, 10, 1, 1);
   draw(colors.lcdInk, 14, 10, 1, 1);
-  draw(colors.lcdInk, 12, 13, 1, 1);
+  draw(colors.lcdInk, 11, 13, 1, 1);
+  draw(colors.lcdMid, 15, 14, 1, 1);
 }
 
 function candy(draw) {
-  draw(colors.lcdInk, 4, 10, 4, 4);
-  draw(colors.lcdInk, 16, 10, 4, 4);
+  draw(colors.lcdInk, 3, 10, 5, 4);
+  draw(colors.lcdInk, 16, 10, 5, 4);
   draw(colors.lcdInk, 8, 8, 8, 8);
   draw(colors.lcdBg, 9, 9, 6, 6);
   draw(colors.lcdMid, 11, 9, 2, 6);
+  draw(colors.lcdInk, 5, 9, 2, 1);
+  draw(colors.lcdInk, 17, 14, 2, 1);
 }
 
 function cake(draw) {
-  draw(colors.lcdInk, 6, 9, 12, 9);
-  draw(colors.lcdBg, 7, 10, 10, 3);
-  draw(colors.lcdMid, 7, 14, 10, 3);
-  draw(colors.lcdInk, 10, 6, 1, 3);
-  draw(colors.lcdInk, 14, 6, 1, 3);
+  draw(colors.lcdInk, 5, 10, 14, 8);
+  draw(colors.lcdInk, 8, 7, 8, 3);
+  draw(colors.lcdBg, 6, 11, 12, 2);
+  draw(colors.lcdMid, 6, 14, 12, 3);
+  draw(colors.lcdInk, 11, 5, 1, 3);
+  draw(colors.lcdInk, 14, 5, 1, 3);
+  draw(colors.lcdMid, 9, 8, 2, 1);
 }
 
 function ball(draw) {
@@ -525,90 +574,104 @@ function face(draw) {
 }
 
 function appleSlice(draw) {
-  draw(colors.lcdInk, 7, 7, 10, 10);
-  draw(colors.lcdInk, 11, 5, 4, 2);
-  draw(colors.lcdBg, 8, 8, 8, 8);
+  draw(colors.lcdInk, 7, 8, 10, 9);
+  draw(colors.lcdInk, 10, 6, 5, 2);
+  draw(colors.lcdBg, 8, 9, 8, 7);
   draw(colors.transparent, 13, 10, 3, 5);
   draw(colors.lcdMid, 9, 12, 3, 2);
-  draw(colors.lcdInk, 9, 9, 1, 1);
+  draw(colors.lcdInk, 9, 10, 1, 1);
+  draw(colors.lcdInk, 14, 6, 2, 1);
 }
 
 function fishBite(draw) {
-  draw(colors.lcdInk, 5, 10, 11, 5);
-  draw(colors.lcdInk, 16, 8, 4, 9);
-  draw(colors.lcdBg, 7, 11, 8, 3);
-  draw(colors.lcdInk, 8, 11, 1, 1);
+  draw(colors.lcdInk, 4, 10, 12, 5);
+  draw(colors.lcdInk, 16, 8, 5, 9);
+  draw(colors.lcdBg, 6, 11, 9, 3);
+  draw(colors.lcdInk, 7, 11, 1, 1);
   draw(colors.lcdMid, 12, 10, 2, 5);
+  draw(colors.lcdInk, 18, 10, 1, 5);
 }
 
 function milk(draw) {
-  draw(colors.lcdInk, 9, 5, 6, 2);
+  draw(colors.lcdInk, 9, 4, 6, 3);
   draw(colors.lcdInk, 8, 7, 8, 13);
   draw(colors.lcdBg, 9, 8, 6, 10);
-  draw(colors.lcdMid, 10, 11, 4, 4);
+  draw(colors.lcdMid, 10, 12, 4, 4);
   draw(colors.lcdInk, 10, 13, 4, 1);
+  draw(colors.lcdMid, 11, 5, 2, 2);
 }
 
 function banana(draw) {
-  draw(colors.lcdInk, 6, 13, 3, 3);
-  draw(colors.lcdInk, 8, 10, 4, 5);
-  draw(colors.lcdInk, 12, 8, 5, 4);
-  draw(colors.lcdInk, 16, 7, 2, 2);
-  draw(colors.lcdBg, 9, 11, 4, 3);
-  draw(colors.lcdBg, 13, 9, 3, 2);
-  draw(colors.lcdMid, 10, 14, 5, 1);
+  draw(colors.lcdInk, 5, 14, 3, 3);
+  draw(colors.lcdInk, 7, 11, 4, 5);
+  draw(colors.lcdInk, 11, 8, 6, 5);
+  draw(colors.lcdInk, 17, 7, 2, 2);
+  draw(colors.lcdBg, 8, 12, 4, 3);
+  draw(colors.lcdBg, 12, 10, 4, 2);
+  draw(colors.lcdMid, 9, 15, 6, 1);
+  draw(colors.lcdMid, 14, 9, 2, 1);
 }
 
 function leafyBundle(draw) {
-  draw(colors.lcdInk, 6, 11, 6, 6);
-  draw(colors.lcdInk, 12, 8, 6, 8);
-  draw(colors.lcdInk, 8, 7, 5, 7);
-  draw(colors.lcdBg, 8, 12, 3, 3);
-  draw(colors.lcdBg, 13, 10, 3, 4);
-  draw(colors.lcdMid, 10, 15, 6, 2);
+  draw(colors.lcdInk, 5, 11, 6, 7);
+  draw(colors.lcdInk, 12, 8, 7, 8);
+  draw(colors.lcdInk, 8, 7, 5, 8);
+  draw(colors.lcdBg, 7, 12, 3, 4);
+  draw(colors.lcdBg, 13, 10, 4, 4);
+  draw(colors.lcdBg, 10, 8, 2, 5);
+  draw(colors.lcdMid, 9, 16, 8, 2);
+  draw(colors.lcdInk, 11, 17, 2, 2);
 }
 
 function sugarcane(draw) {
-  draw(colors.lcdInk, 8, 6, 3, 14);
-  draw(colors.lcdInk, 13, 5, 3, 14);
-  draw(colors.lcdBg, 9, 7, 1, 12);
-  draw(colors.lcdBg, 14, 6, 1, 12);
-  draw(colors.lcdMid, 7, 10, 5, 1);
-  draw(colors.lcdMid, 12, 14, 5, 1);
+  draw(colors.lcdInk, 7, 5, 3, 15);
+  draw(colors.lcdInk, 13, 4, 3, 15);
+  draw(colors.lcdBg, 8, 6, 1, 13);
+  draw(colors.lcdBg, 14, 5, 1, 13);
+  draw(colors.lcdMid, 6, 9, 5, 1);
+  draw(colors.lcdMid, 12, 8, 5, 1);
+  draw(colors.lcdMid, 6, 14, 5, 1);
+  draw(colors.lcdMid, 12, 13, 5, 1);
 }
 
 function melonSlice(draw) {
-  draw(colors.lcdInk, 5, 12, 14, 5);
-  draw(colors.lcdInk, 7, 9, 10, 3);
-  draw(colors.lcdBg, 7, 12, 10, 3);
-  draw(colors.lcdMid, 8, 10, 8, 2);
-  draw(colors.lcdInk, 10, 13, 1, 1);
-  draw(colors.lcdInk, 14, 13, 1, 1);
+  draw(colors.lcdInk, 4, 12, 16, 5);
+  draw(colors.lcdInk, 6, 9, 12, 3);
+  draw(colors.lcdBg, 6, 12, 12, 3);
+  draw(colors.lcdMid, 7, 10, 10, 2);
+  draw(colors.lcdInk, 9, 13, 1, 1);
+  draw(colors.lcdInk, 13, 13, 1, 1);
+  draw(colors.lcdInk, 16, 14, 1, 1);
 }
 
 function chickenBite(draw) {
-  draw(colors.lcdInk, 7, 9, 10, 8);
-  draw(colors.lcdInk, 15, 7, 4, 3);
-  draw(colors.lcdBg, 8, 10, 8, 6);
-  draw(colors.lcdMid, 11, 9, 3, 2);
-  draw(colors.lcdInk, 9, 17, 6, 1);
+  draw(colors.lcdInk, 6, 10, 11, 7);
+  draw(colors.lcdInk, 15, 7, 5, 4);
+  draw(colors.lcdBg, 7, 11, 9, 5);
+  draw(colors.lcdMid, 10, 10, 4, 2);
+  draw(colors.lcdInk, 8, 17, 8, 1);
+  draw(colors.lcdInk, 18, 6, 2, 2);
 }
 
 function steamedBun(draw) {
-  draw(colors.lcdInk, 6, 11, 12, 7);
-  draw(colors.lcdInk, 8, 8, 8, 3);
-  draw(colors.lcdBg, 7, 12, 10, 5);
-  draw(colors.lcdMid, 9, 9, 1, 3);
-  draw(colors.lcdMid, 12, 8, 1, 3);
-  draw(colors.lcdMid, 15, 10, 1, 2);
+  draw(colors.lcdInk, 5, 11, 14, 7);
+  draw(colors.lcdInk, 7, 8, 10, 3);
+  draw(colors.lcdInk, 10, 6, 4, 2);
+  draw(colors.lcdBg, 6, 12, 12, 5);
+  draw(colors.lcdMid, 8, 10, 1, 3);
+  draw(colors.lcdMid, 11, 8, 1, 4);
+  draw(colors.lcdMid, 14, 8, 1, 4);
+  draw(colors.lcdMid, 17, 11, 1, 1);
 }
 
 function mangoCube(draw) {
-  draw(colors.lcdInk, 8, 8, 9, 9);
-  draw(colors.lcdBg, 9, 9, 7, 7);
+  draw(colors.lcdInk, 7, 8, 10, 9);
+  draw(colors.lcdInk, 9, 6, 5, 2);
+  draw(colors.lcdBg, 8, 9, 8, 7);
   draw(colors.lcdMid, 11, 9, 5, 2);
-  draw(colors.lcdInk, 7, 11, 2, 3);
+  draw(colors.lcdInk, 6, 11, 2, 3);
   draw(colors.lcdInk, 16, 13, 2, 3);
+  draw(colors.lcdMid, 9, 14, 3, 1);
 }
 
 function sparkle(draw, x, y) {

@@ -33,6 +33,7 @@ export function ItemIcon({
   return (
     <span
       className="item-icon"
+      data-icon-id={iconId}
       aria-hidden="true"
       style={{
         width: size,

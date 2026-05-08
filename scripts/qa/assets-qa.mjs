@@ -24,6 +24,7 @@ function main() {
   if (MODE === "items") {
     assertFile("resources/items/lcd-core/items.json");
     assertFile("docs/qa/lcd-item-icons-contact-sheet.png");
+    assertFile("docs/qa/lcd-food-icons-contact-sheet.png");
     console.log("Item asset QA passed.");
     return;
   }

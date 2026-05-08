@@ -305,11 +305,17 @@ async function runOverlayScenario(run, app) {
     "[data-testid='overlay-feed-picker']",
     "feed picker"
   );
-  await page.locator("[data-testid='overlay-feed-item']").first().click();
-  await page.waitForSelector("[data-testid='pet-food-cue']", { timeout: 5_000 });
-  run.pass("eating feedback shows selected food cue");
+  await selectFoodAndAssertCue(run, page, page.locator("[data-testid='overlay-feed-item']").first(), "meal");
   await page.screenshot({ path: path.join(run.runDir, "overlay-eating.png") });
   run.artifact("overlay-eating.png");
+
+  await page.locator("[data-testid='pet-sprite']").click();
+  await page.waitForSelector("[data-testid='overlay-actions']", { timeout: 5_000 });
+  await page.locator("button[title='Feed']").click();
+  await page.waitForSelector("[data-testid='overlay-feed-picker']", { timeout: 5_000 });
+  await page.getByRole("tab", { name: "Snack" }).click();
+  await selectFoodAndAssertCue(run, page, page.locator("[data-testid='overlay-feed-item']").first(), "snack");
+
   await page.locator("[data-testid='pet-sprite']").click();
   await page.waitForSelector("[data-testid='overlay-actions']", { timeout: 5_000 });
 
@@ -328,6 +334,31 @@ async function runOverlayScenario(run, app) {
   windows.length === 1
     ? run.pass("overlay health did not open a panel window")
     : run.fail("overlay health did not open a panel window", { windowCount: windows.length });
+}
+
+async function selectFoodAndAssertCue(run, page, foodLocator, label) {
+  const expectedIconId = await foodLocator.getAttribute("data-icon-id");
+  const expectedItemId = await foodLocator.getAttribute("data-item-id");
+  await foodLocator.click();
+  const foodCue = page.locator(
+    `[data-testid='pet-food-cue'][data-icon-id='${expectedIconId}'][data-item-id='${expectedItemId}']`
+  );
+  await foodCue.waitFor({ timeout: 5_000 });
+  const actualIconId = await foodCue.getAttribute("data-icon-id");
+  const actualItemId = await foodCue.getAttribute("data-item-id");
+  if (actualIconId === expectedIconId && actualItemId === expectedItemId) {
+    run.pass(`${label} eating feedback uses selected food cue`, {
+      iconId: actualIconId,
+      itemId: actualItemId
+    });
+    return;
+  }
+  run.fail(`${label} eating feedback uses selected food cue`, {
+    expectedIconId,
+    expectedItemId,
+    actualIconId,
+    actualItemId
+  });
 }
 
 async function runPlayScenario(run, app) {
