@@ -62,6 +62,21 @@ async function main() {
     await page.locator("#export-status").waitFor({ state: "visible", timeout: 10000 });
     recordPass(checks, "manual acceptance page loaded");
 
+    const closeoutTargetText = await page.locator(".section").filter({
+      hasText: "Closeout Target"
+    }).innerText();
+    assertIncludes(
+      closeoutTargetText,
+      "docs/qa/v2-manual-acceptance-export.json",
+      "closeout target path"
+    );
+    assertIncludes(
+      closeoutTargetText,
+      "npm.cmd run qa:v2:closeout",
+      "closeout target command"
+    );
+    recordPass(checks, "manual acceptance page shows closeout target path");
+
     const gateCount = await page.locator("[data-check]").count();
     assertEqual(gateCount, 19, "manual gate count");
     recordPass(checks, "manual gate count matched", { gateCount });

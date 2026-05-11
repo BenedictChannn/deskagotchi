@@ -420,6 +420,15 @@
       <section class="section">
         <h2>Export</h2>
         <p class="summary">Use this JSON as the manual evidence blob in the V2 audit or PR notes. Checked gates mean tested and passed. Deferred gates require a rationale and an approver in the run context.</p>
+        <div class="card">
+          <h3>Closeout Target</h3>
+          <p class="status-line">
+            Save or move the exported JSON to `docs/qa/v2-manual-acceptance-export.json`,
+            then run `npm.cmd run qa:v2:audit -- --manual docs\qa\v2-manual-acceptance-export.json`.
+            Strict closeout still requires committing the export and refreshed report before
+            `npm.cmd run qa:v2:closeout` can pass.
+          </p>
+        </div>
         <h3>Accepted Deferrals</h3>
         <p class="summary">Use these only when a gate is explicitly accepted as out of scope for this V2 release. A deferred gate without rationale or approver still blocks closeout.</p>
         <div class="deferral-grid" id="deferral-grid"></div>

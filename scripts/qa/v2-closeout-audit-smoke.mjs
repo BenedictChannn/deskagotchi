@@ -109,6 +109,7 @@ const AUTOMATED_FIXTURES = [
     suffix: "manual-page",
     checks: [
       "manual acceptance page loaded",
+      "manual acceptance page shows closeout target path",
       "manual gate count matched",
       "blank run context blocks manual pass",
       "embedded manual context prefills without resolving gates",

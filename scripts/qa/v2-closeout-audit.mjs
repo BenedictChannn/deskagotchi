@@ -117,6 +117,7 @@ const AUTOMATED_SCENARIOS = [
     suffix: "manual-page",
     requiredChecks: [
       "manual acceptance page loaded",
+      "manual acceptance page shows closeout target path",
       "manual gate count matched",
       "blank run context blocks manual pass",
       "embedded manual context prefills without resolving gates",
