@@ -54,6 +54,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
 | `npm.cmd run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
 | `npm.cmd run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
+| `npm.cmd run qa:v2:manual-status` | Printing the current manual acceptance status, acceptance page URL, export path, blocker counts, and next commands without failing the shell when gates are still open. |
 | `npm.cmd run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
 | `npm.cmd run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
 | `npm.cmd run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
@@ -103,12 +104,15 @@ fields without checking any gate.
 Before final closeout, run:
 
 ```powershell
+npm.cmd run qa:v2:manual-status
 npm.cmd run qa:v2:manual-preflight
 ```
 
-This writes a focused manual blocker report under `.qa-runs/` and exits
-non-zero until the manual JSON exists and the closeout audit has no unresolved
-manual blockers.
+`manual-status` is the quick non-failing progress check. It reports the latest
+acceptance page, expected export path, current blocker counts, and next
+commands. `manual-preflight` is the stricter gate; it writes a focused manual
+blocker report under `.qa-runs/` and exits non-zero until the manual JSON
+exists and the closeout audit has no unresolved manual blockers.
 
 Use `docs/qa/v2-manual-acceptance-runbook.md` while executing the checklist.
 It maps every manual gate ID to the required physical action, evidence note,
