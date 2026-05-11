@@ -288,6 +288,11 @@
           <label class="field">Installer path <input data-field="installerPath" type="text" placeholder="release/Deskagotchi Setup 0.1.0.exe" /></label>
           <label class="field">Accepted out of scope by <input data-field="acceptedOutOfScopeBy" type="text" placeholder="Required only when deferring a gate" /></label>
         </div>
+        <p class="warning">
+          Keep the imported build and installer path unchanged. If either one is
+          wrong, rerun `npm.cmd run qa:v2:manual-context`; closeout rejects
+          hand-edited or stale manual context identity.
+        </p>
         <div class="actions">
           <a href="./v2-completion-audit.md">Completion audit</a>
           <a href="./v2-manual-acceptance-runbook.md">Manual runbook</a>
@@ -628,7 +633,7 @@
         const contextFailureCount = fieldFailures.length + evidenceFailures.length + conflictFailures.length;
         const fieldStatus = fieldFailures.length === 0
           ? "Required run context complete."
-          : `${fieldFailures.length} required run context field${fieldFailures.length === 1 ? "" : "s"} missing.`;
+          : `${fieldFailures.length} required run context issue${fieldFailures.length === 1 ? "" : "s"}.`;
         const evidenceStatus = evidenceFailures.length === 0
           ? "Required evidence notes complete."
           : `${evidenceFailures.length} required evidence note${evidenceFailures.length === 1 ? "" : "s"} missing.`;
@@ -646,8 +651,31 @@
         const failures = requiredManualFields
           .filter((fieldName) => !state.fields[fieldName]?.trim())
           .map((fieldName) => `Missing run context field: ${fieldLabels[fieldName] || fieldName}`);
+        failures.push(...buildContextIdentityFailures(state));
         if (hasDeferrals && !state.fields.acceptedOutOfScopeBy?.trim()) {
           failures.push("Missing run context field: Accepted out of scope by");
+        }
+        return failures;
+      }
+
+      function buildContextIdentityFailures(state) {
+        if (!currentManualContextSignature) {
+          return [];
+        }
+
+        const signatureParts = currentManualContextSignature.split("|");
+        if (signatureParts.length < 4) {
+          return ["Imported manual context signature is malformed."];
+        }
+
+        const expectedBuild = signatureParts[2];
+        const expectedInstallerPath = signatureParts[3];
+        const failures = [];
+        if ((state.fields.build || "").trim() !== expectedBuild) {
+          failures.push("Deskagotchi build changed after manual context import.");
+        }
+        if ((state.fields.installerPath || "").trim() !== expectedInstallerPath) {
+          failures.push("Installer path changed after manual context import.");
         }
         return failures;
       }

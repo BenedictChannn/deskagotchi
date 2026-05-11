@@ -53,11 +53,12 @@ import box and click `Apply Context`.
 
 Both paths only fill run context and note starters; neither checks any gates.
 
-Keep the generated `Build` field unchanged. The closeout audit verifies that
-the exported build contains the current `package.json` version, a real Git
-commit from this repository, and the same value embedded in the manual context
-signature. If you need to test a newer build, rerun
-`npm.cmd run qa:v2:manual-context` instead of editing the field by hand.
+Keep the generated `Build` and `Installer path` fields unchanged. The closeout
+audit verifies that the exported build contains the current `package.json`
+version, a real Git commit from this repository, and the same build and
+installer path embedded in the manual context signature. If you need to test a
+newer build or installer, rerun `npm.cmd run qa:v2:manual-context` instead of
+editing either field by hand.
 After that build is tested, only documentation/evidence commits should be added
 before closeout. Any app, source, package, or asset change after the manual
 build commit requires regenerating the context and rerunning the affected manual

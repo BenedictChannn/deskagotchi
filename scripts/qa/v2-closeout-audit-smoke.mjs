@@ -176,6 +176,7 @@ function main() {
   const invalidVersionManualPath = path.join(SMOKE_DIR, "manual-invalid-version.json");
   const staleCodeManualPath = path.join(SMOKE_DIR, "manual-stale-code.json");
   const mismatchedBuildManualPath = path.join(SMOKE_DIR, "manual-mismatched-build.json");
+  const mismatchedInstallerManualPath = path.join(SMOKE_DIR, "manual-mismatched-installer.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
@@ -221,6 +222,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     mismatchedBuildSignature: true
+  });
+  writeManualReport(mismatchedInstallerManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    mismatchedInstallerPathSignature: true
   });
   writeManualReport(completeManualPath, checkKeys, {
     complete: true,
@@ -438,6 +444,25 @@ function main() {
     throw new Error("Mismatched-build manual report did not include context-signature blocker.");
   }
 
+  const mismatchedInstallerReportPath = path.join(SMOKE_DIR, "report-mismatched-installer.md");
+  const mismatchedInstallerRun = runAudit([
+    "--manual",
+    mismatchedInstallerManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    mismatchedInstallerReportPath
+  ]);
+  if (mismatchedInstallerRun.status !== 1) {
+    throw new Error(
+      `Expected mismatched-installer manual evidence to fail strict mode, got ${mismatchedInstallerRun.status}.`
+    );
+  }
+  const mismatchedInstallerReport = fs.readFileSync(mismatchedInstallerReportPath, "utf8");
+  if (!mismatchedInstallerReport.includes("Manual acceptance JSON installerPath does not match manualContextSignature")) {
+    throw new Error("Mismatched-installer manual report did not include context-signature blocker.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -512,6 +537,7 @@ function main() {
         invalidVersionStrictExit: invalidVersionRun.status,
         staleCodeStrictExit: staleCodeRun.status,
         mismatchedBuildStrictExit: mismatchedBuildRun.status,
+        mismatchedInstallerStrictExit: mismatchedInstallerRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
@@ -617,6 +643,10 @@ function writeManualReport(filePath, checkKeys, options) {
   const signatureBuild = options.mismatchedBuildSignature === true
     ? "0.1.0 / 1111111111111111111111111111111111111111"
     : build;
+  const installerPath = "release/Deskagotchi Setup 0.1.0.exe";
+  const signatureInstallerPath = options.mismatchedInstallerPathSignature === true
+    ? "release/Deskagotchi Setup stale-smoke.exe"
+    : installerPath;
   const reportCheckKeys = options.unknownCheck === undefined
     ? checkKeys
     : [...checkKeys, options.unknownCheck];
@@ -646,7 +676,7 @@ function writeManualReport(filePath, checkKeys, options) {
         windowsVersion: "Windows smoke fixture",
         build,
         monitorSetup: "smoke fixture",
-        installerPath: "release/Deskagotchi Setup 0.1.0.exe",
+        installerPath,
         visualNotes: "Visual fixture notes.",
         installerNotes: "Installer fixture notes.",
         startupNotes: "Startup fixture notes.",
@@ -680,7 +710,7 @@ function writeManualReport(filePath, checkKeys, options) {
       {
         manualContextSignature: options.omitReportMetadata === true
           ? undefined
-          : `manual-page-smoke-context|2026-05-11T00:00:00.000Z|${signatureBuild}|release/Deskagotchi Setup 0.1.0.exe`,
+          : `manual-page-smoke-context|2026-05-11T00:00:00.000Z|${signatureBuild}|${signatureInstallerPath}`,
         fields,
         checks,
         deferrals,

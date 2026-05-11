@@ -83,7 +83,7 @@ async function main() {
 
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",
-      "6 required run context fields missing.",
+      "6 required run context issues.",
       "Required evidence notes complete.",
       "Manual pass is still blocked."
     ]);
@@ -132,6 +132,34 @@ async function main() {
       "blocking gates after context import"
     );
     recordPass(checks, "manual context import prefills without resolving gates");
+
+    await page.locator('[data-field="build"]').fill("manual-page-smoke-edited");
+    await assertStatusIncludes(page, [
+      "1 required run context issue.",
+      "Manual pass is still blocked."
+    ]);
+    const editedBuildReport = await exportReport(page);
+    assertIncludes(
+      editedBuildReport.fieldFailures.join("\n"),
+      "Deskagotchi build changed after manual context import.",
+      "edited build field failure"
+    );
+    await applyManualContext(page);
+    recordPass(checks, "edited build identity blocks manual pass");
+
+    await page.locator('[data-field="installerPath"]').fill("release/stale-installer.exe");
+    await assertStatusIncludes(page, [
+      "1 required run context issue.",
+      "Manual pass is still blocked."
+    ]);
+    const editedInstallerReport = await exportReport(page);
+    assertIncludes(
+      editedInstallerReport.fieldFailures.join("\n"),
+      "Installer path changed after manual context import.",
+      "edited installer field failure"
+    );
+    await applyManualContext(page);
+    recordPass(checks, "edited installer identity blocks manual pass");
 
     await setAllGates(page, true);
     await applyManualContext(page);
@@ -187,7 +215,7 @@ async function main() {
     await setAllGates(page, true);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
-      "6 required run context fields missing.",
+      "6 required run context issues.",
       "6 required evidence notes missing.",
       "Manual pass is still blocked."
     ]);
@@ -220,7 +248,7 @@ async function main() {
       .fill("Accepted as out of scope for page smoke.");
     await assertStatusIncludes(page, [
       "18/19 gates resolved.",
-      "1 required run context field missing.",
+      "1 required run context issue.",
       "Required evidence notes complete.",
       "Manual pass is still blocked."
     ]);

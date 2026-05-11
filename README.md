@@ -180,12 +180,13 @@ This writes `.qa-runs/<run-id>-manual-context/report.md` with the current build,
 installer candidate, latest QA run IDs, monitor topology, and starter evidence
 notes. Paste the generated `manual-context.json` into the manual checklist's
 context import box to prefill fields. It is manual-prep only and does not mark
-any manual gate as passed. Do not hand-edit the generated build field in the
-manual export; strict closeout verifies that it contains the current
-`package.json` version, a real Git commit from this repository, and the same
-value embedded in the manual context signature. Once that build is tested, keep
-post-test commits to documentation/evidence files; app, package, source, or
-asset changes require regenerating the context and retesting the affected gates.
+any manual gate as passed. Do not hand-edit the generated build or installer
+path fields in the manual export; strict closeout verifies that the build
+contains the current `package.json` version, a real Git commit from this
+repository, and the same build plus installer path embedded in the manual
+context signature. Once that build is tested, keep post-test commits to
+documentation/evidence files; app, package, source, or asset changes require
+regenerating the context and retesting the affected gates.
 
 Regenerate LCD item icons:
 

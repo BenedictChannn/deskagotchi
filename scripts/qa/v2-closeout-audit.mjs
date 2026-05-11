@@ -873,6 +873,7 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
 function validateManualBuildIdentity(manualReport) {
   const failures = [];
   const build = getManualField(manualReport, "build");
+  const installerPath = getManualField(manualReport, "installerPath");
   const manualContextSignature = typeof manualReport.manualContextSignature === "string"
     ? manualReport.manualContextSignature.trim()
     : "";
@@ -881,8 +882,13 @@ function validateManualBuildIdentity(manualReport) {
     return failures;
   }
 
-  if (manualContextSignature.length > 0 && !manualContextSignature.includes(build)) {
-    failures.push("Manual acceptance JSON build does not match manualContextSignature.");
+  const contextIdentityFailures = validateManualContextIdentity(
+    manualContextSignature,
+    build,
+    installerPath
+  );
+  if (contextIdentityFailures.length > 0) {
+    failures.push(...contextIdentityFailures);
   }
 
   const version = extractManualBuildVersion(build);
@@ -915,6 +921,27 @@ function validateManualBuildIdentity(manualReport) {
     failures.push(...validatePostManualBuildChanges(commit));
   }
 
+  return failures;
+}
+
+function validateManualContextIdentity(manualContextSignature, build, installerPath) {
+  if (manualContextSignature.length === 0) {
+    return [];
+  }
+
+  const signatureParts = manualContextSignature.split("|");
+  if (signatureParts.length < 4) {
+    return ["Manual acceptance JSON manualContextSignature is malformed."];
+  }
+
+  const [, , signatureBuild, signatureInstallerPath] = signatureParts;
+  const failures = [];
+  if (build !== signatureBuild) {
+    failures.push("Manual acceptance JSON build does not match manualContextSignature.");
+  }
+  if (installerPath.length > 0 && installerPath !== signatureInstallerPath) {
+    failures.push("Manual acceptance JSON installerPath does not match manualContextSignature.");
+  }
   return failures;
 }
 
