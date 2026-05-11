@@ -801,6 +801,7 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
     Number.isNaN(Date.parse(manualReport.exportedAt))) {
     failures.push("Manual acceptance JSON has missing or invalid exportedAt.");
   }
+  failures.push(...validateManualContextTiming(manualReport));
   failures.push(...validateManualBuildIdentity(manualReport));
 
   if (reportedExpectedChecks === null) {
@@ -869,6 +870,40 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
   }
 
   return failures;
+}
+
+function validateManualContextTiming(manualReport) {
+  const manualContextSignature = typeof manualReport.manualContextSignature === "string"
+    ? manualReport.manualContextSignature.trim()
+    : "";
+  const exportedAt = typeof manualReport.exportedAt === "string"
+    ? manualReport.exportedAt.trim()
+    : "";
+
+  if (manualContextSignature.length === 0 || exportedAt.length === 0) {
+    return [];
+  }
+
+  const exportedAtMs = Date.parse(exportedAt);
+  if (Number.isNaN(exportedAtMs)) {
+    return [];
+  }
+
+  const signatureParts = manualContextSignature.split("|");
+  if (signatureParts.length < 4) {
+    return [];
+  }
+
+  const contextGeneratedAtMs = Date.parse(signatureParts[1]);
+  if (Number.isNaN(contextGeneratedAtMs)) {
+    return ["Manual acceptance JSON manualContextSignature has invalid generatedAt."];
+  }
+
+  if (exportedAtMs < contextGeneratedAtMs) {
+    return ["Manual acceptance JSON exportedAt is earlier than manual context generation time."];
+  }
+
+  return [];
 }
 
 function validateManualBuildIdentity(manualReport) {

@@ -173,6 +173,7 @@ function main() {
   const conflictedManualPath = path.join(SMOKE_DIR, "manual-conflicted.json");
   const staleGateManualPath = path.join(SMOKE_DIR, "manual-stale-gate.json");
   const missingMetadataManualPath = path.join(SMOKE_DIR, "manual-missing-metadata.json");
+  const staleExportTimeManualPath = path.join(SMOKE_DIR, "manual-stale-export-time.json");
   const invalidBuildManualPath = path.join(SMOKE_DIR, "manual-invalid-build.json");
   const invalidVersionManualPath = path.join(SMOKE_DIR, "manual-invalid-version.json");
   const staleCodeManualPath = path.join(SMOKE_DIR, "manual-stale-code.json");
@@ -203,6 +204,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     omitReportMetadata: true
+  });
+  writeManualReport(staleExportTimeManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    exportedAtOverride: "2026-05-10T23:59:59.000Z"
   });
   writeManualReport(invalidBuildManualPath, checkKeys, {
     complete: true,
@@ -367,6 +373,25 @@ function main() {
   }
   if (!missingMetadataReport.includes("Manual acceptance JSON has missing or invalid exportedAt")) {
     throw new Error("Missing-metadata manual report did not include exportedAt blocker.");
+  }
+
+  const staleExportTimeReportPath = path.join(SMOKE_DIR, "report-stale-export-time.md");
+  const staleExportTimeRun = runAudit([
+    "--manual",
+    staleExportTimeManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    staleExportTimeReportPath
+  ]);
+  if (staleExportTimeRun.status !== 1) {
+    throw new Error(
+      `Expected stale-export-time manual evidence to fail strict mode, got ${staleExportTimeRun.status}.`
+    );
+  }
+  const staleExportTimeReport = fs.readFileSync(staleExportTimeReportPath, "utf8");
+  if (!staleExportTimeReport.includes("Manual acceptance JSON exportedAt is earlier than manual context generation time")) {
+    throw new Error("Stale-export-time report did not include context timestamp blocker.");
   }
 
   const invalidBuildReportPath = path.join(SMOKE_DIR, "report-invalid-build.md");
@@ -534,6 +559,7 @@ function main() {
         conflictedStrictExit: conflictedRun.status,
         staleGateStrictExit: staleGateRun.status,
         missingMetadataStrictExit: missingMetadataRun.status,
+        staleExportTimeStrictExit: staleExportTimeRun.status,
         invalidBuildStrictExit: invalidBuildRun.status,
         invalidVersionStrictExit: invalidVersionRun.status,
         staleCodeStrictExit: staleCodeRun.status,
@@ -743,7 +769,7 @@ function writeManualReport(filePath, checkKeys, options) {
         manualPass: blockingChecks.length === 0,
         exportedAt: options.omitReportMetadata === true
           ? undefined
-          : new Date().toISOString()
+          : options.exportedAtOverride ?? new Date().toISOString()
       },
       null,
       2
