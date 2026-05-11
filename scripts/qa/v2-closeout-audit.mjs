@@ -800,6 +800,7 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
     Number.isNaN(Date.parse(manualReport.exportedAt))) {
     failures.push("Manual acceptance JSON has missing or invalid exportedAt.");
   }
+  failures.push(...validateManualBuildIdentity(manualReport));
 
   if (reportedExpectedChecks === null) {
     failures.push("Manual acceptance JSON is missing expectedChecks.");
@@ -867,6 +868,49 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
   }
 
   return failures;
+}
+
+function validateManualBuildIdentity(manualReport) {
+  const failures = [];
+  const build = getManualField(manualReport, "build");
+  const manualContextSignature = typeof manualReport.manualContextSignature === "string"
+    ? manualReport.manualContextSignature.trim()
+    : "";
+
+  if (build.length === 0) {
+    return failures;
+  }
+
+  if (manualContextSignature.length > 0 && !manualContextSignature.includes(build)) {
+    failures.push("Manual acceptance JSON build does not match manualContextSignature.");
+  }
+
+  const commit = extractManualBuildCommit(build);
+  if (commit === null) {
+    failures.push("Manual acceptance JSON build field must include a git commit hash.");
+    return failures;
+  }
+
+  const commitExists = runGit(["cat-file", "-e", `${commit}^{commit}`]);
+  if (!commitExists.ok) {
+    failures.push(`Manual acceptance JSON build commit does not exist in this repository: ${commit}`);
+    return failures;
+  }
+
+  const commitIsReachable = runGit(["merge-base", "--is-ancestor", commit, "HEAD"]);
+  if (!commitIsReachable.ok) {
+    failures.push(`Manual acceptance JSON build commit is not an ancestor of HEAD: ${commit}`);
+  }
+
+  return failures;
+}
+
+function extractManualBuildCommit(build) {
+  const matches = build.match(/\b[0-9a-f]{7,40}\b/gi) ?? [];
+  if (matches.length === 0) {
+    return null;
+  }
+  return matches[matches.length - 1].toLowerCase();
 }
 
 function isManualGateResolved(manualReport, checkKey, acceptedOutOfScopeBy) {

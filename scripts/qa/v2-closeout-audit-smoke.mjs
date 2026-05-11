@@ -172,6 +172,8 @@ function main() {
   const conflictedManualPath = path.join(SMOKE_DIR, "manual-conflicted.json");
   const staleGateManualPath = path.join(SMOKE_DIR, "manual-stale-gate.json");
   const missingMetadataManualPath = path.join(SMOKE_DIR, "manual-missing-metadata.json");
+  const invalidBuildManualPath = path.join(SMOKE_DIR, "manual-invalid-build.json");
+  const mismatchedBuildManualPath = path.join(SMOKE_DIR, "manual-mismatched-build.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
@@ -197,6 +199,16 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     omitReportMetadata: true
+  });
+  writeManualReport(invalidBuildManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    invalidBuildCommit: true
+  });
+  writeManualReport(mismatchedBuildManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    mismatchedBuildSignature: true
   });
   writeManualReport(completeManualPath, checkKeys, {
     complete: true,
@@ -338,6 +350,44 @@ function main() {
     throw new Error("Missing-metadata manual report did not include exportedAt blocker.");
   }
 
+  const invalidBuildReportPath = path.join(SMOKE_DIR, "report-invalid-build.md");
+  const invalidBuildRun = runAudit([
+    "--manual",
+    invalidBuildManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    invalidBuildReportPath
+  ]);
+  if (invalidBuildRun.status !== 1) {
+    throw new Error(
+      `Expected invalid-build manual evidence to fail strict mode, got ${invalidBuildRun.status}.`
+    );
+  }
+  const invalidBuildReport = fs.readFileSync(invalidBuildReportPath, "utf8");
+  if (!invalidBuildReport.includes("Manual acceptance JSON build commit does not exist")) {
+    throw new Error("Invalid-build manual report did not include missing commit blocker.");
+  }
+
+  const mismatchedBuildReportPath = path.join(SMOKE_DIR, "report-mismatched-build.md");
+  const mismatchedBuildRun = runAudit([
+    "--manual",
+    mismatchedBuildManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    mismatchedBuildReportPath
+  ]);
+  if (mismatchedBuildRun.status !== 1) {
+    throw new Error(
+      `Expected mismatched-build manual evidence to fail strict mode, got ${mismatchedBuildRun.status}.`
+    );
+  }
+  const mismatchedBuildReport = fs.readFileSync(mismatchedBuildReportPath, "utf8");
+  if (!mismatchedBuildReport.includes("Manual acceptance JSON build does not match manualContextSignature")) {
+    throw new Error("Mismatched-build manual report did not include context-signature blocker.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -408,6 +458,8 @@ function main() {
         conflictedStrictExit: conflictedRun.status,
         staleGateStrictExit: staleGateRun.status,
         missingMetadataStrictExit: missingMetadataRun.status,
+        invalidBuildStrictExit: invalidBuildRun.status,
+        mismatchedBuildStrictExit: mismatchedBuildRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
@@ -503,6 +555,13 @@ function readManualCheckKeys() {
 }
 
 function writeManualReport(filePath, checkKeys, options) {
+  const buildCommit = options.invalidBuildCommit === true
+    ? "0000000000000000000000000000000000000000"
+    : readCurrentCommit();
+  const build = `0.1.0 / ${buildCommit}`;
+  const signatureBuild = options.mismatchedBuildSignature === true
+    ? "0.1.0 / 1111111111111111111111111111111111111111"
+    : build;
   const reportCheckKeys = options.unknownCheck === undefined
     ? checkKeys
     : [...checkKeys, options.unknownCheck];
@@ -530,7 +589,7 @@ function writeManualReport(filePath, checkKeys, options) {
         tester: "V2 closeout audit smoke",
         date: "2026-05-11",
         windowsVersion: "Windows smoke fixture",
-        build: "smoke-fixture",
+        build,
         monitorSetup: "smoke fixture",
         installerPath: "release/Deskagotchi Setup 0.1.0.exe",
         visualNotes: "Visual fixture notes.",
@@ -566,7 +625,7 @@ function writeManualReport(filePath, checkKeys, options) {
       {
         manualContextSignature: options.omitReportMetadata === true
           ? undefined
-          : "manual-page-smoke-context|2026-05-11T00:00:00.000Z|smoke-fixture|release/Deskagotchi Setup 0.1.0.exe",
+          : `manual-page-smoke-context|2026-05-11T00:00:00.000Z|${signatureBuild}|release/Deskagotchi Setup 0.1.0.exe`,
         fields,
         checks,
         deferrals,
@@ -604,6 +663,18 @@ function writeManualReport(filePath, checkKeys, options) {
       2
     )
   );
+}
+
+function readCurrentCommit() {
+  const result = spawnSync("git", ["rev-parse", "--short", "HEAD"], {
+    cwd: ROOT_DIR,
+    encoding: "utf8",
+    stdio: "pipe"
+  });
+  if (result.status !== 0) {
+    throw new Error(`Unable to read current git commit for smoke fixture: ${result.stderr.trim()}`);
+  }
+  return result.stdout.trim();
 }
 
 function runAudit(args) {
