@@ -775,9 +775,31 @@ function getManualField(manualReport, fieldName) {
 function validateManualReportShape(manualReport, expectedCheckKeys) {
   const failures = [];
   const expectedCheckSet = new Set(expectedCheckKeys);
+  const requiredFieldSet = new Set(REQUIRED_MANUAL_FIELDS);
+  const requiredEvidenceFieldKeys = REQUIRED_MANUAL_EVIDENCE_FIELDS.map(
+    ([section, fieldName]) => `${section}:${fieldName}`
+  );
+  const requiredEvidenceFieldSet = new Set(requiredEvidenceFieldKeys);
   const reportedExpectedChecks = Array.isArray(manualReport.expectedChecks)
     ? manualReport.expectedChecks.filter((checkKey) => typeof checkKey === "string")
     : null;
+  const reportedRequiredFields = Array.isArray(manualReport.requiredFields)
+    ? manualReport.requiredFields.filter((fieldName) => typeof fieldName === "string")
+    : null;
+  const reportedEvidenceFields = Array.isArray(manualReport.requiredEvidenceFields)
+    ? manualReport.requiredEvidenceFields
+      .filter((entry) => typeof entry?.section === "string" && typeof entry?.field === "string")
+      .map((entry) => `${entry.section}:${entry.field}`)
+    : null;
+
+  if (typeof manualReport.manualContextSignature !== "string" ||
+    manualReport.manualContextSignature.trim().length === 0) {
+    failures.push("Manual acceptance JSON is missing manualContextSignature.");
+  }
+  if (typeof manualReport.exportedAt !== "string" ||
+    Number.isNaN(Date.parse(manualReport.exportedAt))) {
+    failures.push("Manual acceptance JSON has missing or invalid exportedAt.");
+  }
 
   if (reportedExpectedChecks === null) {
     failures.push("Manual acceptance JSON is missing expectedChecks.");
@@ -794,6 +816,42 @@ function validateManualReportShape(manualReport, expectedCheckKeys) {
     }
     for (const checkKey of staleExpectedChecks) {
       failures.push(`Manual acceptance JSON expectedChecks has unknown gate: ${checkKey}`);
+    }
+  }
+
+  if (reportedRequiredFields === null) {
+    failures.push("Manual acceptance JSON is missing requiredFields.");
+  } else {
+    const reportedRequiredFieldSet = new Set(reportedRequiredFields);
+    const missingRequiredFields = REQUIRED_MANUAL_FIELDS.filter(
+      (fieldName) => !reportedRequiredFieldSet.has(fieldName)
+    );
+    const unknownRequiredFields = reportedRequiredFields.filter(
+      (fieldName) => !requiredFieldSet.has(fieldName)
+    );
+    for (const fieldName of missingRequiredFields) {
+      failures.push(`Manual acceptance JSON requiredFields is missing field: ${fieldName}`);
+    }
+    for (const fieldName of unknownRequiredFields) {
+      failures.push(`Manual acceptance JSON requiredFields has unknown field: ${fieldName}`);
+    }
+  }
+
+  if (reportedEvidenceFields === null) {
+    failures.push("Manual acceptance JSON is missing requiredEvidenceFields.");
+  } else {
+    const reportedEvidenceFieldSet = new Set(reportedEvidenceFields);
+    const missingEvidenceFields = requiredEvidenceFieldKeys.filter(
+      (fieldKey) => !reportedEvidenceFieldSet.has(fieldKey)
+    );
+    const unknownEvidenceFields = reportedEvidenceFields.filter(
+      (fieldKey) => !requiredEvidenceFieldSet.has(fieldKey)
+    );
+    for (const fieldKey of missingEvidenceFields) {
+      failures.push(`Manual acceptance JSON requiredEvidenceFields is missing field: ${fieldKey}`);
+    }
+    for (const fieldKey of unknownEvidenceFields) {
+      failures.push(`Manual acceptance JSON requiredEvidenceFields has unknown field: ${fieldKey}`);
     }
   }
 

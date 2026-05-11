@@ -171,6 +171,7 @@ function main() {
   const missingFieldsManualPath = path.join(SMOKE_DIR, "manual-missing-fields.json");
   const conflictedManualPath = path.join(SMOKE_DIR, "manual-conflicted.json");
   const staleGateManualPath = path.join(SMOKE_DIR, "manual-stale-gate.json");
+  const missingMetadataManualPath = path.join(SMOKE_DIR, "manual-missing-metadata.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
@@ -191,6 +192,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     unknownCheck: "stale.manual.gate"
+  });
+  writeManualReport(missingMetadataManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    omitReportMetadata: true
   });
   writeManualReport(completeManualPath, checkKeys, {
     complete: true,
@@ -304,6 +310,34 @@ function main() {
     throw new Error("Stale-gate manual report did not include deferrals blocker.");
   }
 
+  const missingMetadataReportPath = path.join(SMOKE_DIR, "report-missing-metadata.md");
+  const missingMetadataRun = runAudit([
+    "--manual",
+    missingMetadataManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    missingMetadataReportPath
+  ]);
+  if (missingMetadataRun.status !== 1) {
+    throw new Error(
+      `Expected missing-metadata manual evidence to fail strict mode, got ${missingMetadataRun.status}.`
+    );
+  }
+  const missingMetadataReport = fs.readFileSync(missingMetadataReportPath, "utf8");
+  if (!missingMetadataReport.includes("Manual acceptance JSON is missing manualContextSignature")) {
+    throw new Error("Missing-metadata manual report did not include context signature blocker.");
+  }
+  if (!missingMetadataReport.includes("Manual acceptance JSON is missing requiredFields")) {
+    throw new Error("Missing-metadata manual report did not include requiredFields blocker.");
+  }
+  if (!missingMetadataReport.includes("Manual acceptance JSON is missing requiredEvidenceFields")) {
+    throw new Error("Missing-metadata manual report did not include requiredEvidenceFields blocker.");
+  }
+  if (!missingMetadataReport.includes("Manual acceptance JSON has missing or invalid exportedAt")) {
+    throw new Error("Missing-metadata manual report did not include exportedAt blocker.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -373,6 +407,7 @@ function main() {
         missingFieldsStrictExit: missingFieldsRun.status,
         conflictedStrictExit: conflictedRun.status,
         staleGateStrictExit: staleGateRun.status,
+        missingMetadataStrictExit: missingMetadataRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
@@ -441,6 +476,8 @@ function assertManualPageGuardsRunContext() {
     "evidenceFailures",
     "conflictFailures",
     "expectedChecks",
+    "requiredFields",
+    "requiredEvidenceFields",
     "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0 && conflictFailures.length === 0",
     "Manual pass is still blocked."
   ];
@@ -527,14 +564,41 @@ function writeManualReport(filePath, checkKeys, options) {
     filePath,
     JSON.stringify(
       {
+        manualContextSignature: options.omitReportMetadata === true
+          ? undefined
+          : "manual-page-smoke-context|2026-05-11T00:00:00.000Z|smoke-fixture|release/Deskagotchi Setup 0.1.0.exe",
         fields,
         checks,
         deferrals,
-        expectedChecks: reportCheckKeys,
+        expectedChecks: options.omitReportMetadata === true
+          ? undefined
+          : reportCheckKeys,
+        requiredFields: options.omitReportMetadata === true
+          ? undefined
+          : [
+              "tester",
+              "date",
+              "windowsVersion",
+              "build",
+              "monitorSetup",
+              "installerPath"
+            ],
+        requiredEvidenceFields: options.omitReportMetadata === true
+          ? undefined
+          : [
+              { section: "visual", label: "Visual acceptance notes", field: "visualNotes" },
+              { section: "installer", label: "Installer notes", field: "installerNotes" },
+              { section: "startup", label: "Startup notes", field: "startupNotes" },
+              { section: "monitors", label: "Monitor run IDs / notes", field: "monitorNotes" },
+              { section: "sleep", label: "Sleep/wake notes", field: "sleepNotes" },
+              { section: "environment", label: "Environment notes", field: "environmentNotes" }
+            ],
         evidenceFailures: [],
         blockingChecks,
         manualPass: blockingChecks.length === 0,
-        exportedAt: new Date().toISOString()
+        exportedAt: options.omitReportMetadata === true
+          ? undefined
+          : new Date().toISOString()
       },
       null,
       2
