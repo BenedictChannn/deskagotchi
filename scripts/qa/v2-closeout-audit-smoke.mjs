@@ -44,6 +44,27 @@ function main() {
     );
   }
 
+  const missingManualReportPath = path.join(SMOKE_DIR, "report-missing-manual.md");
+  const missingManualRun = runAudit([
+    "--manual",
+    path.join(SMOKE_DIR, "does-not-exist.json"),
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    missingManualReportPath
+  ]);
+  if (missingManualRun.status !== 1) {
+    throw new Error(
+      `Expected missing manual evidence to fail strict mode, got ${missingManualRun.status}.`
+    );
+  }
+  const missingManualReport = fs.readFileSync(missingManualReportPath, "utf8");
+  if (!missingManualReport.includes(
+    "Manual gate not exported: visual.pets: All five pets read as intended animals at desktop size."
+  )) {
+    throw new Error("Missing manual evidence report did not include labeled gate blockers.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -103,6 +124,7 @@ function main() {
       {
         checkCount: checkKeys.length,
         incompleteStrictExit: incompleteRun.status,
+        missingManualStrictExit: missingManualRun.status,
         completeStrictExit: completeRun.status,
         checkOnlyStrictExit: checkOnlyRun.status,
         deferredStrictExit: deferredRun.status,

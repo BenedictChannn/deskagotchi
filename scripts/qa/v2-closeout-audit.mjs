@@ -194,16 +194,6 @@ const REQUIRED_MANUAL_FIELDS = [
   "monitorSetup"
 ];
 
-const MANUAL_BLOCKERS = [
-  "Final subjective visual acceptance for pets and food icons.",
-  "Interactive installer UI and interactive uninstall UI.",
-  "Real packaged startup-on-login after Windows login or restart.",
-  "Right-side and stacked physical monitor layouts.",
-  "RDP-specific behavior.",
-  "Unusual taskbar layouts.",
-  "SmartScreen/signing reputation caveat."
-];
-
 const V2_DELIVERABLES = [
   "Companion surface: compact transparent pet overlay, in-place care controls, click and drag behavior.",
   "Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.",
@@ -544,7 +534,11 @@ function auditManualAcceptance() {
   const manualPaths = ARGS.manualPath === null
     ? MANUAL_ACCEPTANCE_PATHS
     : [ARGS.manualPath];
-  const expectedCheckKeys = readExpectedManualCheckKeys();
+  const expectedChecks = readExpectedManualChecks();
+  const expectedCheckKeys = expectedChecks.map((check) => check.key);
+  const expectedCheckByKey = new Map(
+    expectedChecks.map((check) => [check.key, check])
+  );
 
   for (const manualPath of manualPaths) {
     const absolutePath = path.isAbsolute(manualPath)
@@ -560,7 +554,7 @@ function auditManualAcceptance() {
         status: "fail",
         path: normalizeManualPath(absolutePath),
         summary: "Manual acceptance JSON exists but could not be parsed.",
-        blockingChecks: MANUAL_BLOCKERS
+        blockingChecks: ["Manual acceptance JSON could not be parsed."]
       };
     }
 
@@ -574,14 +568,16 @@ function auditManualAcceptance() {
     if (hasDeferrals && acceptedOutOfScopeBy.length === 0) {
       fieldFailures.push("Missing manual context field: acceptedOutOfScopeBy");
     }
-    const checkFailures = expectedCheckKeys
-      .filter((checkKey) => !isManualGateResolved(manualReport, checkKey, acceptedOutOfScopeBy))
-      .map((checkKey) => `Missing, unchecked, or unresolved manual gate: ${checkKey}`);
+    const checkFailures = expectedChecks
+      .filter((check) => !isManualGateResolved(manualReport, check.key, acceptedOutOfScopeBy))
+      .map((check) => `Missing, unchecked, or unresolved manual gate: ${formatManualCheck(check)}`);
     const blockingChecks = [
       ...fieldFailures,
       ...checkFailures,
       ...(manualReport.blockingChecks ?? []).map(
-        (checkKey) => `Reported blocking check: ${checkKey}`
+        (checkKey) => `Reported blocking check: ${formatManualCheck(
+          expectedCheckByKey.get(checkKey) ?? { key: checkKey, label: "Unknown manual gate." }
+        )}`
       )
     ];
 
@@ -608,23 +604,35 @@ function auditManualAcceptance() {
     status: "manual-open",
     path: null,
     summary: "No exported manual acceptance JSON found.",
-    blockingChecks: MANUAL_BLOCKERS
+    blockingChecks: expectedChecks.map(
+      (check) => `Manual gate not exported: ${formatManualCheck(check)}`
+    )
   };
 }
 
-function readExpectedManualCheckKeys() {
+function readExpectedManualChecks() {
   const manualPagePath = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
   const manualPage = fs.readFileSync(manualPagePath, "utf8");
-  const checkKeys = new Set();
-  const dataCheckPattern = /data-check="([^"]+)"/g;
+  const checks = new Map();
+  const dataCheckPattern = /<label class="check">\s*<input data-check="([^"]+)"[^>]*\/>\s*<span>(.*?)<\/span>\s*<\/label>/gs;
   let match = dataCheckPattern.exec(manualPage);
 
   while (match !== null) {
-    checkKeys.add(match[1]);
+    checks.set(match[1], normalizeHtmlText(match[2]));
     match = dataCheckPattern.exec(manualPage);
   }
 
-  return Array.from(checkKeys).sort();
+  return Array.from(checks)
+    .map(([key, label]) => ({ key, label }))
+    .sort((left, right) => left.key.localeCompare(right.key));
+}
+
+function normalizeHtmlText(value) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function formatManualCheck(check) {
+  return `${check.key}: ${check.label}`;
 }
 
 function hasNonEmptyManualField(manualReport, fieldName) {
