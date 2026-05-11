@@ -8,6 +8,13 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 const RELEASE_DIR = path.join(ROOT_DIR, "release");
+const MANUAL_PAGE_PATH = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
+const MANUAL_RUNBOOK_PATH = path.join(
+  ROOT_DIR,
+  "docs",
+  "qa",
+  "v2-manual-acceptance-runbook.md"
+);
 const SCENARIO = "manual-context";
 const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-${SCENARIO}`;
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
@@ -45,6 +52,9 @@ function main() {
         context: path.relative(ROOT_DIR, contextPath),
         report: path.relative(ROOT_DIR, reportPath),
         summary: path.relative(ROOT_DIR, summaryPath),
+        manualPage: context.manualAcceptance.page,
+        runbook: context.manualAcceptance.runbook,
+        manualGateCount: context.manualAcceptance.gateCount,
         manualPassClaimed: false
       },
       null,
@@ -57,6 +67,7 @@ function buildManualContext(startedAt) {
   const latestRuns = Object.fromEntries(
     SCENARIOS.map((suffix) => [suffix, readLatestRun(suffix)])
   );
+  const manualGateKeys = readManualGateKeys();
   const releaseCandidates = findReleaseCandidates();
   const displayTopology = readLatestDisplayTopology(latestRuns.drag?.runId);
   const git = readGitState();
@@ -76,6 +87,12 @@ function buildManualContext(startedAt) {
     fields,
     git,
     releaseCandidates,
+    manualAcceptance: {
+      page: path.relative(ROOT_DIR, MANUAL_PAGE_PATH),
+      runbook: path.relative(ROOT_DIR, MANUAL_RUNBOOK_PATH),
+      gateCount: manualGateKeys.length,
+      gateKeys: manualGateKeys
+    },
     latestRuns,
     displayTopology,
     evidenceNoteStarters: buildEvidenceNoteStarters(
@@ -88,6 +105,10 @@ function buildManualContext(startedAt) {
       "This context does not mark any manual gate as passed.",
       "Use it to fill run context and notes before performing the physical/manual checks.",
       "The final exported manual JSON must still come from docs/qa/v2-manual-acceptance.html."
+    ],
+    closeoutCommands: [
+      "npm.cmd run qa:v2:audit -- --manual docs\\qa\\v2-manual-acceptance-export.json",
+      "npm.cmd run qa:v2:closeout"
     ]
   };
 }
@@ -224,6 +245,20 @@ function buildPasteBlock(fields) {
     .join("\n");
 }
 
+function readManualGateKeys() {
+  const manualPage = fs.readFileSync(MANUAL_PAGE_PATH, "utf8");
+  const gateKeys = new Set();
+  const dataCheckPattern = /data-check="([^"]+)"/g;
+  let match = dataCheckPattern.exec(manualPage);
+
+  while (match !== null) {
+    gateKeys.add(match[1]);
+    match = dataCheckPattern.exec(manualPage);
+  }
+
+  return Array.from(gateKeys).sort();
+}
+
 function formatRun(run) {
   if (run === null) {
     return "not found";
@@ -303,6 +338,11 @@ function buildSummary(context, startedAt) {
       }
     },
     {
+      name: "manual acceptance files recorded",
+      status: "pass",
+      details: context.manualAcceptance
+    },
+    {
       name: "latest QA run references collected",
       status: "pass",
       details: {
@@ -370,6 +410,9 @@ function renderReport(context, summary) {
   const noteRows = Object.entries(context.evidenceNoteStarters)
     .map(([field, value]) => `| ${field} | ${value} |`)
     .join("\n");
+  const closeoutCommandRows = context.closeoutCommands
+    .map((command) => `\`\`\`powershell\n${command}\n\`\`\``)
+    .join("\n\n");
   const dirtyRows = context.git.dirtyEntries.length === 0
     ? "- None"
     : context.git.dirtyEntries.map((entry) => `- \`${entry}\``).join("\n");
@@ -398,6 +441,15 @@ ${fieldRows}
 \`\`\`text
 ${context.pasteIntoManualPage}
 \`\`\`
+
+## Manual Acceptance Files
+
+| File | Path |
+| --- | --- |
+| Manual page | ${context.manualAcceptance.page} |
+| Runbook | ${context.manualAcceptance.runbook} |
+
+Manual gate count: ${context.manualAcceptance.gateCount}
 
 ## Git State
 
@@ -430,6 +482,10 @@ ${noteRows}
 ## Reminders
 
 ${context.reminders.map((reminder) => `- ${reminder}`).join("\n")}
+
+## Closeout Commands After Export
+
+${closeoutCommandRows}
 
 ## Uncovered Conditions
 

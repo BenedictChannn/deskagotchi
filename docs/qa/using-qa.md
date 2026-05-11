@@ -87,8 +87,9 @@ npm.cmd run qa:v2:manual-context
 
 This writes `.qa-runs/<run-id>-manual-context/report.md` with the current
 commit, package version, Windows version, installer candidate, latest QA run
-IDs, monitor topology from drag QA, and starter notes. It is only a prep
-artifact; it does not mark any manual gate as passed. Paste the generated
+IDs, monitor topology from drag QA, manual acceptance page/runbook paths, gate
+count, closeout commands, and starter notes. It is only a prep artifact; it
+does not mark any manual gate as passed. Paste the generated
 `manual-context.json` into the manual checklist's context import box to prefill
 fields without checking any gate.
 
