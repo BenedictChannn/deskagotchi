@@ -33,6 +33,9 @@ const SCENARIOS = [
   "renderer",
   "idle",
   "release",
+  "check",
+  "assets-pets",
+  "assets-items",
   "manual-page",
   "visual-page",
   "v2-scope"
@@ -242,6 +245,8 @@ function buildEvidenceNoteStarters(latestRuns, fields, releaseCandidates) {
   return {
     visualNotes: [
       `Automated visual page smoke: ${formatRun(latestRuns["visual-page"])}.`,
+      `Built-in pet asset QA: ${formatRun(latestRuns["assets-pets"])}.`,
+      `Food and item asset QA: ${formatRun(latestRuns["assets-items"])}.`,
       "Human review still needs pet and food recognizability notes."
     ].join(" "),
     installerNotes: [
