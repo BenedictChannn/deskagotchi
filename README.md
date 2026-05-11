@@ -139,6 +139,10 @@ Smoke-test the manual acceptance page export logic and refresh its screenshot:
 npm.cmd run qa:v2:manual-page -- --update-screenshot
 ```
 
+Routine `npm.cmd run qa:v2:manual-page` runs without changing tracked
+screenshots and writes `.qa-runs/<run-id>-manual-page/` evidence for the V2
+closeout audit.
+
 Manual checklist checkboxes mean the gate was tested and passed. If a gate is
 accepted as out of scope for V2, mark its deferral in the checklist and fill in
 the approver plus rationale. The manual page and closeout audit both require

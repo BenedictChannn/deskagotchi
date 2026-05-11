@@ -106,6 +106,21 @@ const AUTOMATED_SCENARIOS = [
       "silent uninstaller completed",
       "silent uninstaller removed installed executable"
     ]
+  },
+  {
+    key: "manual-page",
+    label: "Manual acceptance page export",
+    suffix: "manual-page",
+    requiredChecks: [
+      "manual acceptance page loaded",
+      "manual gate count matched",
+      "blank run context blocks manual pass",
+      "all gates without run context blocks manual pass",
+      "all gates with run context exports manual pass",
+      "deferral without approver blocks manual pass",
+      "deferral with approver exports manual pass",
+      "manual acceptance screenshot captured"
+    ]
   }
 ];
 
@@ -284,6 +299,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Manual physical gates are either tested and passed or explicitly deferred with rationale.",
     evidence: "V2 manual acceptance JSON",
+    automatedKeys: ["manual-page"],
     manualOnly: true,
     manualRequired: true
   }

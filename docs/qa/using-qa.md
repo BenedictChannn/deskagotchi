@@ -21,6 +21,7 @@ This runs:
 7. `npm.cmd run qa:renderer`
 8. `npm.cmd run qa:assets:pets`
 9. `npm.cmd run qa:assets:items`
+10. `npm.cmd run qa:v2:manual-page`
 
 Use this before claiming a feature is ready when the change affects multiple surfaces.
 
@@ -40,7 +41,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
 | `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
-| `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete. |
+| `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
 
 When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:

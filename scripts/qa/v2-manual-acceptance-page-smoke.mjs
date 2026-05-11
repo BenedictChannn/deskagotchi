@@ -8,6 +8,7 @@ import { chromium } from "playwright";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
+const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 const PAGE_PATH = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
 const SCREENSHOT_PATH = path.join(
   ROOT_DIR,
@@ -15,6 +16,8 @@ const SCREENSHOT_PATH = path.join(
   "qa",
   "v2-manual-acceptance-screenshot.png"
 );
+const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-page`;
+const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const UPDATE_SCREENSHOT = process.argv.includes("--update-screenshot");
 const REQUIRED_FIELD_FIXTURE = {
   tester: "V2 manual page smoke",
@@ -25,6 +28,10 @@ const REQUIRED_FIELD_FIXTURE = {
 };
 
 async function main() {
+  fs.mkdirSync(RUN_DIR, { recursive: true });
+  const startedAt = new Date().toISOString();
+  const checks = [];
+  const artifacts = [];
   const browser = await launchBrowser();
   const context = await browser.newContext({
     viewport: { width: 1280, height: 1600 },
@@ -38,15 +45,18 @@ async function main() {
       timeout: 10000
     });
     await page.locator("#export-status").waitFor({ state: "visible", timeout: 10000 });
+    recordPass(checks, "manual acceptance page loaded");
 
     const gateCount = await page.locator("[data-check]").count();
     assertEqual(gateCount, 19, "manual gate count");
+    recordPass(checks, "manual gate count matched", { gateCount });
 
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",
       "5 required run context fields missing.",
       "Manual pass is still blocked."
     ]);
+    recordPass(checks, "blank run context blocks manual pass");
 
     await setAllGates(page, true);
     await assertStatusIncludes(page, [
@@ -54,6 +64,7 @@ async function main() {
       "5 required run context fields missing.",
       "Manual pass is still blocked."
     ]);
+    recordPass(checks, "all gates without run context blocks manual pass");
 
     await fillRequiredFields(page);
     await assertStatusIncludes(page, [
@@ -66,6 +77,7 @@ async function main() {
     assertEqual(passingReport.manualPass, true, "manual pass after fields");
     assertEqual(passingReport.fieldFailures.length, 0, "field failures after fields");
     assertEqual(passingReport.blockingChecks.length, 0, "blocking gates after fields");
+    recordPass(checks, "all gates with run context exports manual pass");
 
     await page.locator("[data-action='clear']").click();
     await fillRequiredFields(page);
@@ -88,6 +100,7 @@ async function main() {
       "Accepted out of scope by",
       "deferral approver field failure"
     );
+    recordPass(checks, "deferral without approver blocks manual pass");
 
     await page
       .locator('[data-field="acceptedOutOfScopeBy"]')
@@ -102,15 +115,30 @@ async function main() {
     assertEqual(deferredReport.manualPass, true, "manual pass with deferral approver");
     assertEqual(deferredReport.fieldFailures.length, 0, "deferral field failures");
     assertEqual(deferredReport.blockingChecks.length, 0, "deferral blocking gates");
+    recordPass(checks, "deferral with approver exports manual pass");
 
+    await page.locator("[data-action='clear']").click();
+    const runScreenshotPath = path.join(RUN_DIR, "manual-acceptance-page.png");
+    await page.screenshot({ path: runScreenshotPath, fullPage: true });
+    artifacts.push("manual-acceptance-page.png");
     if (UPDATE_SCREENSHOT) {
-      await page.locator("[data-action='clear']").click();
       await page.screenshot({ path: SCREENSHOT_PATH, fullPage: true });
     }
+    recordPass(checks, "manual acceptance screenshot captured", {
+      screenshot: path.relative(ROOT_DIR, runScreenshotPath)
+    });
+
+    writeRunArtifacts({
+      startedAt,
+      checks,
+      artifacts,
+      screenshotUpdated: UPDATE_SCREENSHOT
+    });
 
     console.log(
       JSON.stringify(
         {
+          runId: RUN_ID,
           gateCount,
           manualPage: path.relative(ROOT_DIR, PAGE_PATH),
           screenshotUpdated: UPDATE_SCREENSHOT,
@@ -123,6 +151,72 @@ async function main() {
   } finally {
     await browser.close();
   }
+}
+
+function recordPass(checks, name, details = {}) {
+  checks.push({
+    name,
+    status: "pass",
+    details
+  });
+}
+
+function writeRunArtifacts({ startedAt, checks, artifacts, screenshotUpdated }) {
+  const finishedAt = new Date().toISOString();
+  const summary = {
+    scenario: "manual-page",
+    runId: RUN_ID,
+    startedAt,
+    confidenceLabel: "automated-pass",
+    evidenceTier: "browser-smoke",
+    checks,
+    artifacts,
+    finishedAt,
+    exactClaimAllowed: "passed automated manual acceptance page export smoke for tested browser scope",
+    uncoveredConditions: [
+      "actual physical manual gate execution",
+      "human subjective signoff",
+      "browser state outside this local smoke run"
+    ],
+    screenshotUpdated
+  };
+  fs.writeFileSync(
+    path.join(RUN_DIR, "summary.json"),
+    JSON.stringify(summary, null, 2)
+  );
+  fs.writeFileSync(path.join(RUN_DIR, "report.md"), renderReport(summary));
+}
+
+function renderReport(summary) {
+  const checks = summary.checks
+    .map((check) => `- ${check.status.toUpperCase()}: ${check.name}`)
+    .join("\n");
+  const artifacts = summary.artifacts.length === 0
+    ? "- None"
+    : summary.artifacts.map((artifact) => `- ${artifact}`).join("\n");
+
+  return `# Deskagotchi Manual Acceptance Page QA
+
+Run ID: ${summary.runId}
+
+Confidence: ${summary.confidenceLabel}
+
+Evidence tier: ${summary.evidenceTier}
+
+Exact claim allowed: ${summary.exactClaimAllowed}
+
+## Checks
+
+${checks}
+
+## Artifacts
+
+${artifacts}
+
+## Uncovered Conditions
+
+${summary.uncoveredConditions.map((condition) => `- ${condition}`).join("\n")}
+`;
 }
 
 async function launchBrowser() {

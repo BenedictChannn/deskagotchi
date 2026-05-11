@@ -41,7 +41,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Area | Evidence | Current status |
 | --- | --- | --- |
 | Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 58 tests. |
-| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, and item assets. |
+| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, and manual acceptance page smoke. |
 | Launch | `.qa-runs/2026-05-11T08-06-17Z-launch/report.md` | Passed. |
 | Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T08-06-31Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
