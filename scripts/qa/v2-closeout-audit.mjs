@@ -911,9 +911,38 @@ function validateManualBuildIdentity(manualReport) {
   const commitIsReachable = runGit(["merge-base", "--is-ancestor", commit, "HEAD"]);
   if (!commitIsReachable.ok) {
     failures.push(`Manual acceptance JSON build commit is not an ancestor of HEAD: ${commit}`);
+  } else {
+    failures.push(...validatePostManualBuildChanges(commit));
   }
 
   return failures;
+}
+
+function validatePostManualBuildChanges(commit) {
+  const diff = runGit(["diff", "--name-only", `${commit}..HEAD`]);
+  if (!diff.ok) {
+    return [`Unable to inspect changes after manual build commit: ${commit}`];
+  }
+
+  const nonEvidencePaths = diff.stdout
+    .split(/\r?\n/)
+    .map((filePath) => filePath.trim())
+    .filter((filePath) => filePath.length > 0)
+    .filter((filePath) => !isAllowedPostManualEvidencePath(filePath));
+
+  if (nonEvidencePaths.length === 0) {
+    return [];
+  }
+
+  return [
+    "Manual acceptance JSON build has app/code changes after manual evidence: " +
+    nonEvidencePaths.join(", ")
+  ];
+}
+
+function isAllowedPostManualEvidencePath(filePath) {
+  const normalizedPath = filePath.replaceAll("\\", "/");
+  return normalizedPath === "README.md" || normalizedPath.startsWith("docs/");
 }
 
 function readPackageVersion() {

@@ -183,7 +183,9 @@ context import box to prefill fields. It is manual-prep only and does not mark
 any manual gate as passed. Do not hand-edit the generated build field in the
 manual export; strict closeout verifies that it contains the current
 `package.json` version, a real Git commit from this repository, and the same
-value embedded in the manual context signature.
+value embedded in the manual context signature. Once that build is tested, keep
+post-test commits to documentation/evidence files; app, package, source, or
+asset changes require regenerating the context and retesting the affected gates.
 
 Regenerate LCD item icons:
 

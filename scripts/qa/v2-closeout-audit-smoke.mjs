@@ -174,6 +174,7 @@ function main() {
   const missingMetadataManualPath = path.join(SMOKE_DIR, "manual-missing-metadata.json");
   const invalidBuildManualPath = path.join(SMOKE_DIR, "manual-invalid-build.json");
   const invalidVersionManualPath = path.join(SMOKE_DIR, "manual-invalid-version.json");
+  const staleCodeManualPath = path.join(SMOKE_DIR, "manual-stale-code.json");
   const mismatchedBuildManualPath = path.join(SMOKE_DIR, "manual-mismatched-build.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
@@ -210,6 +211,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     invalidBuildVersion: true
+  });
+  writeManualReport(staleCodeManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    buildCommitOverride: readPostBuildCodeChangeCommit()
   });
   writeManualReport(mismatchedBuildManualPath, checkKeys, {
     complete: true,
@@ -394,6 +400,25 @@ function main() {
     throw new Error("Invalid-version manual report did not include package version blocker.");
   }
 
+  const staleCodeReportPath = path.join(SMOKE_DIR, "report-stale-code.md");
+  const staleCodeRun = runAudit([
+    "--manual",
+    staleCodeManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    staleCodeReportPath
+  ]);
+  if (staleCodeRun.status !== 1) {
+    throw new Error(
+      `Expected stale-code manual evidence to fail strict mode, got ${staleCodeRun.status}.`
+    );
+  }
+  const staleCodeReport = fs.readFileSync(staleCodeReportPath, "utf8");
+  if (!staleCodeReport.includes("Manual acceptance JSON build has app/code changes after manual evidence")) {
+    throw new Error("Stale-code manual report did not include post-build code blocker.");
+  }
+
   const mismatchedBuildReportPath = path.join(SMOKE_DIR, "report-mismatched-build.md");
   const mismatchedBuildRun = runAudit([
     "--manual",
@@ -485,6 +510,7 @@ function main() {
         missingMetadataStrictExit: missingMetadataRun.status,
         invalidBuildStrictExit: invalidBuildRun.status,
         invalidVersionStrictExit: invalidVersionRun.status,
+        staleCodeStrictExit: staleCodeRun.status,
         mismatchedBuildStrictExit: mismatchedBuildRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
@@ -586,7 +612,7 @@ function writeManualReport(filePath, checkKeys, options) {
     : readPackageVersion();
   const buildCommit = options.invalidBuildCommit === true
     ? "0000000000000000000000000000000000000000"
-    : readCurrentCommit();
+    : options.buildCommitOverride ?? readCurrentCommit();
   const build = `${buildVersion} / ${buildCommit}`;
   const signatureBuild = options.mismatchedBuildSignature === true
     ? "0.1.0 / 1111111111111111111111111111111111111111"
@@ -709,6 +735,32 @@ function readCurrentCommit() {
     throw new Error(`Unable to read current git commit for smoke fixture: ${result.stderr.trim()}`);
   }
   return result.stdout.trim();
+}
+
+function readPostBuildCodeChangeCommit() {
+  const result = spawnSync(
+    "git",
+    ["log", "--format=%H", "--max-count=2", "HEAD", "--", "scripts/qa/v2-closeout-audit.mjs"],
+    {
+      cwd: ROOT_DIR,
+      encoding: "utf8",
+      stdio: "pipe"
+    }
+  );
+  if (result.status !== 0) {
+    throw new Error(
+      `Unable to read audit script history for smoke fixture: ${result.stderr.trim()}`
+    );
+  }
+
+  const commits = result.stdout
+    .split(/\r?\n/)
+    .map((commit) => commit.trim())
+    .filter((commit) => commit.length > 0);
+  if (commits.length < 2) {
+    throw new Error("Audit script history is too shallow for stale-code smoke coverage.");
+  }
+  return commits[1];
 }
 
 function runAudit(args) {
