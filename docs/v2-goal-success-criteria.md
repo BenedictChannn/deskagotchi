@@ -230,6 +230,9 @@ npm.cmd run qa:v2:closeout
 
 Required manual evidence:
 
+- `npm.cmd run qa:v2:manual-context` output can be used to prefill build,
+  installer, latest QA run, monitor, and evidence-note context. This helper is
+  not a pass condition by itself.
 - `docs/qa/v2-manual-acceptance.html` export with every required gate either
   passed or explicitly deferred with approver and rationale.
 - Food icon recognizability review against

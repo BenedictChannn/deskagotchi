@@ -44,6 +44,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
 | `npm.cmd run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
+| `npm.cmd run qa:v2:manual-context` | Collecting the current build, installer candidate, monitor topology, latest QA run IDs, and starter evidence notes before filling the manual checklist. |
 | `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
 | `npm.cmd run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
 | `npm.cmd run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
@@ -72,6 +73,17 @@ Manual checklist checkboxes mean tested and passed. If a V2 gate is accepted as
 out of scope, use the checklist deferral controls and include the approver plus
 rationale. The page and closeout audit both reject missing required run context
 fields.
+
+Before filling the V2 manual checklist, generate local context:
+
+```powershell
+npm.cmd run qa:v2:manual-context
+```
+
+This writes `.qa-runs/<run-id>-manual-context/report.md` with the current
+commit, package version, Windows version, installer candidate, latest QA run
+IDs, monitor topology from drag QA, and starter notes. It is only a prep
+artifact; it does not mark any manual gate as passed.
 
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
 for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it

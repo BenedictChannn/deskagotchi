@@ -164,6 +164,16 @@ requires a clean Git worktree so QA evidence is not claimed against uncommitted
 local changes. Use `--check-only` for the final release gate; run without it
 only when intentionally refreshing the Markdown closeout report.
 
+Generate a helper report before filling the manual V2 checklist:
+
+```powershell
+npm.cmd run qa:v2:manual-context
+```
+
+This writes `.qa-runs/<run-id>-manual-context/report.md` with the current build,
+installer candidate, latest QA run IDs, monitor topology, and starter evidence
+notes. It is manual-prep only and does not mark any manual gate as passed.
+
 Regenerate LCD item icons:
 
 ```powershell
