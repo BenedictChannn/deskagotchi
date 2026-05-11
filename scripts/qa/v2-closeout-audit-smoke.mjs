@@ -61,6 +61,7 @@ const AUTOMATED_FIXTURES = [
     checks: [
       "no existing non-QA Deskagotchi process detected",
       "overlay starts with always-on-top enabled",
+      "second launch reset and showed pet window",
       "powerMonitor resume progressed simulation and refreshed renderer",
       "powerMonitor unlock-screen progressed simulation and refreshed renderer",
       "always-on-top setting disabled native overlay flag",
@@ -107,6 +108,7 @@ const AUTOMATED_FIXTURES = [
       "manual acceptance page loaded",
       "manual gate count matched",
       "blank run context blocks manual pass",
+      "manual context import prefills without resolving gates",
       "all gates without run context blocks manual pass",
       "all gates with run context exports manual pass",
       "deferral without approver blocks manual pass",

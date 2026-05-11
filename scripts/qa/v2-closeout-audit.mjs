@@ -68,6 +68,7 @@ const AUTOMATED_SCENARIOS = [
     requiredChecks: [
       "no existing non-QA Deskagotchi process detected",
       "overlay starts with always-on-top enabled",
+      "second launch reset and showed pet window",
       "powerMonitor resume progressed simulation and refreshed renderer",
       "powerMonitor unlock-screen progressed simulation and refreshed renderer",
       "always-on-top setting disabled native overlay flag",

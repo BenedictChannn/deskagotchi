@@ -78,8 +78,11 @@ iterating but should not be used as final idle evidence.
 
 `qa:desktop:lifecycle` verifies that `launchOnStartup` persists while QA skips
 the native login-item mutation. This protects the developer machine during
-automated runs. A real packaged startup-on-boot check still requires a manual
-Windows login/restart pass.
+automated runs. It also launches a second Deskagotchi process against the same
+QA profile and verifies the already-running pet window is shown and reset,
+covering the normal user recovery path when they launch the app again. A real
+packaged startup-on-boot check still requires a manual Windows login/restart
+pass.
 
 Run the full gate before making a broad readiness claim:
 

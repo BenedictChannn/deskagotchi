@@ -14,6 +14,13 @@ const MAIN_ENTRY = path.join(ROOT_DIR, "out/main/index.js");
 const SCENARIO = process.argv[2] ?? "launch";
 const QA_EXECUTABLE_PATH = process.env.DESKAGOTCHI_QA_EXECUTABLE_PATH;
 const IS_WINDOWS = process.platform === "win32";
+const LOCAL_ELECTRON_EXECUTABLE = path.join(
+  ROOT_DIR,
+  "node_modules",
+  "electron",
+  "dist",
+  IS_WINDOWS ? "electron.exe" : "electron"
+);
 const DRAG_DELTA_DIP = 72;
 const DRAG_TOLERANCE_DIP = 24;
 const IDLE_SECONDS = Number.parseInt(process.env.DESKAGOTCHI_IDLE_SECONDS ?? "60", 10);
@@ -650,6 +657,7 @@ async function runLifecycleScenario(run, app) {
   await page.waitForTimeout(400);
   const reset = await getOverlayWindowInfo(app);
   run.pass("reset position command returned", { bounds: reset.bounds });
+  await assertSecondInstanceRecovery(run, app);
 
   await assertPowerMonitorProgress(run, app, page, "resume");
   await assertPowerMonitorProgress(run, app, page, "unlock-screen");
@@ -783,6 +791,119 @@ async function emitPowerMonitorEvent(app, eventName) {
   );
 }
 
+async function assertSecondInstanceRecovery(run, app) {
+  const staged = await app.evaluate(({ BrowserWindow, screen }) => {
+    const window = BrowserWindow.getAllWindows().find((candidate) =>
+      candidate.webContents.getURL().includes("#/overlay")
+    );
+    if (window === undefined) {
+      throw new Error("Overlay window was not found.");
+    }
+    const workArea = screen.getPrimaryDisplay().workArea;
+    const stagedBounds = {
+      x: workArea.x + 12,
+      y: workArea.y + 12,
+      width: 240,
+      height: 240
+    };
+    const expectedBounds = {
+      x: workArea.x + workArea.width - 240 - 40,
+      y: workArea.y + workArea.height - 240 - 40,
+      width: 240,
+      height: 240
+    };
+    window.setBounds(stagedBounds);
+    window.hide();
+    return {
+      expectedBounds,
+      stagedBounds
+    };
+  });
+
+  const command = getSecondInstanceCommand(app);
+  const result = spawnSync(command.executablePath, command.args, {
+    cwd: ROOT_DIR,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      DESKAGOTCHI_QA: "1",
+      DESKAGOTCHI_QA_RUN_ID: run.runId,
+      DESKAGOTCHI_QA_RUN_DIR: run.runDir,
+      DESKAGOTCHI_QA_USER_DATA_DIR: run.profileDir
+    },
+    timeout: 15_000
+  });
+  writeCommandLog(run, "second-instance.log", result);
+  run.artifact("second-instance.log");
+
+  const recovered = await waitForOverlayRecovery(app, staged.expectedBounds);
+  if (result.status === 0 && recovered.recovered) {
+    run.pass("second launch reset and showed pet window", {
+      command,
+      status: result.status,
+      stagedBounds: staged.stagedBounds,
+      expectedBounds: staged.expectedBounds,
+      recoveredBounds: recovered.info.bounds
+    });
+    return;
+  }
+
+  run.fail("second launch reset and showed pet window", {
+    command,
+    status: result.status,
+    signal: result.signal,
+    stagedBounds: staged.stagedBounds,
+    expectedBounds: staged.expectedBounds,
+    recovered
+  });
+}
+
+function getSecondInstanceCommand(app) {
+  if (QA_EXECUTABLE_PATH !== undefined) {
+    return {
+      executablePath: QA_EXECUTABLE_PATH,
+      args: []
+    };
+  }
+
+  if (fs.existsSync(LOCAL_ELECTRON_EXECUTABLE)) {
+    return {
+      executablePath: LOCAL_ELECTRON_EXECUTABLE,
+      args: [ROOT_DIR]
+    };
+  }
+
+  const processInfo = app.process();
+  return {
+    executablePath: processInfo.spawnfile,
+    args: [ROOT_DIR]
+  };
+}
+
+async function waitForOverlayRecovery(app, expectedBounds) {
+  const deadline = Date.now() + 5_000;
+  let info;
+  while (Date.now() < deadline) {
+    info = await getOverlayWindowInfo(app);
+    const nearExpected =
+      Math.abs(info.bounds.x - expectedBounds.x) <= 4 &&
+      Math.abs(info.bounds.y - expectedBounds.y) <= 4 &&
+      Math.abs(info.bounds.width - expectedBounds.width) <= 4 &&
+      Math.abs(info.bounds.height - expectedBounds.height) <= 4;
+    if (info.visible && nearExpected) {
+      return {
+        recovered: true,
+        info
+      };
+    }
+    await delay(250);
+  }
+  return {
+    recovered: false,
+    info
+  };
+}
+
 async function runRendererScenario(run, app) {
   const page = await overlayPage(app);
   const views = ["status", "pet-selector", "settings"];
@@ -827,6 +948,7 @@ async function getOverlayWindowInfo(app) {
       bounds,
       url: window.webContents.getURL(),
       alwaysOnTop: window.isAlwaysOnTop(),
+      visible: window.isVisible(),
       display: {
         id: String(display.id),
         bounds: display.bounds,
@@ -1318,6 +1440,23 @@ ${uncovered || "- None listed."}
 
 function appendLog(run, line) {
   fs.appendFileSync(path.join(run.runDir, "console.log"), `${line}\n`, "utf8");
+}
+
+function writeCommandLog(run, filename, result) {
+  fs.writeFileSync(
+    path.join(run.runDir, filename),
+    [
+      `status=${result.status ?? ""}`,
+      `signal=${result.signal ?? ""}`,
+      "stdout:",
+      result.stdout ?? "",
+      "stderr:",
+      result.stderr ?? "",
+      "error:",
+      result.error instanceof Error ? result.error.message : ""
+    ].join("\n"),
+    "utf8"
+  );
 }
 
 function writeJson(filePath, value) {
