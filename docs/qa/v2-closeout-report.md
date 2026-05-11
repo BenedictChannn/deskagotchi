@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T08:31:14.467Z
+Generated: 2026-05-11T08:39:30.692Z
 
 Completion status: **incomplete**
 
@@ -54,7 +54,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `c5a2d7c`
+Commit: `2643c2c`
 
 Workspace is clean.
 
@@ -93,13 +93,25 @@ Evidence path: not exported yet
 
 No exported manual acceptance JSON found.
 
-- Final subjective visual acceptance for pets and food icons.
-- Interactive installer UI and interactive uninstall UI.
-- Real packaged startup-on-login after Windows login or restart.
-- Right-side and stacked physical monitor layouts.
-- RDP-specific behavior.
-- Unusual taskbar layouts.
-- SmartScreen/signing reputation caveat.
+- Manual gate not exported: environment.rdp: RDP behavior is acceptable or explicitly deferred.
+- Manual gate not exported: environment.smartscreen: SmartScreen/signing caveat is documented for this build.
+- Manual gate not exported: environment.taskbar: Unusual taskbar layout is acceptable or explicitly deferred.
+- Manual gate not exported: installer.install: Interactive installer completes without confusing or broken UI.
+- Manual gate not exported: installer.launch: Installed app launches to the pet overlay.
+- Manual gate not exported: installer.uninstall: Interactive uninstall removes the installed executable.
+- Manual gate not exported: monitors.dpi: Mixed-DPI drag and restore behavior is acceptable.
+- Manual gate not exported: monitors.right: Right-side monitor layout works.
+- Manual gate not exported: monitors.stacked: Stacked-above or stacked-below layout works.
+- Manual gate not exported: sleep.process: No duplicate or stuck Deskagotchi processes remain.
+- Manual gate not exported: sleep.state: Stats/state refresh after wake.
+- Manual gate not exported: sleep.visible: Pet remains visible or recoverable after wake.
+- Manual gate not exported: startup.disable: Startup is disabled again after the test.
+- Manual gate not exported: startup.enable: Packaged app registers startup after enabling the setting.
+- Manual gate not exported: startup.login: App opens once after login/restart.
+- Manual gate not exported: visual.animations: Animation rows have visible but not distracting movement.
+- Manual gate not exported: visual.cohesion: Pets and food share a coherent monochrome LCD style.
+- Manual gate not exported: visual.food: Food icons are roughly identifiable without relying on labels.
+- Manual gate not exported: visual.pets: All five pets read as intended animals at desktop size.
 
 ## Strict Mode
 
