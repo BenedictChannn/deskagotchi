@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T08:52:40.275Z
+Generated: 2026-05-11T09:02:07.063Z
 
 Completion status: **incomplete**
 
@@ -23,14 +23,15 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 | Area | Status | Latest evidence | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| Launch | PASS | .qa-runs/2026-05-11T08-06-17Z-launch/report.md | automated-pass | passed automated launch QA for tested scope |
-| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-11T08-06-31Z-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
-| Overlay care interactions | PASS | .qa-runs/2026-05-11T08-06-51Z-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
-| Ball play mode | PASS | .qa-runs/2026-05-11T08-06-59Z-play/report.md | automated-pass | passed automated play QA for tested scope |
-| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-11T08-07-08Z-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
-| Renderer panel routes | PASS | .qa-runs/2026-05-11T08-07-22Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
+| Launch | PASS | .qa-runs/2026-05-11T08-57-30Z-launch/report.md | automated-pass | passed automated launch QA for tested scope |
+| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-11T08-57-46Z-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
+| Overlay care interactions | PASS | .qa-runs/2026-05-11T08-58-07Z-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
+| Ball play mode | PASS | .qa-runs/2026-05-11T08-58-16Z-play/report.md | automated-pass | passed automated play QA for tested scope |
+| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-11T08-58-25Z-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
+| Renderer panel routes | PASS | .qa-runs/2026-05-11T08-58-40Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T07-57-16Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
+| Manual acceptance page export | PASS | .qa-runs/2026-05-11T08-59-44Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
 
 ## Prompt-To-Artifact Checklist
 
@@ -54,7 +55,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `e0d7054`
+Commit: `74c87a7`
 
 Workspace is clean.
 
