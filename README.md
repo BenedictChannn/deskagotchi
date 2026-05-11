@@ -18,8 +18,8 @@ The app runs as a small transparent frameless pet window with tray controls, loc
   - Miso, a cat companion
   - Mochi, a monkey companion
   - Peanut, an elephant companion
-  - Deskcat, Deskdog, Deskduck, and Deskblob legacy placeholder companions
-- Deskcat includes multiple care-based growth variants; imagegen-assisted pets ship with the full MVP animation row set.
+  - Puddles, a duck companion with peas and corn as favorite foods
+- Built-in pets ship with the full MVP animation row set and pet-specific food preferences.
 - Shared package schema for built-in and custom pets.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
 - Local Hatch draft creator with prompt/IP guardrails.
@@ -85,12 +85,6 @@ and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
 `docs/qa/using-qa.md` for when to run each targeted QA command and how to
 interpret the reports.
 
-Regenerate built-in pet assets:
-
-```powershell
-npm.cmd run generate:pets
-```
-
 Regenerate LCD item icons:
 
 ```powershell
@@ -144,6 +138,10 @@ icon.png
 The MVP runtime accepts `.svg`, `.png`, and `.webp` assets. The monochrome LCD
 production path should use lightweight transparent `.png` atlases; legacy SVGs
 are still accepted for placeholder pets.
+
+Built-in imagegen-derived pets may also include `source-metadata.json`. Keep
+large source concepts and contact sheets under `docs/qa/` so the packaged app
+does not carry unnecessary generation artifacts.
 
 Important `pet.json` fields:
 
@@ -205,11 +203,12 @@ Do not copy Bandai, Tamagotchi, Codex pet characters, names, logos, shell design
 
 Preferred flow:
 
-1. Add or update pet definitions in `scripts/generate-placeholder-pets.mjs`.
-2. Run `npm.cmd run generate:pets`.
-3. Run `npm.cmd run validate:pets`.
-4. Replace placeholder assets with validated imagegen assets when ready.
-5. Keep `pet.json` schema-compatible with `src/shared/domain.ts`.
+1. Generate or select an approved base concept with `$imagegen`.
+2. Build the animation rows from that approved concept, keeping a flat chroma-key background until cleanup.
+3. Copy the final `spritesheet.png`, `preview.png`, `icon.png`, and source metadata into `resources/pets/<package-id>/`.
+4. Add any pet-specific foods to `scripts/generate-lcd-item-icons.mjs`, then run `npm.cmd run generate:items`.
+5. Run `npm.cmd run validate:pets`, `npm.cmd run qa:assets:pets`, and `npm.cmd run qa:assets:items`.
+6. Keep `pet.json` schema-compatible with `src/shared/domain.ts`.
 
 For a fully featured built-in pet, include:
 
@@ -236,6 +235,6 @@ For a fully featured built-in pet, include:
 - `src/shared/`: Domain schemas, Hatch validation, package validation, IPC types, deterministic simulation.
 - `resources/pets/`: Built-in pet packages.
 - `resources/items/`: Built-in item icon atlases and care item manifests.
-- `scripts/`: Reproducible placeholder asset generation.
+- `scripts/`: App icon, item atlas, and QA utility scripts.
 
 The simulation engine is framework-agnostic and uses injected time so offline progression and evolution can be tested deterministically.
