@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T12:17:34.695Z
+Generated: 2026-05-11T12:24:22.586Z
 
 Completion status: **incomplete**
 
@@ -31,6 +31,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Renderer panel routes | PASS | .qa-runs/2026-05-11T09-43-55Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T10-57-21Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
+| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-11T12-23-54Z-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
 | Built-in pet asset QA | PASS | .qa-runs/2026-05-11T12-17-26Z-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
 | Food and item asset QA | PASS | .qa-runs/2026-05-11T12-17-26Z-assets-items/report.md | automated-pass | passed assets-items static asset QA |
 | Manual acceptance page export | PASS | .qa-runs/2026-05-11T12-06-28Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
@@ -49,6 +50,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through npm.cmd run check |  |
 | Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | MANUAL OPEN | pet asset contact sheets and visual acceptance page | manual acceptance JSON is not passing yet |
 | Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through npm.cmd run check |  |
+| Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through npm.cmd run check |  |
 | Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README, renderer route removal, and V2 scope QA |  |
 | Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
 | Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
@@ -59,7 +61,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `6a9b0ec`
+Commit: `54f6586`
 
 Workspace is clean.
 
