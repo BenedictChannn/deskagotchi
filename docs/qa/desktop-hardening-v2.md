@@ -97,9 +97,13 @@ npm.cmd run qa:release
 ```
 
 That command rebuilds the installer, checks packaged resources, launches the
-unpacked packaged executable, silently installs into `.qa-runs/`, launches the
-installed executable, and runs the generated uninstaller. It does not replace a
-human pass through the interactive installer UI or SmartScreen behavior.
+unpacked packaged executable, runs packaged lifecycle recovery smoke against the
+unpacked executable, silently installs into `.qa-runs/`, launches the installed
+executable, and runs the generated uninstaller. The packaged lifecycle smoke
+reuses `qa:desktop:lifecycle` with the packaged executable, so the release gate
+covers second-launch recovery, resume/unlock refresh behavior, and persisted
+always-on-top settings in the packaged runtime. It does not replace a human pass
+through the interactive installer UI or SmartScreen behavior.
 
 ## Manual Acceptance Form
 

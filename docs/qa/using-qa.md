@@ -41,6 +41,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:renderer` | Changing panel routes, renderer-only UI, settings, or pet selector UI. |
 | `npm.cmd run qa:assets:pets` | Changing pet packages, pet manifests, or built-in pet assets. |
 | `npm.cmd run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
+| `npm.cmd run qa:release` | Rebuilding the Windows package, checking packaged resources, running packaged launch and lifecycle recovery smoke, then testing silent install, installed launch, and uninstall. |
 | `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
 | `npm.cmd run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |

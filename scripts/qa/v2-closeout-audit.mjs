@@ -102,6 +102,7 @@ const AUTOMATED_SCENARIOS = [
       "Windows installer exists",
       "packaged executable exists",
       "packaged executable launches with isolated QA profile",
+      "packaged executable passes lifecycle recovery smoke",
       "silent installer completed",
       "installed executable launches with isolated QA profile",
       "silent uninstaller completed",

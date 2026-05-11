@@ -1262,8 +1262,9 @@ async function closeApp(app, run) {
     // Playwright may report close failure after app.quit completes.
   }
   await delay(800);
+  let rootRunning = isProcessRunning(pid);
   let descendants = getDescendantProcesses(pid);
-  if (descendants.length === 0) {
+  if (!rootRunning && descendants.length === 0) {
     run.pass("QA process tree cleaned up", { pid });
     return;
   }
@@ -1273,15 +1274,29 @@ async function closeApp(app, run) {
     });
     await delay(500);
   }
+  rootRunning = isProcessRunning(pid);
   descendants = getDescendantProcesses(pid);
-  if (descendants.length === 0) {
+  if (!rootRunning && descendants.length === 0) {
     run.pass("QA process tree cleaned up", {
       pid,
       forcedCleanup: true
     });
     return;
   }
-  run.fail("QA process tree cleaned up", { pid, descendants });
+  run.fail("QA process tree cleaned up", { pid, rootRunning, descendants });
+}
+
+function isProcessRunning(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "EPERM"
+    );
+  }
 }
 
 function getDescendantProcesses(pid) {

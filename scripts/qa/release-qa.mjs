@@ -90,6 +90,7 @@ function main() {
     assertInstallerArtifacts(run);
     assertPackagedResources(run);
     runPackagedLaunchSmoke(run);
+    runPackagedLifecycleSmoke(run);
     runInstallerSmoke(run);
   } catch (error) {
     run.fail("release QA threw", {
@@ -153,7 +154,7 @@ function assertPackagedResources(run) {
 }
 
 function runPackagedLaunchSmoke(run) {
-  const result = runDesktopLaunchSmoke(run, PACKAGED_EXE);
+  const result = runDesktopScenarioSmoke(run, PACKAGED_EXE, "launch");
   if (result.status === 0) {
     run.pass("packaged executable launches with isolated QA profile", {
       report: result.relativeReport
@@ -174,6 +175,21 @@ function runPackagedLaunchSmoke(run) {
     return;
   }
   run.fail("packaged executable launches with isolated QA profile", {
+    status: result.status,
+    report: result.relativeReport
+  });
+}
+
+function runPackagedLifecycleSmoke(run) {
+  const result = runDesktopScenarioSmoke(run, PACKAGED_EXE, "lifecycle");
+  if (result.status === 0) {
+    run.pass("packaged executable passes lifecycle recovery smoke", {
+      report: result.relativeReport
+    });
+    return;
+  }
+
+  run.fail("packaged executable passes lifecycle recovery smoke", {
     status: result.status,
     report: result.relativeReport
   });
@@ -208,7 +224,7 @@ function runInstallerSmoke(run) {
   const installedExe = path.join(installDir, "Deskagotchi.exe");
   assertFile(run, "silent installer created installed executable", installedExe, 1_000_000);
 
-  const installedLaunch = runDesktopLaunchSmoke(run, installedExe);
+  const installedLaunch = runDesktopScenarioSmoke(run, installedExe, "launch");
   if (installedLaunch.status === 0) {
     run.pass("installed executable launches with isolated QA profile", {
       report: installedLaunch.relativeReport
@@ -254,8 +270,9 @@ function runInstallerSmoke(run) {
   cleanupDirectoryWithRetry(installDir);
 }
 
-function runDesktopLaunchSmoke(run, executablePath) {
-  const child = spawnSync("node", ["scripts/qa/desktop-qa.mjs", "launch"], {
+function runDesktopScenarioSmoke(run, executablePath, scenario) {
+  const startedAtMs = Date.now();
+  const child = spawnSync(process.execPath, ["scripts/qa/desktop-qa.mjs", scenario], {
     cwd: ROOT_DIR,
     stdio: "inherit",
     env: {
@@ -264,22 +281,48 @@ function runDesktopLaunchSmoke(run, executablePath) {
       DESKAGOTCHI_QA_SKIP_BUILD: "1"
     }
   });
-  const latestRunDir = fs.readFileSync(path.join(QA_ROOT, "latest.txt"), "utf8").trim();
-  const relativeReport = path.relative(
-    ROOT_DIR,
-    path.join(latestRunDir, "report.md")
-  );
-  run.artifact(relativeReport);
-  run.artifact(path.relative(ROOT_DIR, path.join(latestRunDir, "startup-invariants.json")));
+  const latestRunDir = readLatestScenarioRunDir(scenario, startedAtMs);
+  const reportPath = latestRunDir === null ? null : path.join(latestRunDir, "report.md");
+  const relativeReport =
+    reportPath === null ? "not recorded" : path.relative(ROOT_DIR, reportPath);
+  if (reportPath !== null) {
+    run.artifact(relativeReport);
+  }
 
-  const metadata = JSON.parse(
-    fs.readFileSync(path.join(latestRunDir, "startup-invariants.json"), "utf8")
-  );
+  const startupInvariantsPath =
+    latestRunDir === null ? null : path.join(latestRunDir, "startup-invariants.json");
+  const metadata =
+    scenario === "launch" && startupInvariantsPath !== null
+      ? readJson(startupInvariantsPath) ?? {}
+      : {};
+  if (scenario === "launch" && startupInvariantsPath !== null) {
+    run.artifact(path.relative(ROOT_DIR, startupInvariantsPath));
+  }
+
   return {
     status: child.status,
     relativeReport,
     metadata
   };
+}
+
+function readLatestScenarioRunDir(scenario, startedAtMs) {
+  const latestPath = path.join(QA_ROOT, "latest.txt");
+  if (!fs.existsSync(latestPath)) {
+    return null;
+  }
+  const latestRunDir = fs.readFileSync(latestPath, "utf8").trim();
+  if (latestRunDir.endsWith(`-${scenario}`) && fs.existsSync(latestRunDir)) {
+    return latestRunDir;
+  }
+
+  const latestMatchingRun = fs
+    .readdirSync(QA_ROOT, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.endsWith(`-${scenario}`))
+    .map((entry) => path.join(QA_ROOT, entry.name))
+    .filter((runDir) => fs.statSync(runDir).mtimeMs >= startedAtMs - 2_000)
+    .sort((left, right) => right.localeCompare(left))[0];
+  return latestMatchingRun ?? null;
 }
 
 function assertFile(run, name, filePath, minBytes) {
@@ -405,6 +448,14 @@ ${uncovered || "- None listed."}
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function readJson(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return null;
+  }
 }
 
 main();
