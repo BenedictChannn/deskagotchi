@@ -36,10 +36,15 @@ Open:
 docs/qa/v2-manual-acceptance.html
 ```
 
-Paste the generated
+Prefer opening the generated
+`.qa-runs/<run-id>-manual-context/manual-acceptance-session.html`. It embeds the
+latest manual context and fills run context plus note starters automatically.
+
+If you use `docs/qa/v2-manual-acceptance.html` directly, paste the generated
 `.qa-runs/<run-id>-manual-context/manual-context.json` into the manual context
-import box and click `Apply Context`. This only fills run context and note
-starters; it does not check any gates.
+import box and click `Apply Context`.
+
+Both paths only fill run context and note starters; neither checks any gates.
 
 ## Gate Execution
 

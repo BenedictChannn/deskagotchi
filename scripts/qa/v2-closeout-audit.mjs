@@ -119,6 +119,7 @@ const AUTOMATED_SCENARIOS = [
       "manual acceptance page loaded",
       "manual gate count matched",
       "blank run context blocks manual pass",
+      "embedded manual context prefills without resolving gates",
       "manual context import prefills without resolving gates",
       "same manual context import preserves current gate decisions",
       "new manual context import resets stale gate decisions",

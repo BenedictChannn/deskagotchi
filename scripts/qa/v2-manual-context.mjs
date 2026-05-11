@@ -38,10 +38,12 @@ function main() {
   const context = buildManualContext(startedAt);
   const summary = buildSummary(context, startedAt);
   const contextPath = path.join(RUN_DIR, "manual-context.json");
+  const manualSessionPath = path.join(RUN_DIR, "manual-acceptance-session.html");
   const reportPath = path.join(RUN_DIR, "report.md");
   const summaryPath = path.join(RUN_DIR, "summary.json");
 
   fs.writeFileSync(contextPath, JSON.stringify(context, null, 2));
+  fs.writeFileSync(manualSessionPath, renderManualSessionHtml(context), "utf8");
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   fs.writeFileSync(reportPath, renderReport(context, summary), "utf8");
 
@@ -50,6 +52,7 @@ function main() {
       {
         runId: RUN_ID,
         context: path.relative(ROOT_DIR, contextPath),
+        session: path.relative(ROOT_DIR, manualSessionPath),
         report: path.relative(ROOT_DIR, reportPath),
         summary: path.relative(ROOT_DIR, summaryPath),
         manualPage: context.manualAcceptance.page,
@@ -89,6 +92,7 @@ function buildManualContext(startedAt) {
     releaseCandidates,
     manualAcceptance: {
       page: path.relative(ROOT_DIR, MANUAL_PAGE_PATH),
+      sessionPage: path.relative(ROOT_DIR, path.join(RUN_DIR, "manual-acceptance-session.html")),
       runbook: path.relative(ROOT_DIR, MANUAL_RUNBOOK_PATH),
       gateCount: manualGateKeys.length,
       gateKeys: manualGateKeys
@@ -104,7 +108,8 @@ function buildManualContext(startedAt) {
     reminders: [
       "This context does not mark any manual gate as passed.",
       "Use it to fill run context and notes before performing the physical/manual checks.",
-      "The final exported manual JSON must still come from docs/qa/v2-manual-acceptance.html."
+      "The generated manual acceptance session page preloads context but does not mark manual gates as passed.",
+      "The final exported manual JSON must still come from the manual acceptance page."
     ],
     closeoutCommands: [
       "npm.cmd run qa:v2:audit -- --manual docs\\qa\\v2-manual-acceptance-export.json",
@@ -381,7 +386,12 @@ function buildSummary(context, startedAt) {
     confidenceLabel: "manual-prep",
     evidenceTier: "local-context",
     checks,
-    artifacts: ["manual-context.json", "summary.json", "report.md"],
+    artifacts: [
+      "manual-context.json",
+      "manual-acceptance-session.html",
+      "summary.json",
+      "report.md"
+    ],
     exactClaimAllowed:
       "manual acceptance context collected; this is not a manual pass",
     uncoveredConditions: [
@@ -449,6 +459,7 @@ ${context.pasteIntoManualPage}
 | File | Path |
 | --- | --- |
 | Manual page | ${context.manualAcceptance.page} |
+| Generated session page | ${context.manualAcceptance.sessionPage} |
 | Runbook | ${context.manualAcceptance.runbook} |
 
 Manual gate count: ${context.manualAcceptance.gateCount}
@@ -493,6 +504,21 @@ ${closeoutCommandRows}
 
 ${summary.uncoveredConditions.map((condition) => `- ${condition}`).join("\n")}
 `;
+}
+
+function renderManualSessionHtml(context) {
+  const manualPage = fs.readFileSync(MANUAL_PAGE_PATH, "utf8");
+  const contextJson = JSON.stringify(context, null, 2).replace(/</g, "\\u003c");
+  const placeholder =
+    '<script id="deskagotchi-manual-context" type="application/json"></script>';
+  if (!manualPage.includes(placeholder)) {
+    throw new Error("Manual page is missing the embedded context placeholder.");
+  }
+
+  return manualPage.replace(
+    placeholder,
+    `<script id="deskagotchi-manual-context" type="application/json">\n${contextJson}\n</script>`
+  );
 }
 
 main();

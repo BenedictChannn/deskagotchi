@@ -298,9 +298,10 @@
         <div class="card context-import">
           <h3>Manual Context Import</h3>
           <p class="status-line">
-            Run `npm.cmd run qa:v2:manual-context`, paste the generated
-            `manual-context.json` here, and apply it to prefill context and
-            evidence-note starters. This never checks manual gates.
+            Run `npm.cmd run qa:v2:manual-context` and open the generated
+            `manual-acceptance-session.html` to preload context automatically,
+            or paste `manual-context.json` here and apply it. This never checks
+            manual gates.
           </p>
           <label class="field">Context JSON <textarea data-context-import></textarea></label>
           <div class="actions">
@@ -431,6 +432,7 @@
         <label class="field">Report JSON <textarea id="export-output" readonly></textarea></label>
       </section>
     </main>
+    <script id="deskagotchi-manual-context" type="application/json"></script>
 
     <script>
       const storageKey = "deskagotchi-v2-manual-acceptance";
@@ -705,7 +707,7 @@
       }
       document.querySelector("[data-action='export']").addEventListener("click", exportReport);
       document.querySelector("[data-action='download']").addEventListener("click", downloadReport);
-      document.querySelector("[data-action='apply-context']").addEventListener("click", applyManualContext);
+      document.querySelector("[data-action='apply-context']").addEventListener("click", applyManualContextFromInput);
       document.querySelector("[data-action='clear']").addEventListener("click", () => {
         localStorage.removeItem(storageKey);
         restoreState();
@@ -713,11 +715,35 @@
         updateProgress();
       });
 
-      function applyManualContext() {
+      applyEmbeddedManualContext();
+
+      function applyManualContextFromInput() {
         const input = document.querySelector("[data-context-import]");
+        applyManualContextPayload(
+          input.value || "{}",
+          "Manual context imported. Manual gates still require human checks or explicit deferrals."
+        );
+      }
+
+      function applyEmbeddedManualContext() {
+        const embeddedContext = document.querySelector("#deskagotchi-manual-context");
+        const payload = embeddedContext?.textContent?.trim();
+        if (!payload) {
+          return;
+        }
+
+        const input = document.querySelector("[data-context-import]");
+        input.value = payload;
+        applyManualContextPayload(
+          payload,
+          "Manual context loaded from this generated session. Manual gates still require human checks or explicit deferrals."
+        );
+      }
+
+      function applyManualContextPayload(payload, successMessage) {
         let context;
         try {
-          context = JSON.parse(input.value || "{}");
+          context = JSON.parse(payload);
         } catch {
           updateProgress("Manual context import failed: JSON could not be parsed.");
           return;
@@ -746,7 +772,7 @@
           }
         }
         saveState();
-        updateProgress("Manual context imported. Manual gates still require human checks or explicit deferrals.");
+        updateProgress(successMessage);
       }
     </script>
   </body>

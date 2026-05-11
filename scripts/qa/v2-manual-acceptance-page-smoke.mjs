@@ -17,6 +17,7 @@ const SCREENSHOT_PATH = path.join(
 );
 const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-page`;
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
+const SESSION_PAGE_PATH = path.join(RUN_DIR, "manual-acceptance-session.html");
 const UPDATE_SCREENSHOT = process.argv.includes("--update-screenshot");
 const REQUIRED_FIELD_FIXTURE = {
   tester: "V2 manual page smoke",
@@ -72,6 +73,31 @@ async function main() {
       "Manual pass is still blocked."
     ]);
     recordPass(checks, "blank run context blocks manual pass");
+
+    writeManualSessionPage();
+    await page.goto(pathToFileURL(SESSION_PAGE_PATH).href, {
+      waitUntil: "domcontentloaded",
+      timeout: 10000
+    });
+    await page.locator("#export-status").waitFor({ state: "visible", timeout: 10000 });
+    await assertStatusIncludes(page, [
+      "0/19 gates resolved.",
+      "Required run context complete.",
+      "Required evidence notes complete.",
+      "Manual pass is still blocked."
+    ]);
+    const sessionCheckedGates = await page.locator("[data-check]:checked").count();
+    assertEqual(sessionCheckedGates, 0, "embedded manual context checked gates");
+    const sessionReport = await exportReport(page);
+    assertEqual(sessionReport.manualPass, false, "manual pass after embedded context");
+    assertEqual(sessionReport.fieldFailures.length, 0, "field failures after embedded context");
+    assertEqual(
+      sessionReport.blockingChecks.length,
+      gateCount,
+      "blocking gates after embedded context"
+    );
+    recordPass(checks, "embedded manual context prefills without resolving gates");
+    artifacts.push("manual-acceptance-session.html");
 
     await applyManualContext(page);
     await assertStatusIncludes(page, [
@@ -311,6 +337,27 @@ async function applyManualContext(page, context = MANUAL_CONTEXT_FIXTURE) {
     .locator("[data-context-import]")
     .fill(JSON.stringify(context));
   await page.locator("[data-action='apply-context']").click();
+}
+
+function writeManualSessionPage() {
+  const manualPage = fs.readFileSync(PAGE_PATH, "utf8");
+  const placeholder =
+    '<script id="deskagotchi-manual-context" type="application/json"></script>';
+  if (!manualPage.includes(placeholder)) {
+    throw new Error("Manual page is missing embedded context placeholder.");
+  }
+  const contextJson = JSON.stringify(MANUAL_CONTEXT_FIXTURE, null, 2).replace(
+    /</g,
+    "\\u003c"
+  );
+  fs.writeFileSync(
+    SESSION_PAGE_PATH,
+    manualPage.replace(
+      placeholder,
+      `<script id="deskagotchi-manual-context" type="application/json">\n${contextJson}\n</script>`
+    ),
+    "utf8"
+  );
 }
 
 async function exportReport(page) {
