@@ -106,6 +106,50 @@ const AUTOMATED_FIXTURES = [
     ]
   },
   {
+    suffix: "assets-pets",
+    checks: [
+      "built-in pet package registry validation passed",
+      "bao manifest exists",
+      "bao spritesheet exists",
+      "bao preview exists",
+      "bao icon exists",
+      "bao contact sheet exists",
+      "miso manifest exists",
+      "miso spritesheet exists",
+      "miso preview exists",
+      "miso icon exists",
+      "miso contact sheet exists",
+      "mochi manifest exists",
+      "mochi spritesheet exists",
+      "mochi preview exists",
+      "mochi icon exists",
+      "mochi contact sheet exists",
+      "peanut manifest exists",
+      "peanut spritesheet exists",
+      "peanut preview exists",
+      "peanut icon exists",
+      "peanut contact sheet exists",
+      "puddles manifest exists",
+      "puddles spritesheet exists",
+      "puddles preview exists",
+      "puddles icon exists",
+      "puddles contact sheet exists",
+      "V2 visual acceptance page exists",
+      "built-in pet manifests use retro-LCD capability",
+      "built-in pet palettes use at most four colors"
+    ]
+  },
+  {
+    suffix: "assets-items",
+    checks: [
+      "item manifest exists and parses",
+      "full item icon contact sheet exists",
+      "food icon contact sheet exists",
+      "item manifest includes food items",
+      "item atlas referenced by manifest exists"
+    ]
+  },
+  {
     suffix: "manual-page",
     checks: [
       "manual acceptance page loaded",

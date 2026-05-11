@@ -112,6 +112,54 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
+    key: "assets-pets",
+    label: "Built-in pet asset QA",
+    suffix: "assets-pets",
+    requiredChecks: [
+      "built-in pet package registry validation passed",
+      "bao manifest exists",
+      "bao spritesheet exists",
+      "bao preview exists",
+      "bao icon exists",
+      "bao contact sheet exists",
+      "miso manifest exists",
+      "miso spritesheet exists",
+      "miso preview exists",
+      "miso icon exists",
+      "miso contact sheet exists",
+      "mochi manifest exists",
+      "mochi spritesheet exists",
+      "mochi preview exists",
+      "mochi icon exists",
+      "mochi contact sheet exists",
+      "peanut manifest exists",
+      "peanut spritesheet exists",
+      "peanut preview exists",
+      "peanut icon exists",
+      "peanut contact sheet exists",
+      "puddles manifest exists",
+      "puddles spritesheet exists",
+      "puddles preview exists",
+      "puddles icon exists",
+      "puddles contact sheet exists",
+      "V2 visual acceptance page exists",
+      "built-in pet manifests use retro-LCD capability",
+      "built-in pet palettes use at most four colors"
+    ]
+  },
+  {
+    key: "assets-items",
+    label: "Food and item asset QA",
+    suffix: "assets-items",
+    requiredChecks: [
+      "item manifest exists and parses",
+      "full item icon contact sheet exists",
+      "food icon contact sheet exists",
+      "item manifest includes food items",
+      "item atlas referenced by manifest exists"
+    ]
+  },
+  {
     key: "manual-page",
     label: "Manual acceptance page export",
     suffix: "manual-page",
@@ -316,7 +364,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Feed picker uses icon-first food choices and selected food appears in eating feedback.",
     evidence: "overlay QA plus item contact sheets",
-    automatedKeys: ["overlay", "visual-page"],
+    automatedKeys: ["overlay", "assets-items", "visual-page"],
     artifactLabels: ["Food icon contact sheet", "Full item icon contact sheet"],
     manualRequired: true
   },
@@ -339,7 +387,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles.",
     evidence: "pet asset contact sheets and visual acceptance page",
-    automatedKeys: ["visual-page"],
+    automatedKeys: ["assets-pets", "visual-page"],
     artifactLabels: [
       "Bao contact sheet",
       "Miso contact sheet",
