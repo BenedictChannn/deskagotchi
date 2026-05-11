@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T09:57:38.797Z
+Generated: 2026-05-11T10:05:01.504Z
 
 Completion status: **incomplete**
 
@@ -31,8 +31,8 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Renderer panel routes | PASS | .qa-runs/2026-05-11T09-43-55Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T07-57-16Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
-| Manual acceptance page export | PASS | .qa-runs/2026-05-11T09-55-56Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
-| V2 visual acceptance pages | PASS | .qa-runs/2026-05-11T09-44-08Z-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
+| Manual acceptance page export | PASS | .qa-runs/2026-05-11T10-02-49Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
+| V2 visual acceptance pages | PASS | .qa-runs/2026-05-11T10-02-28Z-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
 | V2 user-facing scope | PASS | .qa-runs/2026-05-11T09-44-07Z-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
 
 ## Prompt-To-Artifact Checklist
@@ -57,7 +57,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `c8f61f8`
+Commit: `5a487d2`
 
 Workspace is clean.
 
@@ -78,6 +78,7 @@ Dirty entries: 0
 | Pet animation gallery | PASS | `docs/qa/pet-animation-gallery.html` |
 | V2 visual acceptance page | PASS | `docs/qa/v2-visual-acceptance.html` |
 | V2 visual acceptance screenshot | PASS | `docs/qa/v2-visual-acceptance-screenshot.png` |
+| V2 visual review notes | PASS | `docs/qa/v2-visual-review-notes.md` |
 | V2 manual acceptance page | PASS | `docs/qa/v2-manual-acceptance.html` |
 | V2 manual acceptance screenshot | PASS | `docs/qa/v2-manual-acceptance-screenshot.png` |
 | Food icon contact sheet | PASS | `docs/qa/lcd-food-icons-contact-sheet.png` |
