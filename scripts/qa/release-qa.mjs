@@ -11,6 +11,7 @@ const QA_ROOT = path.join(ROOT_DIR, ".qa-runs");
 const RELEASE_DIR = path.join(ROOT_DIR, "release");
 const PACKAGED_EXE = path.join(RELEASE_DIR, "win-unpacked", "Deskagotchi.exe");
 const INSTALLER_EXE = path.join(RELEASE_DIR, "Deskagotchi Setup 0.1.0.exe");
+const SOURCE_RESOURCE_ROOT = path.join(ROOT_DIR, "resources");
 const PACKAGED_RESOURCE_ROOT = path.join(
   RELEASE_DIR,
   "win-unpacked",
@@ -131,9 +132,23 @@ function assertPackagedResources(run) {
     path.join(PACKAGED_RESOURCE_ROOT, "items", "lcd-core", "items.png"),
     1
   );
+  assertJsonFieldMatches(
+    run,
+    "packaged item manifest matches source asset version",
+    path.join(SOURCE_RESOURCE_ROOT, "items", "lcd-core", "items.json"),
+    path.join(PACKAGED_RESOURCE_ROOT, "items", "lcd-core", "items.json"),
+    "assetVersion"
+  );
+  assertFileMatches(
+    run,
+    "packaged item atlas matches source bytes",
+    path.join(SOURCE_RESOURCE_ROOT, "items", "lcd-core", "items.png"),
+    path.join(PACKAGED_RESOURCE_ROOT, "items", "lcd-core", "items.png")
+  );
 
   for (const petId of REQUIRED_PETS) {
     const petDir = path.join(PACKAGED_RESOURCE_ROOT, "pets", petId);
+    const sourcePetDir = path.join(SOURCE_RESOURCE_ROOT, "pets", petId);
     assertDirectory(run, `packaged pet ${petId} directory exists`, petDir);
     for (const filename of REQUIRED_PET_FILES) {
       assertFile(
@@ -141,6 +156,12 @@ function assertPackagedResources(run) {
         `packaged pet ${petId} includes ${filename}`,
         path.join(petDir, filename),
         1
+      );
+      assertFileMatches(
+        run,
+        `packaged pet ${petId} ${filename} matches source bytes`,
+        path.join(sourcePetDir, filename),
+        path.join(petDir, filename)
       );
     }
   }
@@ -347,6 +368,56 @@ function assertDirectory(run, name, directoryPath) {
     return;
   }
   run.fail(name, { path: directoryPath });
+}
+
+function assertJsonFieldMatches(run, name, sourcePath, packagedPath, fieldName) {
+  const sourceJson = readJson(sourcePath);
+  const packagedJson = readJson(packagedPath);
+  const sourceValue = sourceJson?.[fieldName];
+  const packagedValue = packagedJson?.[fieldName];
+  if (
+    typeof sourceValue === "string" &&
+    typeof packagedValue === "string" &&
+    sourceValue === packagedValue
+  ) {
+    run.pass(name, { [fieldName]: packagedValue });
+    return;
+  }
+
+  run.fail(name, {
+    sourcePath: path.relative(ROOT_DIR, sourcePath),
+    packagedPath: path.relative(ROOT_DIR, packagedPath),
+    sourceValue,
+    packagedValue
+  });
+}
+
+function assertFileMatches(run, name, sourcePath, packagedPath) {
+  if (!fs.existsSync(sourcePath) || !fs.existsSync(packagedPath)) {
+    run.fail(name, {
+      sourcePath: path.relative(ROOT_DIR, sourcePath),
+      packagedPath: path.relative(ROOT_DIR, packagedPath),
+      reason: "missing file"
+    });
+    return;
+  }
+
+  const sourceBytes = fs.readFileSync(sourcePath);
+  const packagedBytes = fs.readFileSync(packagedPath);
+  if (sourceBytes.equals(packagedBytes)) {
+    run.pass(name, {
+      path: path.relative(ROOT_DIR, packagedPath),
+      size: packagedBytes.length
+    });
+    return;
+  }
+
+  run.fail(name, {
+    sourcePath: path.relative(ROOT_DIR, sourcePath),
+    packagedPath: path.relative(ROOT_DIR, packagedPath),
+    sourceSize: sourceBytes.length,
+    packagedSize: packagedBytes.length
+  });
 }
 
 function findUninstaller(installDir) {

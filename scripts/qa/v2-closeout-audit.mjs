@@ -101,6 +101,8 @@ const AUTOMATED_SCENARIOS = [
     requiredChecks: [
       "Windows installer exists",
       "packaged executable exists",
+      "packaged item manifest matches source asset version",
+      "packaged item atlas matches source bytes",
       "packaged executable launches with isolated QA profile",
       "packaged executable passes lifecycle recovery smoke",
       "silent installer completed",

@@ -96,9 +96,10 @@ Run release smoke before installer readiness claims:
 npm.cmd run qa:release
 ```
 
-That command rebuilds the installer, checks packaged resources, launches the
-unpacked packaged executable, runs packaged lifecycle recovery smoke against the
-unpacked executable, silently installs into `.qa-runs/`, launches the installed
+That command rebuilds the installer, checks packaged resources, verifies the
+packaged item atlas matches the current source assets, launches the unpacked
+packaged executable, runs packaged lifecycle recovery smoke against the unpacked
+executable, silently installs into `.qa-runs/`, launches the installed
 executable, and runs the generated uninstaller. The packaged lifecycle smoke
 reuses `qa:desktop:lifecycle` with the packaged executable, so the release gate
 covers second-launch recovery, resume/unlock refresh behavior, and persisted
