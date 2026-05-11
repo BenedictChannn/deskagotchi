@@ -662,6 +662,7 @@ function auditManualAcceptance() {
     const hasDeferrals = expectedCheckKeys.some(
       (checkKey) => manualReport.deferrals?.[checkKey]?.accepted === true
     );
+    const shapeFailures = validateManualReportShape(manualReport, expectedCheckKeys);
     const fieldFailures = REQUIRED_MANUAL_FIELDS
       .filter((fieldName) => !hasNonEmptyManualField(manualReport, fieldName))
       .map((fieldName) => `Missing manual context field: ${fieldName}`);
@@ -686,6 +687,7 @@ function auditManualAcceptance() {
       .filter((check) => !isManualGateResolved(manualReport, check.key, acceptedOutOfScopeBy))
       .map((check) => `Missing, unchecked, or unresolved manual gate: ${formatManualCheck(check)}`);
     const blockingChecks = [
+      ...shapeFailures,
       ...fieldFailures,
       ...evidenceFailures,
       ...conflictFailures,
@@ -768,6 +770,45 @@ function isManualSectionTouched(manualReport, section, expectedCheckKeys) {
 function getManualField(manualReport, fieldName) {
   const value = manualReport.fields?.[fieldName];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function validateManualReportShape(manualReport, expectedCheckKeys) {
+  const failures = [];
+  const expectedCheckSet = new Set(expectedCheckKeys);
+  const reportedExpectedChecks = Array.isArray(manualReport.expectedChecks)
+    ? manualReport.expectedChecks.filter((checkKey) => typeof checkKey === "string")
+    : null;
+
+  if (reportedExpectedChecks === null) {
+    failures.push("Manual acceptance JSON is missing expectedChecks.");
+  } else {
+    const reportedExpectedSet = new Set(reportedExpectedChecks);
+    const missingExpectedChecks = expectedCheckKeys.filter(
+      (checkKey) => !reportedExpectedSet.has(checkKey)
+    );
+    const staleExpectedChecks = reportedExpectedChecks.filter(
+      (checkKey) => !expectedCheckSet.has(checkKey)
+    );
+    for (const checkKey of missingExpectedChecks) {
+      failures.push(`Manual acceptance JSON expectedChecks is missing gate: ${checkKey}`);
+    }
+    for (const checkKey of staleExpectedChecks) {
+      failures.push(`Manual acceptance JSON expectedChecks has unknown gate: ${checkKey}`);
+    }
+  }
+
+  for (const checkKey of Object.keys(manualReport.checks ?? {})) {
+    if (!expectedCheckSet.has(checkKey)) {
+      failures.push(`Manual acceptance JSON checks has unknown gate: ${checkKey}`);
+    }
+  }
+  for (const checkKey of Object.keys(manualReport.deferrals ?? {})) {
+    if (!expectedCheckSet.has(checkKey)) {
+      failures.push(`Manual acceptance JSON deferrals has unknown gate: ${checkKey}`);
+    }
+  }
+
+  return failures;
 }
 
 function isManualGateResolved(manualReport, checkKey, acceptedOutOfScopeBy) {

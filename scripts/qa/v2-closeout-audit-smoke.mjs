@@ -170,6 +170,7 @@ function main() {
   const incompleteManualPath = path.join(SMOKE_DIR, "manual-incomplete.json");
   const missingFieldsManualPath = path.join(SMOKE_DIR, "manual-missing-fields.json");
   const conflictedManualPath = path.join(SMOKE_DIR, "manual-conflicted.json");
+  const staleGateManualPath = path.join(SMOKE_DIR, "manual-stale-gate.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
@@ -185,6 +186,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     conflictedCheck: checkKeys[0]
+  });
+  writeManualReport(staleGateManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    unknownCheck: "stale.manual.gate"
   });
   writeManualReport(completeManualPath, checkKeys, {
     complete: true,
@@ -273,6 +279,31 @@ function main() {
     throw new Error("Conflicted manual report did not include gate conflict blockers.");
   }
 
+  const staleGateReportPath = path.join(SMOKE_DIR, "report-stale-gate.md");
+  const staleGateRun = runAudit([
+    "--manual",
+    staleGateManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    staleGateReportPath
+  ]);
+  if (staleGateRun.status !== 1) {
+    throw new Error(
+      `Expected stale-gate manual evidence to fail strict mode, got ${staleGateRun.status}.`
+    );
+  }
+  const staleGateReport = fs.readFileSync(staleGateReportPath, "utf8");
+  if (!staleGateReport.includes("Manual acceptance JSON expectedChecks has unknown gate")) {
+    throw new Error("Stale-gate manual report did not include expectedChecks blocker.");
+  }
+  if (!staleGateReport.includes("Manual acceptance JSON checks has unknown gate")) {
+    throw new Error("Stale-gate manual report did not include checks blocker.");
+  }
+  if (!staleGateReport.includes("Manual acceptance JSON deferrals has unknown gate")) {
+    throw new Error("Stale-gate manual report did not include deferrals blocker.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -341,6 +372,7 @@ function main() {
         missingManualStrictExit: missingManualRun.status,
         missingFieldsStrictExit: missingFieldsRun.status,
         conflictedStrictExit: conflictedRun.status,
+        staleGateStrictExit: staleGateRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
@@ -408,6 +440,7 @@ function assertManualPageGuardsRunContext() {
     "fieldFailures",
     "evidenceFailures",
     "conflictFailures",
+    "expectedChecks",
     "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0 && conflictFailures.length === 0",
     "Manual pass is still blocked."
   ];
@@ -433,14 +466,17 @@ function readManualCheckKeys() {
 }
 
 function writeManualReport(filePath, checkKeys, options) {
+  const reportCheckKeys = options.unknownCheck === undefined
+    ? checkKeys
+    : [...checkKeys, options.unknownCheck];
   const checks = Object.fromEntries(
-    checkKeys.map((checkKey) => [
+    reportCheckKeys.map((checkKey) => [
       checkKey,
       options.deferredCheck === checkKey ? false : options.complete
     ])
   );
   const deferrals = Object.fromEntries(
-    checkKeys.map((checkKey) => [
+    reportCheckKeys.map((checkKey) => [
       checkKey,
       {
         accepted: options.deferredCheck === checkKey ||
@@ -494,7 +530,7 @@ function writeManualReport(filePath, checkKeys, options) {
         fields,
         checks,
         deferrals,
-        expectedChecks: checkKeys,
+        expectedChecks: reportCheckKeys,
         evidenceFailures: [],
         blockingChecks,
         manualPass: blockingChecks.length === 0,
