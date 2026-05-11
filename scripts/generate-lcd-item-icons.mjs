@@ -57,7 +57,9 @@ const icons = [
   icon("melon-slice", "Melon", "snack", 5, 2, "Melon slice"),
   icon("chicken-bite", "Chicken", "meal", 5, 3, "Chicken bite"),
   icon("steamed-bun", "Bun", "meal", 5, 4, "Steamed bun"),
-  icon("mango-cube", "Mango", "snack", 5, 5, "Mango cube")
+  icon("mango-cube", "Mango", "snack", 5, 5, "Mango cube"),
+  icon("peas", "Peas", "meal", 6, 0, "Small peas"),
+  icon("corn-kernels", "Corn", "meal", 6, 1, "Corn kernels")
 ];
 
 const items = [
@@ -70,6 +72,8 @@ const items = [
   item("meal-banana", "Banana", "meal", "banana", { hunger: 17, happiness: 3 }, ["primate", "herbivore", "fruit"]),
   item("meal-leafy-bundle", "Leafy Bundle", "meal", "leafy-bundle", { hunger: 21, health: 2 }, ["herbivore", "leafy"]),
   item("meal-sugarcane", "Sugarcane", "meal", "sugarcane", { hunger: 18, happiness: 2, energy: 2 }, ["herbivore", "plant"]),
+  item("meal-peas", "Peas", "meal", "peas", { hunger: 18, happiness: 4, health: 2 }, ["duck", "herbivore", "plant"]),
+  item("meal-corn-kernels", "Corn Kernels", "meal", "corn-kernels", { hunger: 17, happiness: 4, energy: 1 }, ["duck", "grain", "plant"]),
   item("snack-biscuit", "Biscuit", "snack", "biscuit", {
     happiness: 10,
     hunger: 4,
@@ -196,7 +200,7 @@ function createManifest() {
     itemSetId: "lcd-core",
     name: "Deskagotchi LCD Core Items",
     description: "Original monochrome LCD item icons for MVP care interactions.",
-    assetVersion: "0.2.0",
+    assetVersion: "0.3.0",
     atlas: "items.png",
     cellWidth: CELL_SIZE,
     cellHeight: CELL_SIZE,
@@ -339,6 +343,12 @@ function renderIcon(id) {
       break;
     case "mango-cube":
       mangoCube(draw);
+      break;
+    case "peas":
+      peas(draw);
+      break;
+    case "corn-kernels":
+      cornKernels(draw);
       break;
     default:
       sparkle(draw, 10, 10);
@@ -672,6 +682,39 @@ function mangoCube(draw) {
   draw(colors.lcdInk, 6, 11, 2, 3);
   draw(colors.lcdInk, 16, 13, 2, 3);
   draw(colors.lcdMid, 9, 14, 3, 1);
+}
+
+function peas(draw) {
+  draw(colors.lcdInk, 5, 12, 14, 5);
+  draw(colors.lcdInk, 7, 10, 10, 3);
+  draw(colors.lcdInk, 18, 13, 2, 2);
+  draw(colors.lcdBg, 7, 12, 10, 3);
+  draw(colors.lcdMid, 6, 13, 2, 2);
+  draw(colors.lcdMid, 16, 13, 2, 2);
+  draw(colors.lcdInk, 8, 11, 3, 3);
+  draw(colors.lcdInk, 11, 10, 3, 3);
+  draw(colors.lcdInk, 14, 11, 3, 3);
+  draw(colors.lcdBg, 9, 11, 1, 1);
+  draw(colors.lcdBg, 12, 10, 1, 1);
+  draw(colors.lcdBg, 15, 11, 1, 1);
+  draw(colors.lcdMid, 8, 17, 9, 1);
+}
+
+function cornKernels(draw) {
+  draw(colors.lcdInk, 9, 4, 7, 15);
+  draw(colors.lcdInk, 7, 8, 3, 9);
+  draw(colors.lcdInk, 15, 8, 3, 9);
+  draw(colors.lcdBg, 10, 5, 5, 12);
+  draw(colors.lcdMid, 11, 6, 1, 2);
+  draw(colors.lcdMid, 13, 6, 1, 2);
+  draw(colors.lcdMid, 10, 9, 1, 2);
+  draw(colors.lcdMid, 12, 9, 1, 2);
+  draw(colors.lcdMid, 14, 9, 1, 2);
+  draw(colors.lcdMid, 11, 12, 1, 2);
+  draw(colors.lcdMid, 13, 12, 1, 2);
+  draw(colors.lcdBg, 8, 10, 1, 5);
+  draw(colors.lcdBg, 16, 10, 1, 5);
+  draw(colors.lcdInk, 8, 18, 9, 2);
 }
 
 function sparkle(draw, x, y) {

@@ -13,7 +13,7 @@ describe("LCD item icon manifest", () => {
     const parsedManifest = ItemIconManifestSchema.parse(itemManifest);
 
     expect(parsedManifest.itemSetId).toBe("lcd-core");
-    expect(parsedManifest.icons).toHaveLength(36);
+    expect(parsedManifest.icons).toHaveLength(38);
     expect(parsedManifest.items.length).toBeGreaterThanOrEqual(25);
   });
 
@@ -63,9 +63,15 @@ describe("LCD item icon manifest", () => {
     const leafyBundle = parsedManifest.items.find(
       (item) => item.id === "meal-leafy-bundle"
     );
+    const peas = parsedManifest.items.find((item) => item.id === "meal-peas");
+    const corn = parsedManifest.items.find(
+      (item) => item.id === "meal-corn-kernels"
+    );
 
     expect(riceBall?.tags).toContain("shared");
     expect(fishBite?.tags).toContain("cat");
     expect(leafyBundle?.tags).toContain("herbivore");
+    expect(peas?.tags).toContain("duck");
+    expect(corn?.tags).toContain("duck");
   });
 });

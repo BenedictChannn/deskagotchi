@@ -29,6 +29,7 @@ export enum ItemTag {
   Plant = "plant",
   Dog = "dog",
   Cat = "cat",
+  Duck = "duck",
   Primate = "primate",
   Herbivore = "herbivore",
   Treat = "treat"
