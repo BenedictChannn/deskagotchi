@@ -10,7 +10,6 @@
     "dev": "electron-vite dev",
     "generate:icon": "node scripts/generate-app-icon.mjs",
     "generate:items": "node scripts/generate-lcd-item-icons.mjs",
-    "generate:pets": "node scripts/generate-placeholder-pets.mjs",
     "validate:pets": "vitest run src/main/packageRegistry.test.ts",
     "qa:desktop:launch": "node scripts/qa/desktop-qa.mjs launch",
     "qa:desktop:drag": "node scripts/qa/desktop-qa.mjs drag",

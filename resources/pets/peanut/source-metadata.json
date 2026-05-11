@@ -1,6 +1,6 @@
 {
   "petId": "peanut",
-  "assetHash": "3c1026db264814934a5cb175bc11fc35117d67fff49062efb4672d0ee8850e4b",
+  "assetHash": "26490cbf940eba044093287fe93b86183752e020aac455431a79108a16feca3c",
   "chromaKey": "#FF00FF",
   "palette": [
     "#f7f8e7",
@@ -67,5 +67,19 @@
       "fps": 6,
       "qaNote": "Alert call frames with ears perked and trunk lifted."
     }
+  },
+  "repair": {
+    "kind": "trunk-identity-patch",
+    "sourceRows": [
+      "idle"
+    ],
+    "patchedRows": [
+      "happy",
+      "sad",
+      "playing",
+      "cleaning",
+      "attention"
+    ],
+    "note": "Central trunk patch was copied from good idle frames into expression rows whose generated frames read as monkey-like without a trunk."
   }
 }

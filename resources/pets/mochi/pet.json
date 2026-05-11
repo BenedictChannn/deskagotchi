@@ -9,7 +9,7 @@
   "species": "Monkey-like desk companion",
   "personality": "Playful, curious, energetic, and quick to call for attention.",
   "createdAt": "2026-05-08T00:00:00.000Z",
-  "assetVersion": "0.1.0",
+  "assetVersion": "0.2.0",
   "assets": {
     "spritesheet": "spritesheet.png",
     "preview": "preview.png",
@@ -289,10 +289,13 @@
     "monkey"
   ],
   "validationStatus": "passed",
-  "assetHash": "4a4a4d6679c7b4109f89966d066188f7adfae74309a4c430206e1e5c035cedcf",
+  "assetHash": "da3a838827dff8c4f0f03432c4704ad759c86a9754b6229231dc6cd99ef13572",
   "generation": {
     "mode": "imagegen",
-    "prompt": "Mochi is an original tiny monkey virtual pet with a round face, round ears, curled tail, playful retro Japanese mascot energy, and compact retro-LCD sprite animations. It does not copy Punch the Monkey characters, markings, proportions, poses, logos, or names.",
-    "referenceImageStored": false
+    "prompt": "Animation-first Mochi reference sheet with stable same-scale monkey poses for idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, and attention.",
+    "referenceImageStored": true,
+    "referenceImage": "docs/qa/mochi-animation-reference.png",
+    "frameLoop": "Each generated 4-frame row is packaged as 6 runtime frames using 0,1,2,3,2,1.",
+    "sizingFix": "Frames are normalized with one scale per animation row to avoid within-row size jumps."
   }
 }

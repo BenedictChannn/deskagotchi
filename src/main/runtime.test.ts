@@ -84,11 +84,11 @@ describe("runtime import and hatch safety", () => {
   it("rejects imported custom packages that reuse an existing package id", async () => {
     const { runtime, userDataDir } = await createInitializedRuntime();
     const duplicatePackage = createTestPetPackage({
-      packageId: "deskcat",
+      packageId: "bao",
       source: PetSource.Custom,
-      name: "Duplicate Deskcat"
+      name: "Duplicate Bao"
     });
-    const archivePath = await writeArchive("duplicate-deskcat", (archive) => {
+    const archivePath = await writeArchive("duplicate-bao", (archive) => {
       archive.addFile("pet.json", Buffer.from(JSON.stringify(duplicatePackage)));
       archive.addFile("spritesheet.svg", Buffer.from("<svg />"));
       archive.addFile("preview.svg", Buffer.from("<svg />"));
@@ -165,15 +165,15 @@ describe("runtime import and hatch safety", () => {
 
 describe("asset URLs", () => {
   it("includes an optional asset version query to bust renderer cache", () => {
-    expect(createAssetUrl("deskdog", "spritesheet.png", "hash v3")).toBe(
-      "deskagotchi://pet-asset/deskdog/spritesheet.png?v=hash%20v3"
+    expect(createAssetUrl("bao", "spritesheet.png", "hash v3")).toBe(
+      "deskagotchi://pet-asset/bao/spritesheet.png?v=hash%20v3"
     );
   });
 
   it("rejects package-root files that are not declared assets", async () => {
     const { runtime } = await createInitializedRuntime();
 
-    expect(() => runtime.resolveAsset("deskcat", "pet.json")).toThrow(
+    expect(() => runtime.resolveAsset("bao", "pet.json")).toThrow(
       "not declared"
     );
   });

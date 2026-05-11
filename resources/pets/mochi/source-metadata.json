@@ -1,7 +1,7 @@
 {
   "petId": "mochi",
-  "assetHash": "4a4a4d6679c7b4109f89966d066188f7adfae74309a4c430206e1e5c035cedcf",
-  "chromaKey": "#FF00FF",
+  "assetHash": "da3a838827dff8c4f0f03432c4704ad759c86a9754b6229231dc6cd99ef13572",
+  "chromaKey": "lcd-reference-background-removed-locally",
   "palette": [
     "#f7f8e7",
     "#dceca8",
@@ -10,63 +10,346 @@
   ],
   "frameSize": 96,
   "baseSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbb65dcd081919b2ae8ceac123c50.png",
-  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbbf7ffb88191b0cc686a0f47eefb.png",
+  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
   "cleaningSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdbcc9909c8191b8e5c8fa95c9fcb2.png",
   "rows": {
     "idle": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Calm sit, blink, and tail-curl frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "same-scale blink and tail-curl idle loop"
     },
     "happy": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 7,
-      "qaNote": "Cheerful bounce, raised paw, and grin frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "same-scale raised-paw bounce loop"
     },
     "sad": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 4,
-      "qaNote": "Droopy lowered-head sad frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "slumped posture with droopy eyes"
     },
     "hungry": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Hungry belly-hold frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "expectant hungry loop with banana or bowl cue"
     },
     "eating": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Tiny snack nibble frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "banana nibble loop with stable body scale"
     },
     "playing": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 7,
-      "qaNote": "Playful paw and jump frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "ball play and clap loop with consistent monkey size"
     },
     "sleeping": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 2,
-      "qaNote": "Closed-eye curled sleeping frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "curled sleep poses with tail tucked"
     },
     "sick": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Droopy sick frames with small sweat details."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "tired sitting loop with attached sweat detail"
     },
     "cleaning": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Clean and recovered grooming frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "face wipe and recovered perk-up loop"
     },
     "walking": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 8,
-      "qaNote": "Side-facing walk cycle frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "side-profile monkey walk with curled tail"
     },
     "attention": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Alert attention frames with a small open mouth."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+      "qaNote": "open-mouth call with raised paws"
+    }
+  },
+  "animationReference": "docs/qa/mochi-animation-reference.png",
+  "rebuild": {
+    "kind": "imagegen-animation-sheet-extraction",
+    "note": "Rebuilt Mochi from the approved animation-first imagegen reference. Every row uses distinct generated monkey poses and one row-level scale so frames do not change size within an animation. Sleeping and attention remove upper detached text-like marks while preserving face details.",
+    "postProcessing": "Cropped 4 generated cells per row, removed LCD background, quantized to the 4-color Deskagotchi palette, then packaged as 6-frame ping-pong loops.",
+    "rows": {
+      "idle": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "same-scale blink and tail-curl idle loop"
+      },
+      "happy": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "same-scale raised-paw bounce loop"
+      },
+      "sad": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 4,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "slumped posture with droopy eyes"
+      },
+      "hungry": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "expectant hungry loop with banana or bowl cue"
+      },
+      "eating": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "banana nibble loop with stable body scale"
+      },
+      "playing": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "ball play and clap loop with consistent monkey size"
+      },
+      "sleeping": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 2,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "curled sleep poses with tail tucked"
+      },
+      "sick": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "tired sitting loop with attached sweat detail"
+      },
+      "cleaning": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "face wipe and recovered perk-up loop"
+      },
+      "walking": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 8,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "side-profile monkey walk with curled tail"
+      },
+      "attention": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a0152bfecdc819198e4abd442443c46.png",
+        "qaNote": "open-mouth call with raised paws"
+      }
     }
   }
 }

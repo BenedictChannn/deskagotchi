@@ -9,7 +9,7 @@
   "species": "Cat-like desk companion",
   "personality": "Curious, cozy, alert, and fond of tiny desk rituals.",
   "createdAt": "2026-05-08T00:00:00.000Z",
-  "assetVersion": "0.1.0",
+  "assetVersion": "0.2.0",
   "assets": {
     "spritesheet": "spritesheet.png",
     "preview": "preview.png",
@@ -289,10 +289,13 @@
     "cat"
   ],
   "validationStatus": "passed",
-  "assetHash": "476a64f0b72fd568b0123d5e7c8f6cd5232f682c55751bac924f77859b36b36e",
+  "assetHash": "d39188a9e7e54a141e15656fc072b83dc8671a0ae365c5b8d2e90be8dd15dfca",
   "generation": {
     "mode": "imagegen",
-    "prompt": "Miso is an original tiny chibi cat virtual pet with triangular ears, a curled tail, cozy curious expressions, and compact retro-LCD sprite animations.",
-    "referenceImageStored": false
+    "prompt": "Animation-first Miso reference sheet with stable same-scale cat poses for idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, and attention.",
+    "referenceImageStored": true,
+    "referenceImage": "docs/qa/miso-animation-reference.png",
+    "frameLoop": "Each generated 4-frame row is packaged as 6 runtime frames using 0,1,2,3,2,1.",
+    "sizingFix": "Frames are normalized with one scale per animation row to avoid within-row size jumps."
   }
 }

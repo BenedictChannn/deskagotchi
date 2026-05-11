@@ -1,7 +1,7 @@
 {
   "petId": "miso",
-  "assetHash": "476a64f0b72fd568b0123d5e7c8f6cd5232f682c55751bac924f77859b36b36e",
-  "chromaKey": "#FF00FF",
+  "assetHash": "d39188a9e7e54a141e15656fc072b83dc8671a0ae365c5b8d2e90be8dd15dfca",
+  "chromaKey": "lcd-reference-background-removed-locally",
   "palette": [
     "#f7f8e7",
     "#dceca8",
@@ -10,62 +10,345 @@
   ],
   "frameSize": 96,
   "baseSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdb4a9bc548191b49dcda1c0c0d2a1.png",
-  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0bbf837b42a7259e0169fdb5372d9481918e6a417556b42763.png",
+  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
   "rows": {
     "idle": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Calm sit, blink, and tail swish frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "same-scale blink and tail-flick loop"
     },
     "happy": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 7,
-      "qaNote": "Cheerful bounce and smile frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "same-scale paw-up bounce loop"
     },
     "sad": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 4,
-      "qaNote": "Droopy lowered-head sad frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "drooped ears and lowered expression"
     },
     "hungry": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Hungry bowl frames with the bowl kept in-slot."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "bowl-facing hungry call with stable body scale"
     },
     "eating": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Eating and nibbling frames with an in-slot bowl."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "nibbling loop with food bowl kept in frame"
     },
     "playing": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 7,
-      "qaNote": "Pounce and paw-raise play frames without detached toys."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "pounce and ball-tap loop with consistent cat size"
     },
     "sleeping": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 2,
-      "qaNote": "Closed-eye curled sleeping frames without floating marks."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "curled cat nap loop with stable loaf shape"
     },
     "sick": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 5,
-      "qaNote": "Droopy sick frames with attached sweat details only."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "tired cat loop with attached sweat detail"
     },
     "cleaning": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Freshly groomed paw and bob frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "grooming paw/face into recovered pose"
     },
     "walking": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 8,
-      "qaNote": "Side-facing right walk cycle frames."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "side-profile walk with alternating paws"
     },
     "attention": {
       "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
       "fps": 6,
-      "qaNote": "Alert attention frames with small open mouth."
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+      "qaNote": "open-mouth call with raised paw"
+    }
+  },
+  "animationReference": "docs/qa/miso-animation-reference.png",
+  "rebuild": {
+    "kind": "imagegen-animation-sheet-extraction",
+    "note": "Rebuilt Miso from the approved animation-first imagegen reference. Every row uses distinct generated cat poses and one row-level scale so frames do not change size within an animation.",
+    "postProcessing": "Cropped 4 generated cells per row, removed LCD background, quantized to the 4-color Deskagotchi palette, then packaged as 6-frame ping-pong loops.",
+    "rows": {
+      "idle": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "same-scale blink and tail-flick loop"
+      },
+      "happy": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "same-scale paw-up bounce loop"
+      },
+      "sad": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 4,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "drooped ears and lowered expression"
+      },
+      "hungry": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "bowl-facing hungry call with stable body scale"
+      },
+      "eating": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "nibbling loop with food bowl kept in frame"
+      },
+      "playing": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "pounce and ball-tap loop with consistent cat size"
+      },
+      "sleeping": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 2,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "curled cat nap loop with stable loaf shape"
+      },
+      "sick": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "tired cat loop with attached sweat detail"
+      },
+      "cleaning": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "grooming paw/face into recovered pose"
+      },
+      "walking": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 8,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "side-profile walk with alternating paws"
+      },
+      "attention": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00b51d8b588191ba6c72eca11144e9.png",
+        "qaNote": "open-mouth call with raised paw"
+      }
     }
   }
 }

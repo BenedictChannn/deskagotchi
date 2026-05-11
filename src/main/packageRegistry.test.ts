@@ -26,18 +26,18 @@ describe("package registry", () => {
 
   it("loads a valid package directory", async () => {
     const tempDir = await mkdtempPackage("valid");
-    const packageRoot = path.join(tempDir, "deskcat");
+    const packageRoot = path.join(tempDir, "testpet");
     await writePackage(packageRoot, createTestPetPackage());
 
     const result = await loadPetPackagesFromDirectory(tempDir, PetSource.BuiltIn);
 
     expect(result.packages).toHaveLength(1);
-    expect(result.packages[0]?.petPackage.packageId).toBe("deskcat");
+    expect(result.packages[0]?.petPackage.packageId).toBe("testpet");
   });
 
   it("rejects packages with disallowed executable files", async () => {
     const tempDir = await mkdtempPackage("unsafe");
-    const packageRoot = path.join(tempDir, "deskcat");
+    const packageRoot = path.join(tempDir, "testpet");
     await writePackage(packageRoot, createTestPetPackage());
     await writeFile(path.join(packageRoot, "install.ps1"), "Write-Host nope", "utf8");
 

@@ -1,0 +1,366 @@
+{
+  "petId": "puddles",
+  "assetHash": "815cd264d2137f18aa58335b36493c2e88ac3db5f99e6dc022c6e784ca2e3c86",
+  "chromaKey": "lcd-reference-background-removed-locally",
+  "palette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "frameSize": 96,
+  "conceptSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+  "poseExtraction": {
+    "source": "approved animation-first imagegen reference sheet",
+    "layout": "11 state rows, 4 generated poses per row",
+    "runtimeLoop": "packaged as 6 frames with 0,1,2,3,2,1 ping-pong order",
+    "postProcessing": "cropped row cells, removed LCD background, quantized to the 4-color Deskagotchi palette"
+  },
+  "rows": {
+    "idle": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 5,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "blink and small body bob from generated row"
+    },
+    "happy": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 7,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "wing-up bounce with open bill"
+    },
+    "sad": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 4,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "drooped head/body and lowered beak"
+    },
+    "hungry": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 5,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "open beak calling and expectant side turns"
+    },
+    "eating": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 6,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "pecking at food with crumbs kept inside frame"
+    },
+    "playing": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 7,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "ball interaction and chase frames"
+    },
+    "sleeping": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 2,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "low curled sleeping poses"
+    },
+    "sick": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 5,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "droopy posture with attached sweat/fatigue marks"
+    },
+    "cleaning": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 6,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "shake-off and recovered sparkle poses"
+    },
+    "walking": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 8,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "side-profile waddling gait"
+    },
+    "attention": {
+      "frames": 6,
+      "sourceFrames": 4,
+      "loopOrder": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "fps": 6,
+      "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+      "qaNote": "open-beak calling with raised wings"
+    }
+  },
+  "foodAssets": {
+    "favoriteFoodIds": [
+      "meal-peas",
+      "meal-corn-kernels"
+    ],
+    "atlas": "resources/items/lcd-core/items.png",
+    "qaContactSheet": "docs/qa/lcd-food-icons-contact-sheet.png"
+  },
+  "rebuild": {
+    "kind": "imagegen-animation-sheet-extraction",
+    "note": "Rebuilt Puddles from the approved animation-first imagegen reference; every row uses distinct generated duck poses and a 4-frame ping-pong loop packaged into 6 frames.",
+    "rows": {
+      "idle": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "blink and small body bob from generated row"
+      },
+      "happy": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "wing-up bounce with open bill"
+      },
+      "sad": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 4,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "drooped head/body and lowered beak"
+      },
+      "hungry": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "open beak calling and expectant side turns"
+      },
+      "eating": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "pecking at food with crumbs kept inside frame"
+      },
+      "playing": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 7,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "ball interaction and chase frames"
+      },
+      "sleeping": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 2,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "low curled sleeping poses"
+      },
+      "sick": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 5,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "droopy posture with attached sweat/fatigue marks"
+      },
+      "cleaning": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "shake-off and recovered sparkle poses"
+      },
+      "walking": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 8,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "side-profile waddling gait"
+      },
+      "attention": {
+        "frames": 6,
+        "sourceFrames": 4,
+        "loopOrder": [
+          0,
+          1,
+          2,
+          3,
+          2,
+          1
+        ],
+        "fps": 6,
+        "generatedImage": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_01b22d62e3ef72e2016a00af2a54ec8191a9fc1f3e3b4f05bd.png",
+        "qaNote": "open-beak calling with raised wings"
+      }
+    }
+  },
+  "animationReference": "docs/qa/puddles-animation-reference.png"
+}

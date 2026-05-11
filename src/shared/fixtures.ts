@@ -21,14 +21,14 @@ import {
 export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPackage {
   return {
     schemaVersion: 1,
-    packageId: "deskcat",
+    packageId: "testpet",
     packageVersion: "0.1.0",
     minAppVersion: "0.1.0",
-    name: "Deskcat",
-    description: "A small original cat-like desk companion.",
+    name: "Test Pet",
+    description: "A small original test companion.",
     source: PetSource.BuiltIn,
-    species: "Cat-like desk companion",
-    personality: "Curious, alert, and fond of tiny keyboard patrols.",
+    species: "Test companion",
+    personality: "Curious, alert, and easy to validate.",
     createdAt: "2026-05-05T00:00:00.000Z",
     assetVersion: "0.1.0",
     assets: {

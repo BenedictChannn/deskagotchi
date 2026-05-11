@@ -1,10 +1,7 @@
 import {
   AnimationId,
-  LifeStage,
-  PackageValidationStatus,
   PetSource,
   DeskagotchiSaveSchema,
-  PlayStyle,
   PetPackageSchema,
   type DeskagotchiSave,
   type PetInstanceState,
@@ -34,10 +31,6 @@ import baoIconUrl from "../../../resources/pets/bao/icon.png?url";
 import baoManifest from "../../../resources/pets/bao/pet.json";
 import baoPreviewUrl from "../../../resources/pets/bao/preview.png?url";
 import baoSpritesheetUrl from "../../../resources/pets/bao/spritesheet.png?url";
-import deskdogIconUrl from "../../../resources/pets/deskdog/icon.png?url";
-import deskdogManifest from "../../../resources/pets/deskdog/pet.json";
-import deskdogPreviewUrl from "../../../resources/pets/deskdog/preview.png?url";
-import deskdogSpritesheetUrl from "../../../resources/pets/deskdog/spritesheet.png?url";
 import itemManifestData from "../../../resources/items/lcd-core/items.json";
 import misoIconUrl from "../../../resources/pets/miso/icon.png?url";
 import misoManifest from "../../../resources/pets/miso/pet.json";
@@ -51,6 +44,10 @@ import peanutIconUrl from "../../../resources/pets/peanut/icon.png?url";
 import peanutManifest from "../../../resources/pets/peanut/pet.json";
 import peanutPreviewUrl from "../../../resources/pets/peanut/preview.png?url";
 import peanutSpritesheetUrl from "../../../resources/pets/peanut/spritesheet.png?url";
+import puddlesIconUrl from "../../../resources/pets/puddles/icon.png?url";
+import puddlesManifest from "../../../resources/pets/puddles/pet.json";
+import puddlesPreviewUrl from "../../../resources/pets/puddles/preview.png?url";
+import puddlesSpritesheetUrl from "../../../resources/pets/puddles/spritesheet.png?url";
 import { shouldInstallDevDeskagotchiApi } from "./devBridgeGate";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
@@ -396,40 +393,12 @@ function repairDevSave(
  * @returns Runtime packages with generated PNG and SVG assets.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  const placeholderPackages = [
-    createDevPetPackage({
-      packageId: "deskcat",
-      name: "Deskcat",
-      description: "A tiny original cat-like desk companion.",
-      species: "Cat-like desk companion",
-      personality: "Curious, alert, and fond of small desk rituals.",
-      colorPalette: ["#f7b267", "#f79d65", "#2f243a", "#fefae0"]
-    }),
-    createDevPetPackage({
-      packageId: "deskduck",
-      name: "Deskduck",
-      description: "A compact duck-like companion with a bright little waddle.",
-      species: "Duck-like desk companion",
-      personality: "Cheerful, snack-motivated, and quick to call for attention.",
-      colorPalette: ["#ffd166", "#f4a261", "#243447", "#fff4d6"]
-    }),
-    createDevPetPackage({
-      packageId: "deskblob",
-      name: "Deskblob",
-      description: "A soft abstract companion built for calm desktop company.",
-      species: "Abstract blob companion",
-      personality: "Gentle, low-maintenance, and expressive.",
-      colorPalette: ["#9bdbd4", "#4ecdc4", "#243447", "#fff4d6"]
-    })
-  ].map(toRuntimePackage);
-
   const builtInPackages = [
     createBaoRuntimePackage(),
     createMisoRuntimePackage(),
     createMochiRuntimePackage(),
     createPeanutRuntimePackage(),
-    createDeskdogRuntimePackage(),
-    ...placeholderPackages
+    createPuddlesRuntimePackage()
   ];
 
   return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
@@ -504,17 +473,17 @@ function createPeanutRuntimePackage(): RuntimePetPackage {
 }
 
 /**
- * Attach the generated Deskbit Dog package to the browser development adapter.
+ * Attach Puddles' duck package to the browser adapter.
  *
  * @returns Runtime package using the same PNG files that Electron serves.
  */
-function createDeskdogRuntimePackage(): RuntimePetPackage {
+function createPuddlesRuntimePackage(): RuntimePetPackage {
   return {
-    petPackage: PetPackageSchema.parse(deskdogManifest),
+    petPackage: PetPackageSchema.parse(puddlesManifest),
     assetUrls: {
-      spritesheet: deskdogSpritesheetUrl,
-      preview: deskdogPreviewUrl,
-      icon: deskdogIconUrl
+      spritesheet: puddlesSpritesheetUrl,
+      preview: puddlesPreviewUrl,
+      icon: puddlesIconUrl
     },
     issues: []
   };
@@ -573,91 +542,6 @@ function persistCustomDevPackages(packages: RuntimePetPackage[]): void {
 }
 
 /**
- * Create a package manifest for a generated development pet.
- *
- * @param overrides - Package identity, copy, palette, and optional source override.
- * @returns A package manifest compatible with runtime validation expectations.
- */
-function createDevPetPackage(overrides: {
-  packageId: string;
-  name: string;
-  description: string;
-  species: string;
-  personality: string;
-  colorPalette: string[];
-  source?: PetSource;
-}): PetPackage {
-  return {
-    schemaVersion: 1,
-    packageId: overrides.packageId,
-    packageVersion: "0.1.0",
-    minAppVersion: "0.1.0",
-    name: overrides.name,
-    description: overrides.description,
-    source: overrides.source ?? PetSource.BuiltIn,
-    species: overrides.species,
-    personality: overrides.personality,
-    createdAt: new Date().toISOString(),
-    assetVersion: "0.1.0",
-    assets: {
-      spritesheet: "spritesheet.svg",
-      preview: "preview.svg",
-      icon: "icon.svg"
-    },
-    animations: [
-      animation(AnimationId.Idle, 0, 6),
-      animation(AnimationId.Happy, 1, 8),
-      animation(AnimationId.Sad, 2, 6),
-      animation(AnimationId.Hungry, 3, 6),
-      animation(AnimationId.Eating, 4, 6),
-      animation(AnimationId.Playing, 5, 8),
-      animation(AnimationId.Sleeping, 6, 2),
-      animation(AnimationId.Sick, 7, 4),
-      animation(AnimationId.Cleaning, 8, 6),
-      animation(AnimationId.Walking, 9, 8),
-      animation(AnimationId.Attention, 10, 6)
-    ],
-    growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", stageThreshold(LifeStage.Egg), 0, 100),
-      growthStage("baby", LifeStage.Baby, `Baby ${overrides.name}`, stageThreshold(LifeStage.Baby), 0, 100),
-      growthStage("child-calm", LifeStage.Child, "Calm Child", stageThreshold(LifeStage.Child), 0, 59),
-      growthStage("child-bright", LifeStage.Child, "Bright Child", stageThreshold(LifeStage.Child), 60, 100),
-      growthStage("teen-shy", LifeStage.Teen, "Shy Teen", stageThreshold(LifeStage.Teen), 0, 49),
-      growthStage("teen-spry", LifeStage.Teen, "Spry Teen", stageThreshold(LifeStage.Teen), 50, 100),
-      growthStage("adult-cozy", LifeStage.Adult, "Cozy Adult", stageThreshold(LifeStage.Adult), 0, 39),
-      growthStage("adult-pal", LifeStage.Adult, "Desk Pal", stageThreshold(LifeStage.Adult), 40, 74),
-      growthStage("adult-star", LifeStage.Adult, `Star ${overrides.name}`, stageThreshold(LifeStage.Adult), 75, 100)
-    ],
-    preferredFoods: ["warm rice", "fruit bite"],
-    dislikedFoods: ["burnt toast"],
-    foodPreferences: {
-      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
-      likedFoodIds: ["snack-apple-slice"],
-      favoriteFoodIds: ["meal-banana"],
-      dislikedFoodIds: ["snack-candy"],
-      eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
-    },
-    favoritePlayStyle: PlayStyle.Rhythm,
-    careModifiers: {
-      hungerDecayMultiplier: 1,
-      happinessDecayMultiplier: 1,
-      energyDecayMultiplier: 1,
-      cleanlinessDecayMultiplier: 1,
-      affectionGainMultiplier: 1
-    },
-    colorPalette: overrides.colorPalette,
-    author: "Deskagotchi",
-    license: "Original Deskagotchi browser test asset",
-    capabilities: ["browser-feedback", "placeholder-art"],
-    validationStatus: PackageValidationStatus.Passed,
-    assetHash: `${overrides.packageId}-browser-dev`,
-    generation: {
-      mode: "local-placeholder"
-    }
-  };
-}
-
-/**
  * Attach generated browser asset URLs to a pet package.
  *
  * @param petPackage - Package manifest to convert.
@@ -674,61 +558,6 @@ function toRuntimePackage(petPackage: PetPackage): RuntimePetPackage {
       icon: preview
     },
     issues: []
-  };
-}
-
-/**
- * Create an animation manifest row for the generated spritesheet.
- *
- * @param id - Animation identifier represented by the row.
- * @param row - Zero-based spritesheet row index.
- * @param fps - Playback rate for the animation.
- * @returns Package animation metadata for a four-frame row.
- */
-function animation(id: AnimationId, row: number, fps: number): PetPackage["animations"][number] {
-  return {
-    id,
-    row,
-    frames: 4,
-    frameWidth: 96,
-    frameHeight: 96,
-    fps,
-    loop: true,
-    ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
-  };
-}
-
-function stageThreshold(lifeStage: LifeStage): number {
-  return DEFAULT_SIMULATION_CONFIG.stageThresholdHours[lifeStage];
-}
-
-/**
- * Create a care-score growth stage definition.
- *
- * @param id - Stable growth-stage identifier.
- * @param lifeStage - Lifecycle bucket represented by the stage.
- * @param label - Display label for the stage.
- * @param minAgeHours - Minimum pet age required for the stage.
- * @param careScoreMin - Inclusive minimum care score for the stage.
- * @param careScoreMax - Inclusive maximum care score for the stage.
- * @returns Package growth-stage metadata.
- */
-function growthStage(
-  id: string,
-  lifeStage: LifeStage,
-  label: string,
-  minAgeHours: number,
-  careScoreMin: number,
-  careScoreMax: number
-): PetPackage["growthStages"][number] {
-  return {
-    id,
-    stage: lifeStage,
-    label,
-    minAgeHours,
-    careScoreMin,
-    careScoreMax,
-    animationSet: Object.values(AnimationId)
   };
 }
 
