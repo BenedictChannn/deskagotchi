@@ -118,7 +118,8 @@ const AUTOMATED_FIXTURES = [
       "new manual context import resets stale gate decisions",
       "manual gate pass and deferral remain mutually exclusive",
       "all gates without run context blocks manual pass",
-      "all gates with run context exports manual pass",
+      "manual context import is required for pass",
+      "all gates with imported context exports manual pass",
       "deferral without approver blocks manual pass",
       "deferral with approver exports manual pass",
       "manual acceptance screenshot captured"

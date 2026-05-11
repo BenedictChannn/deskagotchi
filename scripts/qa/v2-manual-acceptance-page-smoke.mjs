@@ -83,7 +83,7 @@ async function main() {
 
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",
-      "6 required run context issues.",
+      "7 required run context issues.",
       "Required evidence notes complete.",
       "Manual pass is still blocked."
     ]);
@@ -215,7 +215,7 @@ async function main() {
     await setAllGates(page, true);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
-      "6 required run context issues.",
+      "7 required run context issues.",
       "6 required evidence notes missing.",
       "Manual pass is still blocked."
     ]);
@@ -223,6 +223,23 @@ async function main() {
 
     await fillRequiredFields(page);
     await fillRequiredEvidenceNotes(page);
+    await assertStatusIncludes(page, [
+      "19/19 gates resolved.",
+      "1 required run context issue.",
+      "Required evidence notes complete.",
+      "Manual pass is still blocked."
+    ]);
+    const noContextReport = await exportReport(page);
+    assertEqual(noContextReport.manualPass, false, "manual pass without imported context");
+    assertIncludes(
+      noContextReport.fieldFailures.join("\n"),
+      "Manual context must be imported from qa:v2:manual-context.",
+      "missing manual context field failure"
+    );
+    recordPass(checks, "manual context import is required for pass");
+
+    await applyManualContext(page);
+    await setAllGates(page, true);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
       "Required run context complete.",
@@ -235,11 +252,10 @@ async function main() {
     assertEqual(passingReport.fieldFailures.length, 0, "field failures after fields");
     assertEqual(passingReport.evidenceFailures.length, 0, "evidence failures after notes");
     assertEqual(passingReport.blockingChecks.length, 0, "blocking gates after fields");
-    recordPass(checks, "all gates with run context exports manual pass");
+    recordPass(checks, "all gates with imported context exports manual pass");
 
     await page.locator("[data-action='clear']").click();
-    await fillRequiredFields(page);
-    await fillRequiredEvidenceNotes(page);
+    await applyManualContext(page);
     await setAllGates(page, true);
     await page.locator('[data-check="visual.pets"]').uncheck();
     await page.locator('[data-deferral="visual.pets"]').check();

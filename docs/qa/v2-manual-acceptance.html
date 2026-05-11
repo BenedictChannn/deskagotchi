@@ -651,6 +651,9 @@
         const failures = requiredManualFields
           .filter((fieldName) => !state.fields[fieldName]?.trim())
           .map((fieldName) => `Missing run context field: ${fieldLabels[fieldName] || fieldName}`);
+        if (!currentManualContextSignature) {
+          failures.push("Manual context must be imported from qa:v2:manual-context.");
+        }
         failures.push(...buildContextIdentityFailures(state));
         if (hasDeferrals && !state.fields.acceptedOutOfScopeBy?.trim()) {
           failures.push("Missing run context field: Accepted out of scope by");
