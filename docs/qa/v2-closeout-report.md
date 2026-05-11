@@ -106,8 +106,12 @@ No exported manual acceptance JSON found.
 Run this audit with strict mode when preparing a release branch:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --strict
+npm.cmd run qa:v2:audit -- --strict --check-only
 ```
+
+Use `--check-only` for final release validation so the tracked report does not
+get rewritten during the clean-worktree gate. Run without `--check-only` when
+you intentionally want to refresh this Markdown report artifact.
 
 Use an exported manual acceptance file from another location when needed:
 

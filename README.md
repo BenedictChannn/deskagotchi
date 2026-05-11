@@ -109,9 +109,16 @@ Generate the V2 closeout report from the latest QA evidence:
 npm.cmd run qa:v2:audit
 ```
 
-This writes `docs/qa/v2-closeout-report.md`. Use `-- --strict` on a release
-branch; strict mode exits non-zero until the manual V2 acceptance JSON is also
-exported and passing.
+This writes `docs/qa/v2-closeout-report.md`. Use strict check-only mode on a
+release branch so final validation does not rewrite the tracked report while it
+checks the clean worktree gate:
+
+```powershell
+npm.cmd run qa:v2:audit -- --strict --check-only
+```
+
+Strict mode exits non-zero until the manual V2 acceptance JSON is also exported
+and passing.
 
 If the manual checklist JSON is downloaded outside the repo, pass it directly:
 
@@ -130,7 +137,9 @@ Manual checklist checkboxes mean the gate was tested and passed. If a gate is
 accepted as out of scope for V2, mark its deferral in the checklist and fill in
 the approver plus rationale; unresolved deferrals still block strict mode.
 Strict V2 closeout also requires a clean Git worktree so QA evidence is not
-claimed against uncommitted local changes.
+claimed against uncommitted local changes. Use `--check-only` for the final
+release gate; run without it only when intentionally refreshing the Markdown
+closeout report.
 
 Regenerate LCD item icons:
 

@@ -48,6 +48,17 @@ directly:
 npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
 ```
 
+For final release validation, use strict check-only mode:
+
+```powershell
+npm.cmd run qa:v2:audit -- --strict --check-only
+```
+
+Check-only mode runs the same closeout checks but does not rewrite the tracked
+Markdown report, which keeps the clean-worktree gate meaningful. Run without
+`--check-only` only when intentionally refreshing
+`docs/qa/v2-closeout-report.md`.
+
 Manual checklist checkboxes mean tested and passed. If a V2 gate is accepted as
 out of scope, use the checklist deferral controls and include the approver plus
 rationale; the closeout audit rejects unresolved deferrals.

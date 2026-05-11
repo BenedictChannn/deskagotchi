@@ -320,10 +320,14 @@ function main() {
     workspaceResult,
     checklistResults: auditPromptChecklist(scenarioResults, artifactResults, manualResult)
   });
-  fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
-  fs.writeFileSync(REPORT_PATH, report);
 
-  console.log(`V2 closeout audit written to ${path.relative(ROOT_DIR, REPORT_PATH)}`);
+  if (ARGS.checkOnly) {
+    console.log("V2 closeout audit ran in check-only mode; report was not written.");
+  } else {
+    fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
+    fs.writeFileSync(REPORT_PATH, report);
+    console.log(`V2 closeout audit written to ${path.relative(ROOT_DIR, REPORT_PATH)}`);
+  }
   console.log(`Completion status: ${completionStatus}`);
 
   if (ARGS.strict && completionStatus !== "complete") {
@@ -334,6 +338,7 @@ function main() {
 function parseArgs(args) {
   const parsed = {
     allowDirty: false,
+    checkOnly: false,
     strict: false,
     manualPath: null,
     reportPath: path.join("docs", "qa", "v2-closeout-report.md")
@@ -347,6 +352,10 @@ function parseArgs(args) {
     }
     if (arg === "--allow-dirty") {
       parsed.allowDirty = true;
+      continue;
+    }
+    if (arg === "--check-only" || arg === "--no-write") {
+      parsed.checkOnly = true;
       continue;
     }
     if (arg === "--manual") {
@@ -824,8 +833,12 @@ ${manualRows}
 Run this audit with strict mode when preparing a release branch:
 
 \`\`\`powershell
-npm.cmd run qa:v2:audit -- --strict
+npm.cmd run qa:v2:audit -- --strict --check-only
 \`\`\`
+
+Use \`--check-only\` for final release validation so the tracked report does not
+get rewritten during the clean-worktree gate. Run without \`--check-only\` when
+you intentionally want to refresh this Markdown report artifact.
 
 Use an exported manual acceptance file from another location when needed:
 

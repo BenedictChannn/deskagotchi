@@ -64,6 +64,26 @@ function main() {
     throw new Error("Complete smoke report did not record complete status.");
   }
 
+  const checkOnlyReportPath = path.join(SMOKE_DIR, "report-check-only.md");
+  fs.rmSync(checkOnlyReportPath, { force: true });
+  const checkOnlyRun = runAudit([
+    "--manual",
+    completeManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--check-only",
+    "--report",
+    checkOnlyReportPath
+  ]);
+  if (checkOnlyRun.status !== 0) {
+    throw new Error(
+      `Expected check-only complete manual evidence to pass strict mode, got ${checkOnlyRun.status}.`
+    );
+  }
+  if (fs.existsSync(checkOnlyReportPath)) {
+    throw new Error("Check-only audit wrote a report file.");
+  }
+
   const deferredRun = runAudit([
     "--manual",
     deferredManualPath,
@@ -84,6 +104,7 @@ function main() {
         checkCount: checkKeys.length,
         incompleteStrictExit: incompleteRun.status,
         completeStrictExit: completeRun.status,
+        checkOnlyStrictExit: checkOnlyRun.status,
         deferredStrictExit: deferredRun.status,
         report: path.relative(ROOT_DIR, completeReportPath)
       },
