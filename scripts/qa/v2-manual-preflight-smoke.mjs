@@ -45,8 +45,14 @@ function main() {
       `Expected 19 missing-manual blockers, got ${missingManualRun.parsed.blockerCount}.`
     );
   }
+  if (missingManualRun.parsed.blockerBatchCount !== 6) {
+    throw new Error(
+      `Expected 6 missing-manual blocker batches, got ${missingManualRun.parsed.blockerBatchCount}.`
+    );
+  }
   recordPass(checks, "manual preflight fails without manual evidence", {
-    blockerCount: missingManualRun.parsed.blockerCount
+    blockerCount: missingManualRun.parsed.blockerCount,
+    blockerBatchCount: missingManualRun.parsed.blockerBatchCount
   });
 
   const completeManualRun = runPreflight(COMPLETE_MANUAL_PATH);

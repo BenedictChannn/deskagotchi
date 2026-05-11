@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { buildManualExecutionBatches } from "./v2-manual-batches.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = resolveQaRunsDir();
@@ -25,6 +27,7 @@ function main() {
   const report = fs.existsSync(reportPath) ? fs.readFileSync(reportPath, "utf8") : "";
   const manualSection = extractManualSection(report);
   const blockers = extractManualBlockers(manualSection);
+  const blockerGroups = groupManualBlockers(blockers);
   const closeoutComplete = report.includes("Completion status: **complete**");
   const status = manualPath !== null &&
     fs.existsSync(reportPath) &&
@@ -54,6 +57,7 @@ function main() {
       status: blockers.length === 0 ? "pass" : "manual-open",
       details: {
         blockerCount: blockers.length,
+        blockerBatchCount: countOpenBatches(blockerGroups),
         blockers
       }
     }
@@ -77,7 +81,8 @@ function main() {
     manualPath,
     closeoutAuditExitCode: audit.status,
     closeoutComplete,
-    blockers
+    blockers,
+    blockerGroups
   };
 
   fs.writeFileSync(path.join(RUN_DIR, "summary.json"), JSON.stringify(summary, null, 2));
@@ -88,6 +93,7 @@ function main() {
         runId: RUN_ID,
         confidenceLabel: summary.confidenceLabel,
         blockerCount: blockers.length,
+        blockerBatchCount: countOpenBatches(blockerGroups),
         manualPath,
         report: path.relative(ROOT_DIR, path.join(RUN_DIR, "report.md")),
         closeoutReport: path.relative(ROOT_DIR, reportPath)
@@ -171,6 +177,52 @@ function extractManualBlockers(manualSection) {
     .map((line) => line.slice(2));
 }
 
+function groupManualBlockers(blockers) {
+  const batches = buildManualExecutionBatches();
+  const unmatchedBlockers = [];
+  const groupedBatches = batches.map((batch) => ({
+    ...batch,
+    blockers: []
+  }));
+
+  for (const blocker of blockers) {
+    const gateId = extractGateIdFromBlocker(blocker);
+    const matchingBatch = groupedBatches.find((batch) =>
+      gateId !== null && batch.gateIds.includes(gateId)
+    );
+    if (matchingBatch === undefined) {
+      unmatchedBlockers.push(blocker);
+    } else {
+      matchingBatch.blockers.push(blocker);
+    }
+  }
+
+  if (unmatchedBlockers.length === 0) {
+    return groupedBatches;
+  }
+
+  return [
+    ...groupedBatches,
+    {
+      name: "Other manual blockers",
+      gateIds: [],
+      when: "Review before closeout.",
+      action: "Fix or resolve blockers that do not map to a known V2 manual gate.",
+      evidence: "Record the resolution and rerun manual preflight.",
+      blockers: unmatchedBlockers
+    }
+  ];
+}
+
+function extractGateIdFromBlocker(blocker) {
+  const match = blocker.match(/^Manual gate [^:]+: ([a-z]+(?:\.[a-z]+)+): /u);
+  return match === null ? null : match[1];
+}
+
+function countOpenBatches(blockerGroups) {
+  return blockerGroups.filter((group) => group.blockers.length > 0).length;
+}
+
 function renderReport(summary) {
   const checks = summary.checks
     .map((check) => `- ${check.status.toUpperCase()}: ${check.name}`)
@@ -178,6 +230,7 @@ function renderReport(summary) {
   const blockers = summary.blockers.length === 0
     ? "- None"
     : summary.blockers.map((blocker) => `- ${blocker}`).join("\n");
+  const blockerBatches = renderBlockerBatches(summary.blockerGroups);
   return `# Deskagotchi V2 Manual Preflight
 
 Run ID: ${summary.runId}
@@ -200,6 +253,10 @@ ${checks}
 
 ${blockers}
 
+## Manual Blockers By Batch
+
+${blockerBatches}
+
 ## Artifacts
 
 ${summary.artifacts.map((artifact) => `- ${artifact}`).join("\n")}
@@ -212,6 +269,27 @@ ${summary.exactClaimAllowed}
 
 ${summary.uncoveredConditions.map((condition) => `- ${condition}`).join("\n")}
 `;
+}
+
+function renderBlockerBatches(blockerGroups) {
+  const openGroups = blockerGroups.filter((group) => group.blockers.length > 0);
+  if (openGroups.length === 0) {
+    return "- None";
+  }
+
+  return openGroups
+    .map((group) => [
+      `### ${group.name}`,
+      "",
+      `When: ${group.when}`,
+      "",
+      `Action: ${group.action}`,
+      "",
+      `Evidence: ${group.evidence}`,
+      "",
+      ...group.blockers.map((blocker) => `- ${blocker}`)
+    ].join("\n"))
+    .join("\n\n");
 }
 
 main();
