@@ -421,6 +421,19 @@
       const deferralGrid = document.querySelector("#deferral-grid");
       const exportOutput = document.querySelector("#export-output");
       const exportStatus = document.querySelector("#export-status");
+      const requiredManualFields = [
+        "tester",
+        "date",
+        "windowsVersion",
+        "build",
+        "monitorSetup"
+      ];
+      const fieldLabels = Object.fromEntries(
+        fields.map((field) => [
+          field.dataset.field,
+          field.closest(".field").childNodes[0].textContent.trim()
+        ])
+      );
 
       function renderDeferrals() {
         deferralGrid.innerHTML = checks
@@ -496,15 +509,18 @@
         const state = collectState();
         const hasDeferrals = Object.values(state.deferrals).some((deferral) => deferral.accepted);
         const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
+        const fieldFailures = buildFieldFailures(state, hasDeferrals);
         const blockingChecks = checks
           .map((check) => check.dataset.check)
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
         return {
           ...state,
           expectedChecks: checks.map((check) => check.dataset.check),
+          requiredFields: requiredManualFields,
+          fieldFailures,
           blockingChecks,
           hasDeferrals,
-          manualPass: blockingChecks.length === 0
+          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0
         };
       }
 
@@ -529,13 +545,31 @@
 
       function updateProgress(message) {
         const state = collectState();
+        const hasDeferrals = Object.values(state.deferrals).some((deferral) => deferral.accepted);
         const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
         const blockingChecks = checks
           .map((check) => check.dataset.check)
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
+        const fieldFailures = buildFieldFailures(state, hasDeferrals);
         const passed = checks.length - blockingChecks.length;
-        const prefix = `${passed}/${checks.length} checks complete.`;
+        const fieldStatus = fieldFailures.length === 0
+          ? "Required run context complete."
+          : `${fieldFailures.length} required run context field${fieldFailures.length === 1 ? "" : "s"} missing.`;
+        const passStatus = blockingChecks.length === 0 && fieldFailures.length === 0
+          ? "Manual pass ready to export."
+          : "Manual pass is still blocked.";
+        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${passStatus}`;
         exportStatus.textContent = message ? `${prefix} ${message}` : prefix;
+      }
+
+      function buildFieldFailures(state, hasDeferrals) {
+        const failures = requiredManualFields
+          .filter((fieldName) => !state.fields[fieldName]?.trim())
+          .map((fieldName) => `Missing run context field: ${fieldLabels[fieldName] || fieldName}`);
+        if (hasDeferrals && !state.fields.acceptedOutOfScopeBy?.trim()) {
+          failures.push("Missing run context field: Accepted out of scope by");
+        }
+        return failures;
       }
 
       function isGateResolved(key, state, acceptedOutOfScopeBy) {

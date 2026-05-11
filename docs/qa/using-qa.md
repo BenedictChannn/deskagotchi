@@ -40,6 +40,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
 | `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
+| `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete. |
 
 When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:
@@ -61,7 +62,8 @@ Markdown report, which keeps the clean-worktree gate meaningful. Run without
 
 Manual checklist checkboxes mean tested and passed. If a V2 gate is accepted as
 out of scope, use the checklist deferral controls and include the approver plus
-rationale; the closeout audit rejects unresolved deferrals.
+rationale. The page and closeout audit both reject missing required run context
+fields.
 
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
 for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it

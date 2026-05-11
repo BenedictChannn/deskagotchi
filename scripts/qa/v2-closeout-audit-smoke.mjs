@@ -11,13 +11,19 @@ const AUDIT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-closeout-audit.mjs
 
 function main() {
   fs.mkdirSync(SMOKE_DIR, { recursive: true });
+  assertManualPageGuardsRunContext();
   const checkKeys = readManualCheckKeys();
   const incompleteManualPath = path.join(SMOKE_DIR, "manual-incomplete.json");
+  const missingFieldsManualPath = path.join(SMOKE_DIR, "manual-missing-fields.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
   writeManualReport(incompleteManualPath, checkKeys, {
     complete: false,
+    includeRequiredFields: false
+  });
+  writeManualReport(missingFieldsManualPath, checkKeys, {
+    complete: true,
     includeRequiredFields: false
   });
   writeManualReport(completeManualPath, checkKeys, {
@@ -63,6 +69,25 @@ function main() {
     "Manual gate not exported: visual.pets: All five pets read as intended animals at desktop size."
   )) {
     throw new Error("Missing manual evidence report did not include labeled gate blockers.");
+  }
+
+  const missingFieldsReportPath = path.join(SMOKE_DIR, "report-missing-fields.md");
+  const missingFieldsRun = runAudit([
+    "--manual",
+    missingFieldsManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    missingFieldsReportPath
+  ]);
+  if (missingFieldsRun.status !== 1) {
+    throw new Error(
+      `Expected missing required run context fields to fail strict mode, got ${missingFieldsRun.status}.`
+    );
+  }
+  const missingFieldsReport = fs.readFileSync(missingFieldsReportPath, "utf8");
+  if (!missingFieldsReport.includes("Missing manual context field: date")) {
+    throw new Error("Missing-fields report did not include required context blockers.");
   }
 
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
@@ -125,6 +150,7 @@ function main() {
         checkCount: checkKeys.length,
         incompleteStrictExit: incompleteRun.status,
         missingManualStrictExit: missingManualRun.status,
+        missingFieldsStrictExit: missingFieldsRun.status,
         completeStrictExit: completeRun.status,
         checkOnlyStrictExit: checkOnlyRun.status,
         deferredStrictExit: deferredRun.status,
@@ -134,6 +160,21 @@ function main() {
       2
     )
   );
+}
+
+function assertManualPageGuardsRunContext() {
+  const manualPage = fs.readFileSync(MANUAL_PAGE_PATH, "utf8");
+  const requiredSnippets = [
+    "const requiredManualFields =",
+    "fieldFailures",
+    "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0",
+    "Manual pass is still blocked."
+  ];
+  for (const snippet of requiredSnippets) {
+    if (!manualPage.includes(snippet)) {
+      throw new Error(`Manual acceptance page is missing run-context guard: ${snippet}`);
+    }
+  }
 }
 
 function readManualCheckKeys() {

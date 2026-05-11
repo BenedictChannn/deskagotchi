@@ -55,7 +55,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
 | Food/item icon contact sheets | `docs/qa/lcd-food-icons-contact-sheet.png`, `docs/qa/lcd-item-icons-contact-sheet.png` | Present and regenerated. |
 | Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png` | Generated from current pet and item manifests; screenshot confirms image paths render. |
-| Manual acceptance form | `docs/qa/v2-manual-acceptance.html`, `docs/qa/v2-manual-acceptance-screenshot.png` | Ready for remaining physical/manual signoff and JSON export; browser smoke confirms sections and export work. |
+| Manual acceptance form | `docs/qa/v2-manual-acceptance.html`, `docs/qa/v2-manual-acceptance-screenshot.png`, `npm.cmd run qa:v2:manual-page` | Ready for remaining physical/manual signoff and JSON export; browser smoke confirms gate counts, required run context blocking, deferral approver blocking, export JSON, and screenshot rendering. |
 
 ## Prompt-To-Artifact Checklist
 
@@ -97,8 +97,10 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 Use `docs/qa/v2-manual-acceptance.html` to record these remaining checks. The
 closeout report now lists every unresolved manual gate by checklist ID and
-label until the exported JSON resolves it. Paste the exported JSON into this
-audit or the release PR before making a V2 complete claim.
+label until the exported JSON resolves it. The manual page itself blocks
+`manualPass` until the required run context fields are filled. Paste the
+exported JSON into this audit or the release PR before making a V2 complete
+claim.
 
 ## Exact Current Claim
 

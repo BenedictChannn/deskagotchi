@@ -133,13 +133,19 @@ report:
 npm.cmd run qa:v2:audit:smoke
 ```
 
+Smoke-test the manual acceptance page export logic and refresh its screenshot:
+
+```powershell
+npm.cmd run qa:v2:manual-page -- --update-screenshot
+```
+
 Manual checklist checkboxes mean the gate was tested and passed. If a gate is
 accepted as out of scope for V2, mark its deferral in the checklist and fill in
-the approver plus rationale; unresolved deferrals still block strict mode.
-Strict V2 closeout also requires a clean Git worktree so QA evidence is not
-claimed against uncommitted local changes. Use `--check-only` for the final
-release gate; run without it only when intentionally refreshing the Markdown
-closeout report.
+the approver plus rationale. The manual page and closeout audit both require
+the run context fields before `manualPass` can be true. Strict V2 closeout also
+requires a clean Git worktree so QA evidence is not claimed against uncommitted
+local changes. Use `--check-only` for the final release gate; run without it
+only when intentionally refreshing the Markdown closeout report.
 
 Regenerate LCD item icons:
 
