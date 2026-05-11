@@ -53,6 +53,12 @@ import box and click `Apply Context`.
 
 Both paths only fill run context and note starters; neither checks any gates.
 
+Keep the generated `Build` field unchanged. The closeout audit verifies that
+the exported build contains a real Git commit from this repository and that it
+matches the embedded manual context signature. If you need to test a newer
+build, rerun `npm.cmd run qa:v2:manual-context` instead of editing the field by
+hand.
+
 ## Gate Execution
 
 | Gate IDs | Action | Evidence To Record |
