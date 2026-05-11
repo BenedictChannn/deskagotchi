@@ -4,6 +4,7 @@ import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { launchQaBrowser } from "./browser-smoke-utils.mjs";
+import { readQaSourceState } from "./qa-git.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -344,6 +345,7 @@ function writeRunArtifacts({ startedAt, checks, artifacts, screenshotUpdated }) 
     scenario: "manual-page",
     runId: RUN_ID,
     startedAt,
+    sourceState: readQaSourceState(ROOT_DIR),
     confidenceLabel: "automated-pass",
     evidenceTier: "browser-smoke",
     checks,

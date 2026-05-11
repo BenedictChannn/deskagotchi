@@ -586,10 +586,12 @@ function auditScenario(scenario) {
     (name) => checks.some((check) => check.name === name && check.status === "pass")
   );
   const extraFailures = scenario.extraValidator?.(runDir, summary) ?? [];
+  const sourceFreshnessFailures = validateScenarioSourceFreshness(summary);
   const failures = [
     ...failedChecks.map((name) => `failed check: ${name}`),
     ...missingChecks.map((name) => `missing check: ${name}`),
-    ...extraFailures
+    ...extraFailures,
+    ...sourceFreshnessFailures
   ];
   const confidencePass = summary.confidenceLabel === "automated-pass";
 
@@ -604,11 +606,117 @@ function auditScenario(scenario) {
     runId: runDir,
     confidenceLabel: summary.confidenceLabel ?? "missing",
     evidenceTier: summary.evidenceTier ?? "not recorded",
+    sourceCommit: formatScenarioSourceCommit(summary),
     exactClaimAllowed: summary.exactClaimAllowed ?? "not recorded",
     uncoveredConditions: summary.uncoveredConditions ?? [],
     notableChecks,
     failures
   };
+}
+
+function validateScenarioSourceFreshness(summary) {
+  if (ARGS.allowDirty) {
+    return [];
+  }
+
+  const sourceState = summary.sourceState;
+  if (sourceState === undefined || sourceState === null || typeof sourceState !== "object") {
+    return ["QA summary is missing sourceState commit metadata."];
+  }
+
+  const commit = typeof sourceState.commit === "string" ? sourceState.commit.trim() : "";
+  if (commit.length === 0 || commit === "unknown") {
+    return ["QA summary sourceState has missing git commit."];
+  }
+
+  const dirtyEntryFailures = validateScenarioDirtyEntries(sourceState);
+  if (dirtyEntryFailures.length > 0) {
+    return dirtyEntryFailures;
+  }
+
+  const commitExists = runGit(["cat-file", "-e", `${commit}^{commit}`]);
+  if (!commitExists.ok) {
+    return [`QA summary source commit does not exist: ${commit}`];
+  }
+
+  const commitIsReachable = runGit(["merge-base", "--is-ancestor", commit, "HEAD"]);
+  if (!commitIsReachable.ok) {
+    return [`QA summary source commit is not an ancestor of HEAD: ${commit}`];
+  }
+
+  const diff = runGit(["diff", "--name-only", `${commit}..HEAD`]);
+  if (!diff.ok) {
+    return [`Unable to inspect source changes after QA commit: ${commit}`];
+  }
+
+  const nonEvidencePaths = diff.stdout
+    .split(/\r?\n/)
+    .map((filePath) => filePath.trim())
+    .filter((filePath) => filePath.length > 0)
+    .filter((filePath) => !isAllowedPostQaEvidencePath(filePath));
+
+  if (nonEvidencePaths.length === 0) {
+    return [];
+  }
+
+  return [
+    "QA evidence has app/source changes after run: " +
+    nonEvidencePaths.join(", ")
+  ];
+}
+
+function validateScenarioDirtyEntries(sourceState) {
+  if (sourceState.dirty !== true) {
+    return [];
+  }
+
+  const dirtyEntries = Array.isArray(sourceState.dirtyEntries)
+    ? sourceState.dirtyEntries.filter((entry) => typeof entry === "string")
+    : [];
+  if (dirtyEntries.length === 0) {
+    return ["QA run was captured from a dirty worktree."];
+  }
+
+  const nonEvidencePaths = dirtyEntries
+    .map((entry) => extractDirtyEntryPath(entry))
+    .filter((filePath) => filePath.length > 0)
+    .filter((filePath) => !isAllowedPostQaEvidencePath(filePath));
+
+  if (nonEvidencePaths.length === 0) {
+    return [];
+  }
+
+  return [
+    "QA run was captured with dirty app/source paths: " +
+    nonEvidencePaths.join(", ")
+  ];
+}
+
+function extractDirtyEntryPath(entry) {
+  const trimmedEntry = entry.trim();
+  const renameSeparatorIndex = trimmedEntry.indexOf(" -> ");
+  const pathEntry = renameSeparatorIndex === -1
+    ? trimmedEntry
+    : trimmedEntry.slice(renameSeparatorIndex + " -> ".length);
+  const match = pathEntry.match(/^[A-Z?!]{1,2}\s+(.+)$/u);
+  return match === null ? pathEntry : match[1].trim();
+}
+
+function formatScenarioSourceCommit(summary) {
+  const sourceState = summary.sourceState;
+  if (sourceState === undefined || sourceState === null || typeof sourceState !== "object") {
+    return "not recorded";
+  }
+
+  const shortCommit = typeof sourceState.shortCommit === "string"
+    ? sourceState.shortCommit.trim()
+    : "";
+  if (shortCommit.length > 0 && shortCommit !== "unknown") {
+    return shortCommit;
+  }
+
+  const commit = typeof sourceState.commit === "string" ? sourceState.commit.trim() : "";
+  return commit.length > 0 && commit !== "unknown" ? commit.slice(0, 12) : "not recorded";
 }
 
 function auditArtifact(artifact) {
@@ -1094,6 +1202,10 @@ function validatePostManualBuildChanges(commit) {
 }
 
 function isAllowedPostManualEvidencePath(filePath) {
+  return isAllowedPostQaEvidencePath(filePath);
+}
+
+function isAllowedPostQaEvidencePath(filePath) {
   const normalizedPath = filePath.replaceAll("\\", "/");
   return normalizedPath === "README.md" || normalizedPath.startsWith("docs/");
 }

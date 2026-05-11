@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { readQaSourceState } from "./qa-git.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
@@ -162,6 +164,7 @@ function writeAutomatedRunFixture(suffix) {
     scenario: suffix,
     runId,
     startedAt: "9999-12-31T23:58:00.000Z",
+    sourceState: readQaSourceState(ROOT_DIR),
     confidenceLabel: "automated-pass",
     evidenceTier: "manual-context-smoke-fixture",
     checks: [
@@ -201,6 +204,7 @@ function writeRunArtifacts({ startedAt, checks, artifacts }) {
     scenario: "manual-context-smoke",
     runId: RUN_ID,
     startedAt,
+    sourceState: readQaSourceState(ROOT_DIR),
     confidenceLabel: "automated-pass",
     evidenceTier: "script-smoke",
     checks,

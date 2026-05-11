@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { readQaSourceState } from "./qa-git.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
@@ -49,6 +51,7 @@ function createRun() {
     runId,
     runDir,
     startedAt: new Date().toISOString(),
+    sourceState: readQaSourceState(ROOT_DIR),
     confidenceLabel: "failed",
     evidenceTier: "static-code-quality",
     checks: [],

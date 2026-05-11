@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { readQaSourceState } from "./qa-git.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const SMOKE_DIR = path.join(ROOT_DIR, ".qa-runs", "v2-closeout-audit-smoke");
@@ -662,6 +664,7 @@ function writeAutomatedRun(fixture) {
     scenario: fixture.suffix,
     runId,
     startedAt: "9999-12-31T23:58:00.000Z",
+    sourceState: readQaSourceState(ROOT_DIR),
     confidenceLabel: "automated-pass",
     evidenceTier: "smoke-fixture",
     checks: fixture.checks.map((name) => ({

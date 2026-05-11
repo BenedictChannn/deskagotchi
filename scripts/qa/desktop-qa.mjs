@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import { _electron as electron } from "playwright";
 
+import { readQaSourceState } from "./qa-git.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_ROOT = path.join(ROOT_DIR, ".qa-runs");
@@ -42,6 +44,7 @@ class QaRun {
       scenario,
       runId: this.runId,
       startedAt: new Date().toISOString(),
+      sourceState: readQaSourceState(ROOT_DIR),
       confidenceLabel: "failed",
       evidenceTier: "electron-internal",
       checks: [],
