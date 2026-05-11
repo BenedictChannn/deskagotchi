@@ -28,6 +28,7 @@
     "qa:v2:audit:smoke": "node scripts/qa/v2-closeout-audit-smoke.mjs",
     "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
     "qa:v2:manual-context": "node scripts/qa/v2-manual-context.mjs",
+    "qa:v2:manual-context:smoke": "node scripts/qa/v2-manual-context-smoke.mjs",
     "qa:v2:manual-open": "node scripts/qa/v2-manual-context.mjs --open",
     "qa:v2:manual-page": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs",
     "qa:v2:manual-page:update": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs --update-screenshot",

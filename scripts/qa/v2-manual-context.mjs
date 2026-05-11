@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
-const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
+const QA_RUNS_DIR = resolveQaRunsDir();
 const RELEASE_DIR = path.join(ROOT_DIR, "release");
 const LATEST_CONTEXT_PATH = path.join(QA_RUNS_DIR, "latest-v2-manual-context.json");
 const LATEST_SESSION_PATH = path.join(
@@ -24,22 +24,74 @@ const SCENARIO = "manual-context";
 const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-${SCENARIO}`;
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const ARGS = parseArgs(process.argv.slice(2));
-const SCENARIOS = [
-  "launch",
-  "drag",
-  "overlay",
-  "play",
-  "lifecycle",
-  "renderer",
-  "idle",
-  "release",
-  "check",
-  "assets-pets",
-  "assets-items",
-  "manual-page",
-  "visual-page",
-  "v2-scope"
+const REQUIRED_AUTOMATED_SCENARIOS = [
+  {
+    suffix: "launch",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "drag",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "overlay",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "play",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "lifecycle",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "renderer",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "idle",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "release",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "check",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "assets-pets",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "assets-items",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "manual-page",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "visual-page",
+    expectedConfidenceLabel: "automated-pass"
+  },
+  {
+    suffix: "v2-scope",
+    expectedConfidenceLabel: "automated-pass"
+  }
 ];
+
+function resolveQaRunsDir() {
+  const configuredPath = process.env.DESKAGOTCHI_QA_RUNS_DIR;
+  if (configuredPath === undefined || configuredPath.trim().length === 0) {
+    return path.join(ROOT_DIR, ".qa-runs");
+  }
+  return path.isAbsolute(configuredPath)
+    ? configuredPath
+    : path.join(ROOT_DIR, configuredPath);
+}
 
 function main() {
   fs.mkdirSync(RUN_DIR, { recursive: true });
@@ -59,6 +111,7 @@ function main() {
   fs.writeFileSync(reportPath, renderReport(context, summary), "utf8");
 
   const openResult = ARGS.open ? openManualSession(LATEST_SESSION_PATH) : null;
+  const failedChecks = summary.checks.filter((check) => check.status !== "pass");
   console.log(
     JSON.stringify(
       {
@@ -81,6 +134,9 @@ function main() {
       2
     )
   );
+  if (failedChecks.length > 0) {
+    process.exit(1);
+  }
 }
 
 function parseArgs(args) {
@@ -91,7 +147,10 @@ function parseArgs(args) {
 
 function buildManualContext(startedAt) {
   const latestRuns = Object.fromEntries(
-    SCENARIOS.map((suffix) => [suffix, readLatestRun(suffix)])
+    REQUIRED_AUTOMATED_SCENARIOS.map((scenario) => [
+      scenario.suffix,
+      readLatestRun(scenario.suffix)
+    ])
   );
   const manualGateKeys = readManualGateKeys();
   const releaseCandidates = findReleaseCandidates();
@@ -416,6 +475,20 @@ function readJson(filePath) {
 }
 
 function buildSummary(context, startedAt) {
+  const missingRuns = REQUIRED_AUTOMATED_SCENARIOS
+    .filter((scenario) => context.latestRuns[scenario.suffix] === null)
+    .map((scenario) => scenario.suffix);
+  const nonPassingRuns = REQUIRED_AUTOMATED_SCENARIOS
+    .filter((scenario) => {
+      const run = context.latestRuns[scenario.suffix];
+      return run !== null && run.confidenceLabel !== scenario.expectedConfidenceLabel;
+    })
+    .map((scenario) => ({
+      suffix: scenario.suffix,
+      expectedConfidenceLabel: scenario.expectedConfidenceLabel,
+      actualConfidenceLabel: context.latestRuns[scenario.suffix].confidenceLabel
+    }));
+  const automatedEvidenceReady = missingRuns.length === 0 && nonPassingRuns.length === 0;
   const checks = [
     {
       name: "manual context collected",
@@ -432,10 +505,12 @@ function buildSummary(context, startedAt) {
     },
     {
       name: "latest QA run references collected",
-      status: "pass",
+      status: automatedEvidenceReady ? "pass" : "fail",
       details: {
         foundRuns: Object.values(context.latestRuns).filter(Boolean).length,
-        expectedRuns: SCENARIOS.length
+        expectedRuns: REQUIRED_AUTOMATED_SCENARIOS.length,
+        missingRuns,
+        nonPassingRuns
       }
     },
     {
@@ -474,7 +549,9 @@ function buildSummary(context, startedAt) {
       "report.md"
     ],
     exactClaimAllowed:
-      "manual acceptance context collected; this is not a manual pass",
+      automatedEvidenceReady
+        ? "manual acceptance context collected from complete automated evidence; this is not a manual pass"
+        : "No manual-prep claim allowed until required automated evidence is complete.",
     uncoveredConditions: [
       "physical manual gate execution",
       "human subjective signoff",

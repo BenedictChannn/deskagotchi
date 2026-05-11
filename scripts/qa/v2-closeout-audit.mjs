@@ -192,6 +192,16 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
+    key: "manual-context-smoke",
+    label: "Manual acceptance context guard",
+    suffix: "manual-context-smoke",
+    requiredChecks: [
+      "manual context fails without complete automated evidence",
+      "manual context passes with complete automated evidence",
+      "manual context report includes code and asset evidence"
+    ]
+  },
+  {
     key: "visual-page",
     label: "V2 visual acceptance pages",
     suffix: "visual-page",

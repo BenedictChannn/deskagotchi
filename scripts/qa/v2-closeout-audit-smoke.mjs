@@ -178,6 +178,14 @@ const AUTOMATED_FIXTURES = [
     ]
   },
   {
+    suffix: "manual-context-smoke",
+    checks: [
+      "manual context fails without complete automated evidence",
+      "manual context passes with complete automated evidence",
+      "manual context report includes code and asset evidence"
+    ]
+  },
+  {
     suffix: "visual-page",
     checks: [
       "visual acceptance page loaded",

@@ -30,6 +30,12 @@ DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
 npm.cmd run qa:v2:manual-context
 ```
 
+`qa:v2:manual-context` now fails if any required automated evidence run is
+missing or has a non-passing confidence label. The generated context must
+include passing references for launch, drag, overlay, play, lifecycle, renderer,
+idle, release, check, built-in pet assets, item assets, manual-page smoke,
+visual-page smoke, and V2 scope QA before manual signoff starts.
+
 Open:
 
 ```text
