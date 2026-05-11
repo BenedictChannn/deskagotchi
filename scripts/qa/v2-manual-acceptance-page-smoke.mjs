@@ -35,6 +35,8 @@ const REQUIRED_EVIDENCE_NOTE_FIXTURE = {
   environmentNotes: "Environment smoke evidence notes."
 };
 const MANUAL_CONTEXT_FIXTURE = {
+  runId: "manual-page-smoke-context",
+  generatedAt: "2026-05-11T00:00:00.000Z",
   fields: REQUIRED_FIELD_FIXTURE,
   evidenceNoteStarters: REQUIRED_EVIDENCE_NOTE_FIXTURE
 };
@@ -89,6 +91,31 @@ async function main() {
       "blocking gates after context import"
     );
     recordPass(checks, "manual context import prefills without resolving gates");
+
+    await setAllGates(page, true);
+    await applyManualContext(page);
+    const reappliedCheckedGates = await page.locator("[data-check]:checked").count();
+    assertEqual(
+      reappliedCheckedGates,
+      gateCount,
+      "same manual context import preserved checked gates"
+    );
+    recordPass(checks, "same manual context import preserves current gate decisions");
+
+    await applyManualContext(page, {
+      ...MANUAL_CONTEXT_FIXTURE,
+      runId: "manual-page-smoke-context-next",
+      fields: {
+        ...REQUIRED_FIELD_FIXTURE,
+        build: "manual-page-smoke-next"
+      }
+    });
+    const resetCheckedGates = await page.locator("[data-check]:checked").count();
+    assertEqual(resetCheckedGates, 0, "new manual context import reset checked gates");
+    const resetReport = await exportReport(page);
+    assertEqual(resetReport.manualPass, false, "manual pass after new context reset");
+    assertEqual(resetReport.blockingChecks.length, gateCount, "blocking gates after new context reset");
+    recordPass(checks, "new manual context import resets stale gate decisions");
 
     await page.locator("[data-action='clear']").click();
     await setAllGates(page, true);
@@ -279,10 +306,10 @@ async function fillRequiredEvidenceNotes(page) {
   }
 }
 
-async function applyManualContext(page) {
+async function applyManualContext(page, context = MANUAL_CONTEXT_FIXTURE) {
   await page
     .locator("[data-context-import]")
-    .fill(JSON.stringify(MANUAL_CONTEXT_FIXTURE));
+    .fill(JSON.stringify(context));
   await page.locator("[data-action='apply-context']").click();
 }
 

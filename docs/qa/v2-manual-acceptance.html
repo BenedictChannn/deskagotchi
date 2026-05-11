@@ -434,6 +434,7 @@
 
     <script>
       const storageKey = "deskagotchi-v2-manual-acceptance";
+      let currentManualContextSignature = "";
       const fields = Array.from(document.querySelectorAll("[data-field]"));
       const checks = Array.from(document.querySelectorAll("[data-check]"));
       const deferralGrid = document.querySelector("#deferral-grid");
@@ -532,6 +533,7 @@
           })
         );
         return {
+          manualContextSignature: currentManualContextSignature,
           fields: Object.fromEntries(fields.map((field) => [field.dataset.field, field.value])),
           checks: Object.fromEntries(checks.map((check) => [check.dataset.check, check.checked])),
           deferrals,
@@ -541,6 +543,7 @@
 
       function restoreState() {
         const state = loadState();
+        currentManualContextSignature = state.manualContextSignature || "";
         for (const field of fields) {
           field.value = state.fields?.[field.dataset.field] || "";
         }
@@ -659,6 +662,30 @@
         );
       }
 
+      function buildManualContextSignature(context) {
+        return [
+          context.runId || "",
+          context.generatedAt || "",
+          context.fields?.build || "",
+          context.fields?.installerPath || ""
+        ].join("|");
+      }
+
+      function clearGateResolutionState() {
+        for (const check of checks) {
+          check.checked = false;
+        }
+        for (const deferral of Array.from(document.querySelectorAll("[data-deferral]"))) {
+          const key = deferral.dataset.deferral;
+          deferral.checked = false;
+          document.querySelector(`[data-deferral-note="${key}"]`).value = "";
+        }
+        const approverField = document.querySelector("[data-field='acceptedOutOfScopeBy']");
+        if (approverField) {
+          approverField.value = "";
+        }
+      }
+
       renderDeferrals();
       restoreState();
       for (const element of [
@@ -695,6 +722,16 @@
           updateProgress("Manual context import failed: JSON could not be parsed.");
           return;
         }
+
+        const nextManualContextSignature = buildManualContextSignature(context);
+        if (
+          nextManualContextSignature &&
+          nextManualContextSignature !== currentManualContextSignature
+        ) {
+          clearGateResolutionState();
+          exportOutput.value = "";
+        }
+        currentManualContextSignature = nextManualContextSignature;
 
         for (const [fieldName, value] of Object.entries(context.fields || {})) {
           const field = document.querySelector(`[data-field="${fieldName}"]`);
