@@ -124,6 +124,7 @@ const AUTOMATED_SCENARIOS = [
       "manual context import prefills without resolving gates",
       "same manual context import preserves current gate decisions",
       "new manual context import resets stale gate decisions",
+      "manual gate pass and deferral remain mutually exclusive",
       "all gates without run context blocks manual pass",
       "all gates with run context exports manual pass",
       "deferral without approver blocks manual pass",
@@ -678,12 +679,16 @@ function auditManualAcceptance() {
       ...computedEvidenceFailures,
       ...reportedEvidenceFailures
     ];
+    const conflictFailures = expectedChecks
+      .filter((check) => isManualGateConflicted(manualReport, check.key))
+      .map((check) => `Manual gate cannot be both checked and deferred: ${formatManualCheck(check)}`);
     const checkFailures = expectedChecks
       .filter((check) => !isManualGateResolved(manualReport, check.key, acceptedOutOfScopeBy))
       .map((check) => `Missing, unchecked, or unresolved manual gate: ${formatManualCheck(check)}`);
     const blockingChecks = [
       ...fieldFailures,
       ...evidenceFailures,
+      ...conflictFailures,
       ...checkFailures,
       ...(manualReport.blockingChecks ?? []).map(
         (checkKey) => `Reported blocking check: ${formatManualCheck(
@@ -779,6 +784,11 @@ function isManualGateResolved(manualReport, checkKey, acceptedOutOfScopeBy) {
     ? deferral.rationale.trim()
     : "";
   return acceptedOutOfScopeBy.length > 0 && rationale.length > 0;
+}
+
+function isManualGateConflicted(manualReport, checkKey) {
+  return manualReport.checks?.[checkKey] === true &&
+    manualReport.deferrals?.[checkKey]?.accepted === true;
 }
 
 function normalizeManualPath(absolutePath) {

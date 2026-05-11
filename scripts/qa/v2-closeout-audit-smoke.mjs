@@ -116,6 +116,7 @@ const AUTOMATED_FIXTURES = [
       "manual context import prefills without resolving gates",
       "same manual context import preserves current gate decisions",
       "new manual context import resets stale gate decisions",
+      "manual gate pass and deferral remain mutually exclusive",
       "all gates without run context blocks manual pass",
       "all gates with run context exports manual pass",
       "deferral without approver blocks manual pass",
@@ -168,6 +169,7 @@ function main() {
   const checkKeys = readManualCheckKeys();
   const incompleteManualPath = path.join(SMOKE_DIR, "manual-incomplete.json");
   const missingFieldsManualPath = path.join(SMOKE_DIR, "manual-missing-fields.json");
+  const conflictedManualPath = path.join(SMOKE_DIR, "manual-conflicted.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
 
@@ -178,6 +180,11 @@ function main() {
   writeManualReport(missingFieldsManualPath, checkKeys, {
     complete: true,
     includeRequiredFields: false
+  });
+  writeManualReport(conflictedManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    conflictedCheck: checkKeys[0]
   });
   writeManualReport(completeManualPath, checkKeys, {
     complete: true,
@@ -247,6 +254,25 @@ function main() {
     throw new Error("Missing-fields report did not include required evidence-note blockers.");
   }
 
+  const conflictedReportPath = path.join(SMOKE_DIR, "report-conflicted.md");
+  const conflictedRun = runAudit([
+    "--manual",
+    conflictedManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    conflictedReportPath
+  ]);
+  if (conflictedRun.status !== 1) {
+    throw new Error(
+      `Expected conflicted manual evidence to fail strict mode, got ${conflictedRun.status}.`
+    );
+  }
+  const conflictedReport = fs.readFileSync(conflictedReportPath, "utf8");
+  if (!conflictedReport.includes("Manual gate cannot be both checked and deferred")) {
+    throw new Error("Conflicted manual report did not include gate conflict blockers.");
+  }
+
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
     "--manual",
@@ -314,6 +340,7 @@ function main() {
         incompleteStrictExit: incompleteRun.status,
         missingManualStrictExit: missingManualRun.status,
         missingFieldsStrictExit: missingFieldsRun.status,
+        conflictedStrictExit: conflictedRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
@@ -380,7 +407,8 @@ function assertManualPageGuardsRunContext() {
     "const requiredManualFields =",
     "fieldFailures",
     "evidenceFailures",
-    "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0",
+    "conflictFailures",
+    "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0 && conflictFailures.length === 0",
     "Manual pass is still blocked."
   ];
   for (const snippet of requiredSnippets) {
@@ -393,7 +421,7 @@ function assertManualPageGuardsRunContext() {
 function readManualCheckKeys() {
   const manualPage = fs.readFileSync(MANUAL_PAGE_PATH, "utf8");
   const checkKeys = new Set();
-  const dataCheckPattern = /data-check="([^"]+)"/g;
+  const dataCheckPattern = /<label class="check">\s*<input data-check="([^"]+)"[^>]*\/>\s*<span>.*?<\/span>\s*<\/label>/gs;
   let match = dataCheckPattern.exec(manualPage);
 
   while (match !== null) {
@@ -415,8 +443,10 @@ function writeManualReport(filePath, checkKeys, options) {
     checkKeys.map((checkKey) => [
       checkKey,
       {
-        accepted: options.deferredCheck === checkKey,
-        rationale: options.deferredCheck === checkKey
+        accepted: options.deferredCheck === checkKey ||
+          options.conflictedCheck === checkKey,
+        rationale: options.deferredCheck === checkKey ||
+          options.conflictedCheck === checkKey
           ? "Accepted as out of scope for this smoke fixture."
           : ""
       }
@@ -436,7 +466,8 @@ function writeManualReport(filePath, checkKeys, options) {
         monitorNotes: "Monitor fixture notes.",
         sleepNotes: "Sleep fixture notes.",
         environmentNotes: "Environment fixture notes.",
-        acceptedOutOfScopeBy: options.deferredCheck === undefined
+        acceptedOutOfScopeBy: options.deferredCheck === undefined &&
+          options.conflictedCheck === undefined
           ? ""
           : "V2 smoke approver"
       }

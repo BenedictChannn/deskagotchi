@@ -158,6 +158,31 @@ async function main() {
     assertEqual(resetReport.blockingChecks.length, gateCount, "blocking gates after new context reset");
     recordPass(checks, "new manual context import resets stale gate decisions");
 
+    await page.locator('[data-check="visual.pets"]').setChecked(true);
+    await page.locator('[data-deferral="visual.pets"]').setChecked(true);
+    assertEqual(
+      await page.locator('[data-check="visual.pets"]:checked').count(),
+      0,
+      "checking deferral cleared pass checkbox"
+    );
+    assertEqual(
+      await page.locator('[data-deferral="visual.pets"]:checked').count(),
+      1,
+      "deferral checkbox remains checked"
+    );
+    await page.locator('[data-check="visual.pets"]').setChecked(true);
+    assertEqual(
+      await page.locator('[data-check="visual.pets"]:checked').count(),
+      1,
+      "pass checkbox remains checked"
+    );
+    assertEqual(
+      await page.locator('[data-deferral="visual.pets"]:checked').count(),
+      0,
+      "checking pass cleared deferral checkbox"
+    );
+    recordPass(checks, "manual gate pass and deferral remain mutually exclusive");
+
     await page.locator("[data-action='clear']").click();
     await setAllGates(page, true);
     await assertStatusIncludes(page, [

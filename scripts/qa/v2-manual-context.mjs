@@ -279,7 +279,7 @@ function buildPasteBlock(fields) {
 function readManualGateKeys() {
   const manualPage = fs.readFileSync(MANUAL_PAGE_PATH, "utf8");
   const gateKeys = new Set();
-  const dataCheckPattern = /data-check="([^"]+)"/g;
+  const dataCheckPattern = /<label class="check">\s*<input data-check="([^"]+)"[^>]*\/>\s*<span>.*?<\/span>\s*<\/label>/gs;
   let match = dataCheckPattern.exec(manualPage);
 
   while (match !== null) {

@@ -577,6 +577,7 @@
         const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
         const fieldFailures = buildFieldFailures(state, hasDeferrals);
         const evidenceFailures = buildEvidenceFailures(state);
+        const conflictFailures = buildConflictFailures(state);
         const blockingChecks = checks
           .map((check) => check.dataset.check)
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
@@ -587,9 +588,10 @@
           requiredEvidenceFields: sectionEvidenceFields,
           fieldFailures,
           evidenceFailures,
+          conflictFailures,
           blockingChecks,
           hasDeferrals,
-          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0
+          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0 && conflictFailures.length === 0
         };
       }
 
@@ -621,18 +623,22 @@
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
         const fieldFailures = buildFieldFailures(state, hasDeferrals);
         const evidenceFailures = buildEvidenceFailures(state);
+        const conflictFailures = buildConflictFailures(state);
         const passed = checks.length - blockingChecks.length;
-        const contextFailureCount = fieldFailures.length + evidenceFailures.length;
+        const contextFailureCount = fieldFailures.length + evidenceFailures.length + conflictFailures.length;
         const fieldStatus = fieldFailures.length === 0
           ? "Required run context complete."
           : `${fieldFailures.length} required run context field${fieldFailures.length === 1 ? "" : "s"} missing.`;
         const evidenceStatus = evidenceFailures.length === 0
           ? "Required evidence notes complete."
           : `${evidenceFailures.length} required evidence note${evidenceFailures.length === 1 ? "" : "s"} missing.`;
+        const conflictStatus = conflictFailures.length === 0
+          ? ""
+          : ` ${conflictFailures.length} gate conflict${conflictFailures.length === 1 ? "" : "s"} must be resolved.`;
         const passStatus = blockingChecks.length === 0 && contextFailureCount === 0
           ? "Manual pass ready to export."
           : "Manual pass is still blocked.";
-        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${evidenceStatus} ${passStatus}`;
+        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${evidenceStatus}${conflictStatus} ${passStatus}`;
         exportStatus.textContent = message ? `${prefix} ${message}` : prefix;
       }
 
@@ -651,6 +657,13 @@
           .filter((sectionEvidence) => isSectionTouched(sectionEvidence.section, state))
           .filter((sectionEvidence) => !state.fields[sectionEvidence.field]?.trim())
           .map((sectionEvidence) => `Missing evidence note: ${sectionEvidence.label}`);
+      }
+
+      function buildConflictFailures(state) {
+        return checks
+          .map((check) => check.dataset.check)
+          .filter((key) => state.checks[key] === true && state.deferrals[key]?.accepted === true)
+          .map((key) => `Gate cannot be both checked and deferred: ${key}`);
       }
 
       function isSectionTouched(section, state) {
@@ -707,10 +720,12 @@
         ...Array.from(document.querySelectorAll("[data-deferral-note]"))
       ]) {
         element.addEventListener("input", () => {
+          normalizeGateResolution(element);
           saveState();
           updateProgress();
         });
         element.addEventListener("change", () => {
+          normalizeGateResolution(element);
           saveState();
           updateProgress();
         });
@@ -783,6 +798,23 @@
         }
         saveState();
         updateProgress(successMessage);
+      }
+
+      function normalizeGateResolution(element) {
+        if (element.matches("[data-check]") && element.checked) {
+          const deferral = document.querySelector(`[data-deferral="${element.dataset.check}"]`);
+          if (deferral) {
+            deferral.checked = false;
+          }
+          return;
+        }
+
+        if (element.matches("[data-deferral]") && element.checked) {
+          const check = document.querySelector(`[data-check="${element.dataset.deferral}"]`);
+          if (check) {
+            check.checked = false;
+          }
+        }
       }
     </script>
   </body>
