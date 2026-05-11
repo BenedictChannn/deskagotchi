@@ -138,11 +138,11 @@ Normal care stays inside the pet overlay:
 
 Management belongs in the full panel or tray:
 
-- Hatch.
 - Switch pet.
 - Import/export pet packages.
 - Settings.
 - Debug/status inspection.
+- Future archived Hatch experiments, only when explicitly re-enabled for research.
 
 A care action must not open the management panel unless it is explicitly a
 management action from the tray or panel.

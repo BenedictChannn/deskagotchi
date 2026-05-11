@@ -41,7 +41,6 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   const [eatingCueItem, setEatingCueItem] = useState<ItemCatalogEntry | undefined>();
   const hasTrayOverlay = menuOpen || playOpen;
   const hasCardOverlay = healthOpen || feedOpen || careFlow !== null;
-  const hasTransientOverlay = hasTrayOverlay || hasCardOverlay;
   const petSpriteSize = 148;
   const petDragPlaneClassName = [
     "pet-drag-plane",
@@ -438,13 +437,6 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           onCancel={() => setCareFlow(null)}
           onConfirm={(actionType) => void performAction(actionType)}
         />
-      ) : null}
-
-      {!playActive && !hasTransientOverlay ? (
-        <div className="overlay-mood" aria-hidden="true">
-          <ItemIcon iconId="heart" size={14} />
-          <span>{snapshot.activeState.mood}</span>
-        </div>
       ) : null}
     </main>
   );

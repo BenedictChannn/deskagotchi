@@ -5,14 +5,8 @@ import {
   PetPackageSchema,
   type DeskagotchiSave,
   type PetInstanceState,
-  type PetPackage,
-  type ValidationIssue
+  type PetPackage
 } from "@shared/domain";
-import {
-  createHatchPetPackage,
-  type HatchDraftInput,
-  validateHatchDraftInput
-} from "@shared/hatch";
 import {
   type CareActionRequest,
   type DeskagotchiApi,
@@ -22,8 +16,7 @@ import {
 } from "@shared/ipc";
 import {
   applyCareAction,
-  createInitialPetState,
-  DEFAULT_SIMULATION_CONFIG
+  createInitialPetState
 } from "@shared/simulation";
 import { ItemIconManifestSchema } from "@shared/itemIcons";
 
@@ -106,7 +99,6 @@ class DevDeskagotchiApi {
       exitPetWindowPlayMode: async () => undefined,
       setClickThrough: async () => undefined,
       recordQaEvent: async () => undefined,
-      hatchCreateDraft: async (input) => this.hatchCreateDraft(input),
       exportPet: async () => undefined,
       importPet: async () => this.createSnapshot(),
       onSnapshotUpdated: (callback) => {
@@ -186,46 +178,6 @@ class DevDeskagotchiApi {
   }
 
   /**
-   * Create and install a local custom pet draft for browser testing.
-   *
-   * @param input - Hatch form values from the panel.
-   * @returns Installation result and validation issues for the draft.
-   */
-  private async hatchCreateDraft(
-    input: HatchDraftInput
-  ): Promise<{ packageId: string; installed: boolean; issues: ValidationIssue[] }> {
-    const issues = validateHatchDraftInput(input);
-    if (issues.length > 0) {
-      return {
-        packageId: "",
-        installed: false,
-        issues
-      };
-    }
-
-    const packageId = slugify(`${input.name}-${Date.now().toString(36)}`);
-    const petPackage = createHatchPetPackage({
-      input,
-      packageId,
-      colorPalette: normalizeColors(input.preferredColors),
-      stageThresholdHours: DEFAULT_SIMULATION_CONFIG.stageThresholdHours,
-      createdAt: new Date().toISOString(),
-      assetHash: `${packageId}-browser-dev`,
-      author: "Local user",
-      license: "Local custom Deskagotchi pet"
-    });
-    this.packages = [...this.packages, toRuntimePackage(petPackage)];
-    this.persistCustomPackages();
-    await this.switchPet(packageId);
-
-    return {
-      packageId,
-      installed: true,
-      issues: []
-    };
-  }
-
-  /**
    * Build a snapshot matching the Electron runtime contract.
    *
    * @returns The current browser-backed Deskagotchi snapshot.
@@ -302,12 +254,6 @@ class DevDeskagotchiApi {
     };
   }
 
-  /**
-   * Persist generated custom packages so browser reloads can resolve active saves.
-   */
-  private persistCustomPackages(): void {
-    persistCustomDevPackages(this.packages);
-  }
 }
 
 /**
@@ -521,27 +467,6 @@ function loadCustomDevPackages(): PetPackage[] {
 }
 
 /**
- * Persist generated custom package manifests for browser development reloads.
- *
- * @param packages - Current runtime package registry.
- */
-function persistCustomDevPackages(packages: RuntimePetPackage[]): void {
-  const customPackages = packages
-    .map((runtimePackage) => runtimePackage.petPackage)
-    .filter((petPackage) => petPackage.source === PetSource.Custom);
-
-  if (customPackages.length === 0) {
-    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-    return;
-  }
-
-  window.localStorage.setItem(
-    CUSTOM_PACKAGES_STORAGE_KEY,
-    JSON.stringify(customPackages)
-  );
-}
-
-/**
  * Attach generated browser asset URLs to a pet package.
  *
  * @param petPackage - Package manifest to convert.
@@ -679,20 +604,6 @@ function normalizeColors(colors: string[]): string[] {
     "#243447",
     palette[2] ?? "#fff4d6"
   ];
-}
-
-/**
- * Convert free-form package names into compact package ids.
- *
- * @param value - Raw value to normalize.
- * @returns Lowercase slug capped to the package id length used by the adapter.
- */
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72);
 }
 
 /**

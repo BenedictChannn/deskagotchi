@@ -7,7 +7,7 @@ Use this contract before implementing or closing any Deskagotchi feature.
 | Level | Scope | Required Evidence |
 | --- | --- | --- |
 | P0 | Native desktop/window behavior such as drag, click-through, bounds, tray, startup, always-on-top, persistence. | Desktop QA command, production-like invariants, artifacts, and manual acceptance form when subjective feel matters. |
-| P1 | Interaction behavior such as overlay care flows, Ball play, Hatch import/export, and in-place transient UI. | Desktop or renderer QA command plus screenshots and state evidence. |
+| P1 | Interaction behavior such as overlay care flows, Ball play, import/export, and in-place transient UI. | Desktop or renderer QA command plus screenshots and state evidence. |
 | P2 | Renderer-only panel layout, forms, route rendering, and visual regressions. | Renderer QA or focused component/browser evidence. |
 | P3 | Pure domain logic such as simulation, package validation, and storage schema. | Unit or integration tests. |
 

@@ -30,7 +30,6 @@ import {
   DeskagotchiSaveSchema,
   PetPackageSchema
 } from "@shared/domain";
-import { HatchDraftInputSchema } from "@shared/hatch";
 import {
   IpcChannel,
   PanelView,
@@ -544,15 +543,6 @@ function registerIpcHandlers(): void {
       parseIpcInput(QaTelemetryInputSchema, input, "QA telemetry event")
     );
   });
-  ipcMain.handle(IpcChannel.HatchCreateDraft, async (event, input: unknown) => {
-    validateIpcSender(event);
-    const result = await runtime.hatchCreateDraft(
-      parseIpcInput(HatchDraftInputSchema, input, "hatch draft")
-    );
-    broadcastSnapshotUpdated();
-    rebuildTray();
-    return result;
-  });
   ipcMain.handle(IpcChannel.ExportPet, (event, packageId: unknown) => {
     validateIpcSender(event);
     return runtime.exportPet(
@@ -662,7 +652,6 @@ function rebuildTray(): void {
     { type: "separator" },
     { label: "Health", click: () => createPanelWindow(PanelView.Status) },
     { label: "Switch pet", click: () => createPanelWindow(PanelView.PetSelector) },
-    { label: "Hatch pet", click: () => createPanelWindow(PanelView.Hatch) },
     { label: "Settings", click: () => createPanelWindow(PanelView.Settings) },
     { type: "separator" },
     {
@@ -709,10 +698,35 @@ function applySettings(settings: UpdateSettingsInput): void {
     petWindow?.setAlwaysOnTop(settings.alwaysOnTop);
   }
   if (settings.launchOnStartup !== undefined) {
-    app.setLoginItemSettings({
-      openAtLogin: settings.launchOnStartup
-    });
+    applyLaunchOnStartupSetting(settings.launchOnStartup);
   }
+}
+
+/**
+ * Apply startup-on-login only for real packaged app runs.
+ *
+ * Development and QA sessions should not mutate the user's real OS startup
+ * registry. The persisted setting is still saved, so packaged builds can apply
+ * it on the next normal launch.
+ *
+ * @param launchOnStartup - Whether Deskagotchi should open at OS login.
+ */
+function applyLaunchOnStartupSetting(launchOnStartup: boolean): void {
+  if (qaConfig.enabled || !app.isPackaged) {
+    recordQaEvent({
+      event: "settings:launchOnStartupSkipped",
+      payload: {
+        launchOnStartup,
+        isPackaged: app.isPackaged,
+        qaEnabled: qaConfig.enabled
+      }
+    });
+    return;
+  }
+
+  app.setLoginItemSettings({
+    openAtLogin: launchOnStartup
+  });
 }
 
 /**

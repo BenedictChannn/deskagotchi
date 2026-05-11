@@ -51,7 +51,7 @@ const OptionalHatchTextSchema = z
   .max(HATCH_OPTIONAL_TEXT_MAX_LENGTH)
   .optional();
 
-/** Runtime-validated Hatch form payload accepted over IPC and browser dev mode. */
+/** Runtime-validated Hatch payload used by the archived draft package prototype. */
 export const HatchDraftInputSchema = z
   .object({
     name: z.string().trim().max(HATCH_NAME_MAX_LENGTH),
@@ -66,6 +66,13 @@ export const HatchDraftInputSchema = z
 
 /** Input collected by Hatch before generating or installing a draft pet package. */
 export type HatchDraftInput = z.infer<typeof HatchDraftInputSchema>;
+
+/** Result of creating and installing an archived Hatch draft package. */
+export interface HatchDraftResult {
+  packageId: string;
+  installed: boolean;
+  issues: ValidationIssue[];
+}
 
 /** Inputs required to build a local Hatch package manifest. */
 export interface HatchPackageOptions {

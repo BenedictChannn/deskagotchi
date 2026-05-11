@@ -5,10 +5,10 @@ The full Deskagotchi panel is a management surface, not part of the normal care 
 ## Allowed Uses
 
 - Settings.
-- Hatch pet.
 - Switch pet.
 - Import or export pet packs.
 - Development or debug status views.
+- Future archived Hatch experiments, only when explicitly re-enabled for research.
 
 ## Not Allowed
 

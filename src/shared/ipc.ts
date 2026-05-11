@@ -10,7 +10,6 @@ import type {
   PetPackage,
   ValidationIssue
 } from "./domain";
-import type { HatchDraftInput } from "./hatch";
 import type { ItemCatalogEntry } from "./itemIcons";
 
 /** IPC channel names shared by preload, renderer, and Electron main process. */
@@ -29,7 +28,6 @@ export enum IpcChannel {
   ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
   RecordQaEvent = "deskagotchi:recordQaEvent",
-  HatchCreateDraft = "deskagotchi:hatchCreateDraft",
   ExportPet = "deskagotchi:exportPet",
   ImportPet = "deskagotchi:importPet",
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
@@ -46,7 +44,6 @@ export enum PetWindowUiMode {
 export enum PanelView {
   Status = "status",
   Settings = "settings",
-  Hatch = "hatch",
   PetSelector = "pet-selector"
 }
 
@@ -69,13 +66,6 @@ export interface DeskagotchiSnapshot {
   packages: RuntimePetPackage[];
   appVersion: string;
   userDataPath: string;
-}
-
-/** Result of creating and installing a Hatch draft package. */
-export interface HatchDraftResult {
-  packageId: string;
-  installed: boolean;
-  issues: ValidationIssue[];
 }
 
 /** Renderer-originated QA telemetry event passed through the preload bridge. */
@@ -126,7 +116,6 @@ export interface DeskagotchiApi {
   exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
   recordQaEvent: (event: QaTelemetryInput) => Promise<void>;
-  hatchCreateDraft: (input: HatchDraftInput) => Promise<HatchDraftResult>;
   exportPet: (packageId: string) => Promise<string | undefined>;
   importPet: () => Promise<DeskagotchiSnapshot>;
   onSnapshotUpdated: (callback: () => void) => () => void;

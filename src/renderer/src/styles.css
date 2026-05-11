@@ -171,24 +171,6 @@ button {
   white-space: nowrap;
 }
 
-.overlay-mood {
-  -webkit-app-region: no-drag;
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #243447;
-  font-size: 11px;
-  font-weight: 800;
-  box-shadow: 0 6px 18px rgba(26, 35, 45, 0.12);
-}
-
 .overlay-health-card {
   -webkit-app-region: no-drag;
   position: absolute;
@@ -782,96 +764,9 @@ meter {
   font-weight: 820;
 }
 
-.hatch-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
-  gap: 20px;
-  align-items: start;
-}
-
-.hatch-form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.hatch-form label {
-  display: grid;
-  gap: 6px;
-  color: #344150;
-  font-size: 13px;
-  font-weight: 760;
-}
-
-.hatch-form textarea,
-.hatch-form input {
-  width: 100%;
-  min-height: 38px;
-  border: 1px solid rgba(37, 49, 61, 0.18);
-  border-radius: 8px;
-  background: #fffaf2;
-  color: #17212c;
-  padding: 9px 10px;
-}
-
-.hatch-form textarea {
-  min-height: 92px;
-  resize: vertical;
-}
-
-.hatch-form label:nth-child(4),
-.color-row,
-.hatch-actions,
-.form-message {
-  grid-column: 1 / -1;
-}
-
-.hatch-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
 .primary-button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.color-row {
-  display: flex;
-  gap: 8px;
-}
-
-.color-row input {
-  width: 48px;
-  padding: 2px;
-}
-
-.form-message {
-  margin: 0;
-  color: #65717d;
-}
-
-.hatch-preview {
-  display: grid;
-  place-items: center;
-  min-height: 230px;
-  border: 1px solid rgba(37, 49, 61, 0.12);
-  border-radius: 8px;
-  background: rgba(255, 250, 242, 0.72);
-}
-
-.hatch-preview img {
-  width: 180px;
-  height: 180px;
-  image-rendering: pixelated;
-}
-
-.empty-preview {
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  border: 2px dashed rgba(37, 49, 61, 0.2);
 }
 
 .settings-list {
@@ -938,9 +833,7 @@ meter {
   }
 
   .status-pet,
-  .stats-grid,
-  .hatch-layout,
-  .hatch-form {
+  .stats-grid {
     grid-template-columns: 1fr;
   }
 
