@@ -96,23 +96,46 @@ drag QA, but physical stacked layout remains untested for this release.
 
 ## Export And Closeout
 
-After resolving every manual gate:
+After resolving every manual gate, choose one evidence flow.
+
+### Option A: Commit The Manual Evidence
 
 1. Click `Export Report` or `Download JSON`.
-2. Save the export as `docs/qa/v2-manual-acceptance-export.json` or keep it in
-   another release-evidence path.
-3. Run:
+2. Save the export as `docs/qa/v2-manual-acceptance-export.json`.
+3. Refresh the closeout report:
 
 ```powershell
 npm.cmd run qa:v2:audit -- --manual docs\qa\v2-manual-acceptance-export.json
+```
+
+4. Commit the manual evidence and refreshed report:
+
+```powershell
+git add docs\qa\v2-manual-acceptance-export.json docs\qa\v2-closeout-report.md
+git commit -m "docs(qa): add v2 manual acceptance evidence"
+```
+
+5. Run the final clean-worktree gate:
+
+```powershell
 npm.cmd run qa:v2:closeout
 ```
 
-If the export lives elsewhere, pass its absolute path:
+This is the normal release-branch path because `qa:v2:closeout` intentionally
+requires a clean Git worktree.
+
+### Option B: Keep The Manual Evidence External
+
+If the export lives outside the repository, pass its absolute path to the
+strict audit command:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
+npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json --strict --check-only
 ```
 
-`npm.cmd run qa:v2:closeout` must remain the final strict gate. It should not
-pass until the manual JSON is complete and the Git worktree is clean.
+Use the external path only when the manual JSON is stored in another release
+evidence system. The tracked `npm.cmd run qa:v2:closeout` script only reads the
+default in-repo manual export paths.
+
+The strict gate should not pass until the manual JSON is complete and the Git
+worktree is clean.

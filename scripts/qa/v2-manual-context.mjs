@@ -108,6 +108,8 @@ function buildManualContext(startedAt) {
     ],
     closeoutCommands: [
       "npm.cmd run qa:v2:audit -- --manual docs\\qa\\v2-manual-acceptance-export.json",
+      "git add docs\\qa\\v2-manual-acceptance-export.json docs\\qa\\v2-closeout-report.md",
+      "git commit -m \"docs(qa): add v2 manual acceptance evidence\"",
       "npm.cmd run qa:v2:closeout"
     ]
   };

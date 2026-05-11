@@ -95,7 +95,9 @@ fields without checking any gate.
 
 Use `docs/qa/v2-manual-acceptance-runbook.md` while executing the checklist.
 It maps every manual gate ID to the required physical action, evidence note,
-and deferral rule.
+deferral rule, and clean-worktree closeout flow. If you save the manual export
+inside `docs/qa/`, refresh `docs/qa/v2-closeout-report.md` and commit both
+files before running `npm.cmd run qa:v2:closeout`.
 
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
 for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it
