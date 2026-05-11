@@ -21,13 +21,13 @@ import {
 import {
   createHatchPetPackage,
   type HatchDraftInput,
+  type HatchDraftResult,
   HATCH_PLACEHOLDER_ANIMATION_IDS,
   validateHatchDraftInput
 } from "@shared/hatch";
 import {
   type CareActionRequest,
   type DeskagotchiSnapshot,
-  type HatchDraftResult,
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
@@ -75,6 +75,7 @@ export class DeskagotchiRuntime {
   private loadedPackages: LoadedPetPackage[] = [];
   private itemManifest: ItemIconManifest | undefined;
   private save: DeskagotchiSave | undefined;
+  private persistQueue: Promise<void> = Promise.resolve();
   private lastNotificationAt = 0;
 
   /**
@@ -650,7 +651,11 @@ export class DeskagotchiRuntime {
   private async persistSave(): Promise<void> {
     const save = this.requireSave();
     const parsed = DeskagotchiSaveSchema.parse(save);
-    await writeDeskagotchiSave(this.storagePaths, parsed);
+    const writeOperation = this.persistQueue
+      .catch(() => undefined)
+      .then(() => writeDeskagotchiSave(this.storagePaths, parsed));
+    this.persistQueue = writeOperation.catch(() => undefined);
+    await writeOperation;
   }
 
   private requireSave(): DeskagotchiSave {

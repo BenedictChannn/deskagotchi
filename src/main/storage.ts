@@ -1,7 +1,8 @@
 /**
  * Save-file and userData storage helpers for the Electron main process.
  */
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -10,6 +11,8 @@ import {
   type PetPackage
 } from "@shared/domain";
 import { createInitialPetState } from "@shared/simulation";
+
+const ATOMIC_RENAME_RETRY_DELAYS_MS = [25, 50, 100, 200];
 
 /**
  * Absolute paths owned by the Electron userData storage area.
@@ -167,11 +170,16 @@ export async function writeJsonAtomic(
   await mkdir(directory, { recursive: true });
   const tempFile = path.join(
     directory,
-    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.tmp`
+    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.${randomUUID()}.tmp`
   );
 
   await writeFile(tempFile, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  await rename(tempFile, filePath);
+  try {
+    await renameWithWindowsRetry(tempFile, filePath);
+  } catch (error) {
+    await rm(tempFile, { force: true });
+    throw error;
+  }
 }
 
 /**
@@ -204,4 +212,40 @@ async function copyCurrentSaveToBackup(paths: StoragePaths): Promise<void> {
   if (currentSave !== undefined) {
     await writeJsonAtomic(paths.backupSaveFile, currentSave);
   }
+}
+
+async function renameWithWindowsRetry(
+  sourcePath: string,
+  destinationPath: string
+): Promise<void> {
+  let lastError: unknown;
+  for (const delayMs of [0, ...ATOMIC_RENAME_RETRY_DELAYS_MS]) {
+    if (delayMs > 0) {
+      await delay(delayMs);
+    }
+    try {
+      await rename(sourcePath, destinationPath);
+      return;
+    } catch (error) {
+      if (!isRetryableRenameError(error)) {
+        throw error;
+      }
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+function isRetryableRenameError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error.code === "EPERM" || error.code === "EACCES" || error.code === "EBUSY")
+  );
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }

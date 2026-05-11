@@ -22,6 +22,13 @@ describe("storage", () => {
 
     expect(save.instances).toHaveLength(1);
     expect(save.activeInstanceId).toBe(save.instances[0]?.instanceId);
+    expect(save.instances[0]?.careDeadlines).toEqual({
+      hunger: null,
+      happiness: null,
+      mess: null,
+      sickness: null,
+      sleep: null
+    });
     await expect(readFile(paths.saveFile, "utf8")).resolves.toContain(
       "activeInstanceId"
     );
@@ -68,5 +75,29 @@ describe("storage", () => {
     );
 
     expect(recoveredSave.activeInstanceId).toBe(save.activeInstanceId);
+  });
+
+  it("loads older saves that do not yet contain explicit care deadlines", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "deskagotchi-storage-"));
+    const paths = createStoragePaths(tempDir);
+    const save = await loadOrCreateSave(
+      paths,
+      [createTestPetPackage()],
+      new Date("2026-05-05T00:00:00.000Z")
+    );
+    const legacySave = JSON.parse(JSON.stringify(save)) as {
+      instances: Array<Record<string, unknown>>;
+    };
+    delete legacySave.instances[0]?.careDeadlines;
+    await writeFile(paths.saveFile, `${JSON.stringify(legacySave, null, 2)}\n`, "utf8");
+
+    const loadedSave = await loadOrCreateSave(
+      paths,
+      [createTestPetPackage()],
+      new Date("2026-05-05T01:00:00.000Z")
+    );
+
+    expect(loadedSave.activeInstanceId).toBe(save.activeInstanceId);
+    expect(loadedSave.instances[0]?.careDeadlines).toBeUndefined();
   });
 });

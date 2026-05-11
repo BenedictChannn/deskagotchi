@@ -259,6 +259,18 @@ export const CareHistorySchema = z.object({
 /** Rolling care-quality counters retained between simulation ticks. */
 export type CareHistory = z.infer<typeof CareHistorySchema>;
 
+/** Validates explicit need deadlines that gate care mistakes. */
+export const CareDeadlinesSchema = z.object({
+  hunger: z.string().datetime().nullable(),
+  happiness: z.string().datetime().nullable(),
+  mess: z.string().datetime().nullable(),
+  sickness: z.string().datetime().nullable(),
+  sleep: z.string().datetime().nullable()
+});
+
+/** Explicit wall-clock deadlines for urgent care needs. */
+export type CareDeadlines = z.infer<typeof CareDeadlinesSchema>;
+
 /** Validates one persisted pet instance and its gameplay state. */
 export const PetInstanceStateSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_STATE_SCHEMA_VERSION),
@@ -278,7 +290,8 @@ export const PetInstanceStateSchema = z.object({
   clockRollbackCount: z.number().int().min(0),
   offlineDebtHours: z.number().min(0),
   stats: PetStatsSchema,
-  careHistory: CareHistorySchema
+  careHistory: CareHistorySchema,
+  careDeadlines: CareDeadlinesSchema.optional()
 });
 
 /** Persisted gameplay state for one hatched pet instance. */

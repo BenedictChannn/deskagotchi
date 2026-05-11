@@ -1,4 +1,4 @@
-import { mkdtemp, readdir } from "node:fs/promises";
+import { mkdtemp, readdir, readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -160,6 +160,30 @@ describe("runtime import and hatch safety", () => {
     expect(readOnlySnapshot.activeState.ageHours).toBe(
       progressedSnapshot.activeState.ageHours
     );
+  });
+
+  it("serializes overlapping save writes from runtime mutations", async () => {
+    const { runtime, userDataDir } = await createInitializedRuntime();
+
+    await Promise.all(
+      Array.from({ length: 8 }, (_, index) =>
+        runtime.updatePetWindowBounds({
+          x: 80 + index,
+          y: 90 + index,
+          width: 180,
+          height: 180
+        })
+      )
+    );
+
+    const rawSave = await readFile(
+      path.join(userDataDir, "deskagotchi-save.json"),
+      "utf8"
+    );
+    const saved = JSON.parse(rawSave) as {
+      settings: { petWindowBounds?: { x: number; y: number } };
+    };
+    expect(saved.settings.petWindowBounds).toMatchObject({ x: 87, y: 97 });
   });
 });
 

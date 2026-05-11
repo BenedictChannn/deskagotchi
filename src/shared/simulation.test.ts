@@ -63,6 +63,79 @@ describe("simulation", () => {
     expect(result.state.mood).toBe(Mood.Eating);
   });
 
+  it("starts care deadlines before counting missed care mistakes", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        hunger: 19
+      }
+    };
+    const result = progressPetState(
+      state,
+      petPackage,
+      new Date("2026-05-05T01:00:00.000Z")
+    );
+
+    expect(result.state.careDeadlines?.hunger).toBe(
+      "2026-05-05T04:15:00.000Z"
+    );
+    expect(result.state.careHistory.careMistakes).toBe(0);
+  });
+
+  it("counts a care mistake when an explicit care deadline expires", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      careDeadlines: {
+        hunger: "2026-05-05T00:30:00.000Z",
+        happiness: null,
+        mess: null,
+        sickness: null,
+        sleep: null
+      },
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        hunger: 10
+      }
+    };
+    const result = progressPetState(
+      state,
+      petPackage,
+      new Date("2026-05-05T01:00:00.000Z")
+    );
+
+    expect(result.state.careHistory.careMistakes).toBe(1);
+    expect(result.state.careDeadlines?.hunger).toBe(
+      "2026-05-05T04:30:00.000Z"
+    );
+    expect(result.events.map((event) => event.code)).toContain(
+      "care_deadline_missed"
+    );
+  });
+
+  it("clears resolved care deadlines when the user handles the need", () => {
+    const state = {
+      ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
+      careDeadlines: {
+        hunger: "2026-05-05T01:00:00.000Z",
+        happiness: null,
+        mess: null,
+        sickness: null,
+        sleep: null
+      },
+      stats: {
+        ...createInitialPetState(petPackage, "Miso", startedAt, "miso-2").stats,
+        hunger: 5
+      }
+    };
+    const result = applyCareAction(state, petPackage, {
+      type: CareActionType.FeedMeal,
+      now: startedAt
+    });
+
+    expect(result.state.careDeadlines?.hunger).toBeNull();
+  });
+
   it("applies selected meal effects instead of generic feeding", () => {
     const state = {
       ...createInitialPetState(petPackage, "Miso", startedAt, "miso-1"),
