@@ -70,6 +70,20 @@ before closeout. Any app, source, package, or asset change after the manual
 build commit requires regenerating the context and rerunning the affected manual
 gates.
 
+## Recommended Batch Order
+
+Use this order so quick checks happen before disruptive checks such as sleep,
+restart, or monitor-layout changes.
+
+| Batch | Gate IDs | How To Execute | Result To Record |
+| --- | --- | --- | --- |
+| Visual acceptance | `visual.pets`, `visual.animations`, `visual.food`, `visual.cohesion` | Review `docs/qa/v2-visual-acceptance.html`, `docs/qa/pet-animation-gallery.html`, and `docs/qa/v2-visual-review-notes.md`. | Whether the five pets read correctly, animations move acceptably, food icons are identifiable enough for V2, and the LCD style feels coherent. |
+| Interactive installer | `installer.install`, `installer.launch`, `installer.uninstall` | Run the installer from the generated context, launch the installed app, then uninstall it. | Installer path, install directory, launch result, uninstall path, and post-uninstall executable/process observation. |
+| Startup on login | `startup.enable`, `startup.login`, `startup.disable` | Enable Launch on startup in the packaged app, restart or sign out/in, confirm exactly one app instance appears, then disable startup. | Restart method, timestamp, app launch count, and confirmation that startup was disabled again. |
+| Sleep and recovery | `sleep.visible`, `sleep.state`, `sleep.process` | Launch Deskagotchi, sleep the machine for at least five minutes, wake/unlock, inspect visibility/status refresh, and run the process check. | Sleep duration, pet visibility or tray recovery result, status refresh, and duplicate/stuck process result. |
+| Physical monitor layouts | `monitors.right`, `monitors.stacked`, `monitors.dpi` | Test right-side, stacked, and mixed-DPI layouts where available. If a layout is unavailable, defer that exact gate with an approver and risk. | Arrangement, scale factors, drag and relaunch restore observation, or gate-specific deferral rationale. |
+| Environment caveats | `environment.rdp`, `environment.taskbar`, `environment.smartscreen` | Check RDP, unusual taskbar placement or auto-hide, and SmartScreen/signing behavior where available. | Tested setup and result, or deferral with approver, reason unavailable, and remaining release risk. |
+
 ## Gate Execution
 
 | Gate IDs | Action | Evidence To Record |
