@@ -36,9 +36,10 @@ Open:
 docs/qa/v2-manual-acceptance.html
 ```
 
-Prefer opening the generated
-`.qa-runs/<run-id>-manual-context/manual-acceptance-session.html`. It embeds the
-latest manual context and fills run context plus note starters automatically.
+Prefer opening `.qa-runs/latest-v2-manual-acceptance.html`, or the generated
+`.qa-runs/<run-id>-manual-context/manual-acceptance-session.html` if you want
+the immutable run-specific copy. Both embed the latest manual context and fill
+run context plus note starters automatically.
 
 If you use `docs/qa/v2-manual-acceptance.html` directly, paste the generated
 `.qa-runs/<run-id>-manual-context/manual-context.json` into the manual context

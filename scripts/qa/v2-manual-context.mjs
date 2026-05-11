@@ -2,12 +2,17 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 const RELEASE_DIR = path.join(ROOT_DIR, "release");
+const LATEST_CONTEXT_PATH = path.join(QA_RUNS_DIR, "latest-v2-manual-context.json");
+const LATEST_SESSION_PATH = path.join(
+  QA_RUNS_DIR,
+  "latest-v2-manual-acceptance.html"
+);
 const MANUAL_PAGE_PATH = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
 const MANUAL_RUNBOOK_PATH = path.join(
   ROOT_DIR,
@@ -44,6 +49,8 @@ function main() {
 
   fs.writeFileSync(contextPath, JSON.stringify(context, null, 2));
   fs.writeFileSync(manualSessionPath, renderManualSessionHtml(context), "utf8");
+  fs.copyFileSync(contextPath, LATEST_CONTEXT_PATH);
+  fs.copyFileSync(manualSessionPath, LATEST_SESSION_PATH);
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   fs.writeFileSync(reportPath, renderReport(context, summary), "utf8");
 
@@ -53,6 +60,9 @@ function main() {
         runId: RUN_ID,
         context: path.relative(ROOT_DIR, contextPath),
         session: path.relative(ROOT_DIR, manualSessionPath),
+        latestContext: path.relative(ROOT_DIR, LATEST_CONTEXT_PATH),
+        latestSession: path.relative(ROOT_DIR, LATEST_SESSION_PATH),
+        latestSessionUrl: pathToLocalFileUrl(LATEST_SESSION_PATH),
         report: path.relative(ROOT_DIR, reportPath),
         summary: path.relative(ROOT_DIR, summaryPath),
         manualPage: context.manualAcceptance.page,
@@ -93,6 +103,9 @@ function buildManualContext(startedAt) {
     manualAcceptance: {
       page: path.relative(ROOT_DIR, MANUAL_PAGE_PATH),
       sessionPage: path.relative(ROOT_DIR, path.join(RUN_DIR, "manual-acceptance-session.html")),
+      latestContext: path.relative(ROOT_DIR, LATEST_CONTEXT_PATH),
+      latestSessionPage: path.relative(ROOT_DIR, LATEST_SESSION_PATH),
+      latestSessionUrl: pathToLocalFileUrl(LATEST_SESSION_PATH),
       runbook: path.relative(ROOT_DIR, MANUAL_RUNBOOK_PATH),
       gateCount: manualGateKeys.length,
       gateKeys: manualGateKeys
@@ -109,6 +122,7 @@ function buildManualContext(startedAt) {
       "This context does not mark any manual gate as passed.",
       "Use it to fill run context and notes before performing the physical/manual checks.",
       "The generated manual acceptance session page preloads context but does not mark manual gates as passed.",
+      "Open .qa-runs/latest-v2-manual-acceptance.html to use the latest generated manual session.",
       "The final exported manual JSON must still come from the manual acceptance page."
     ],
     closeoutCommands: [
@@ -264,6 +278,10 @@ function readManualGateKeys() {
   }
 
   return Array.from(gateKeys).sort();
+}
+
+function pathToLocalFileUrl(filePath) {
+  return pathToFileURL(filePath).href;
 }
 
 function formatRun(run) {
@@ -460,7 +478,11 @@ ${context.pasteIntoManualPage}
 | --- | --- |
 | Manual page | ${context.manualAcceptance.page} |
 | Generated session page | ${context.manualAcceptance.sessionPage} |
+| Latest session page | ${context.manualAcceptance.latestSessionPage} |
+| Latest context JSON | ${context.manualAcceptance.latestContext} |
 | Runbook | ${context.manualAcceptance.runbook} |
+
+Latest session URL: ${context.manualAcceptance.latestSessionUrl}
 
 Manual gate count: ${context.manualAcceptance.gateCount}
 
