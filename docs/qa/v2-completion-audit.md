@@ -48,26 +48,26 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 | Area | Evidence | Current status |
 | --- | --- | --- |
-| Lint, typecheck, unit tests | `.qa-runs/2026-05-11T12-44-42Z-check/report.md`, produced by `npm.cmd run qa:check` | Passed, 59 tests. |
+| Lint, typecheck, unit tests | `.qa-runs/2026-05-11T13-53-52Z-check/report.md`, produced by `npm.cmd run qa:check` | Passed, 59 tests on commit `8b79c55`. |
 | Full automated QA gate | `npm.cmd run qa` | Includes persisted check evidence, launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, manual-context smoke, manual-preflight smoke, visual page, and manual acceptance page smoke. Release and five-minute idle remain targeted commands because they are slower and environment-sensitive. |
-| Launch | `.qa-runs/2026-05-11T10-58-03Z-launch/report.md` | Passed. |
-| Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T09-42-57Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
+| Launch | `.qa-runs/2026-05-11T13-59-04Z-launch/report.md` | Passed with cleanup included in the scenario verdict. |
+| Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T13-54-35Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
-| Overlay care UI | `.qa-runs/2026-05-11T10-49-46Z-overlay/report.md` | Passed with updated food atlas and selected-food eating cues. |
-| Ball play mode | `.qa-runs/2026-05-11T09-43-29Z-play/report.md` | Passed. |
-| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T10-57-31Z-lifecycle/report.md` | Passed. |
-| Renderer panel routes | `.qa-runs/2026-05-11T09-43-55Z-renderer/report.md` | Passed. |
-| Packaged release and installer smoke | `.qa-runs/2026-05-11T10-57-21Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, current source resource byte checks, silent install, installed launch, and silent uninstall. |
-| Five-minute idle CPU | `.qa-runs/2026-05-11T07-37-17Z-idle/report.md` | Passed over 300 seconds. |
-| Pet package validation and asset QA | `.qa-runs/2026-05-11T12-17-26Z-assets-pets/report.md` | Passed for Bao, Miso, Mochi, Peanut, and Puddles package files, preview/icon assets, contact sheets, retro-LCD capability, and palette limits. |
-| Food/item asset QA | `.qa-runs/2026-05-11T12-17-26Z-assets-items/report.md` | Passed for item manifest parsing, food item presence, item atlas, and contact-sheet artifacts. |
+| Overlay care UI | `.qa-runs/2026-05-11T13-54-57Z-overlay/report.md` | Passed with updated food atlas and selected-food eating cues. |
+| Ball play mode | `.qa-runs/2026-05-11T13-55-06Z-play/report.md` | Passed. |
+| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T13-58-32Z-lifecycle/report.md` | Passed with cleanup included in the scenario verdict. |
+| Renderer panel routes | `.qa-runs/2026-05-11T13-55-32Z-renderer/report.md` | Passed. |
+| Packaged release and installer smoke | `.qa-runs/2026-05-11T13-58-18Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, current source resource byte checks, silent install, installed launch, and silent uninstall. |
+| Five-minute idle CPU | `.qa-runs/2026-05-11T13-59-34Z-idle/report.md` | Passed over 300 seconds. |
+| Pet package validation and asset QA | `.qa-runs/2026-05-11T13-55-40Z-assets-pets/report.md` | Passed for Bao, Miso, Mochi, Peanut, and Puddles package files, preview/icon assets, contact sheets, retro-LCD capability, and palette limits. |
+| Food/item asset QA | `.qa-runs/2026-05-11T13-55-42Z-assets-items/report.md` | Passed for item manifest parsing, food item presence, item atlas, and contact-sheet artifacts. |
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
 | Food/item icon contact sheets | `docs/qa/lcd-food-icons-contact-sheet.png`, `docs/qa/lcd-item-icons-contact-sheet.png` | Present and regenerated. |
-| Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png`, `.qa-runs/2026-05-11T10-49-32Z-visual-page/report.md` | Generated from current pet and item manifests; browser smoke confirms current pet cards, food sheets, gallery animation cells, controls, and image paths render. |
+| Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png`, `.qa-runs/2026-05-11T13-56-05Z-visual-page/report.md` | Generated from current pet and item manifests; browser smoke confirms current pet cards, food sheets, gallery animation cells, controls, and image paths render. |
 | Manual acceptance form | `docs/qa/v2-manual-acceptance.html`, `docs/qa/v2-manual-acceptance-screenshot.png`, `npm.cmd run qa:v2:manual-page` | Ready for remaining physical/manual signoff and JSON export; browser smoke confirms gate counts, required run context blocking, generated session context preload, stale-context reset behavior, pass/defer mutual exclusion, deferral approver blocking, export JSON, and screenshot rendering. |
-| Manual context guard | `.qa-runs/2026-05-11T12-35-05Z-manual-context-smoke/report.md` | Passed; manual context generation rejects missing automated evidence and succeeds with complete fixture evidence. |
-| Manual preflight guard | `.qa-runs/2026-05-11T12-44-42Z-manual-preflight-smoke/report.md` | Passed; manual preflight rejects missing manual JSON and accepts complete fixture JSON. |
-| Manual preflight current state | `npm.cmd run qa:v2:manual-preflight` | Fails as expected with 19 unresolved manual gates because no real manual export exists yet. |
+| Manual context guard | `.qa-runs/2026-05-11T13-55-44Z-manual-context-smoke/report.md` | Passed; manual context generation rejects missing automated evidence and succeeds with complete fixture evidence. |
+| Manual preflight guard | `.qa-runs/2026-05-11T13-55-51Z-manual-preflight-smoke/report.md` | Passed; manual preflight rejects missing manual JSON, groups missing gates into six batches, and accepts complete fixture JSON. |
+| Manual preflight current state | `.qa-runs/2026-05-11T14-06-42Z-manual-preflight/report.md` | Fails as expected with 19 unresolved manual gates across six batches because no real manual export exists yet. |
 
 ## Prompt-To-Artifact Checklist
 
@@ -86,7 +86,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Hatch/custom generation deferred | README, roadmap, `PanelView`, IPC channel surface, `npm.cmd run qa:v2:scope` | User-facing generation has no panel route, preload API, IPC channel, panel tab, or overlay action; archived local draft helpers remain as package-boundary research code. |
 | Always-on-top persists across relaunch | Lifecycle QA | None known. |
 | Sleep/wake resume and unlock refresh simulation | Lifecycle QA synthetic `powerMonitor` checks | Real machine sleep/wake manual pass still useful. |
-| Frozen-window/process cleanup | Desktop QA process cleanup checks | RDP and unusual taskbar behavior untested. |
+| Frozen-window/process cleanup | Desktop QA process cleanup checks now run before each desktop summary is finalized | RDP and unusual taskbar behavior untested. |
 | Multi-monitor support | Pure bounds tests and left-side monitor drag QA | Right-side and stacked physical layouts still require manual or hardware-specific QA. |
 | Ball play uses monitor work area and restores compact overlay | Play QA | None known. |
 | Package safety and data safety | Runtime/package/storage tests and release QA | None known for current local scope. |
@@ -98,21 +98,27 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 ## Blocking Gaps
 
-- Final visual acceptance for pets and food icons. `docs/qa/v2-visual-acceptance.html`
-  is ready for signoff, but the signoff itself is still manual.
-- Interactive installer UI and interactive uninstall UI.
-- Real packaged startup-on-login after Windows login or restart.
-- Right-side and stacked physical monitor layouts.
-- RDP-specific behavior.
-- Unusual taskbar layouts.
-- SmartScreen/signing reputation caveat.
+- Visual acceptance: `visual.pets`, `visual.animations`, `visual.food`, and
+  `visual.cohesion` still need human signoff against
+  `docs/qa/v2-visual-acceptance.html`.
+- Interactive installer: `installer.install`, `installer.launch`, and
+  `installer.uninstall` still need a real UI pass.
+- Startup on login: `startup.enable`, `startup.login`, and `startup.disable`
+  still need a packaged Windows login or restart pass.
+- Sleep and recovery: `sleep.visible`, `sleep.state`, and `sleep.process`
+  still need a real sleep/wake observation.
+- Physical monitor layouts: `monitors.right`, `monitors.stacked`, and
+  `monitors.dpi` still need matching hardware/layouts or explicit deferrals.
+- Environment caveats: `environment.rdp`, `environment.taskbar`, and
+  `environment.smartscreen` still need testing where available or explicit
+  deferrals.
 
 Use `docs/qa/v2-manual-acceptance.html` to record these remaining checks. The
 closeout report and `npm.cmd run qa:v2:manual-preflight` list every unresolved
-manual gate by checklist ID and label until the exported JSON resolves it. The
-manual page itself blocks `manualPass` until the required run context fields are
-filled. Paste the exported JSON into this audit or the release PR before making
-a V2 complete claim.
+manual gate by checklist ID, label, and batch until the exported JSON resolves
+it. The manual page itself blocks `manualPass` until the required run context
+fields are filled. Paste the exported JSON into this audit or the release PR
+before making a V2 complete claim.
 
 ## Exact Current Claim
 
