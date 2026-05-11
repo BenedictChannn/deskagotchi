@@ -91,6 +91,12 @@ user-facing V2 surface:
 npm.cmd run qa:v2:scope
 ```
 
+Smoke-test the visual acceptance and pet animation gallery pages:
+
+```powershell
+npm.cmd run qa:v2:visual-page
+```
+
 Run the idle CPU observation separately because it intentionally waits:
 
 ```powershell

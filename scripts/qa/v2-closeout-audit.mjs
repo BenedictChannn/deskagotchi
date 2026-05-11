@@ -123,6 +123,29 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
+    key: "visual-page",
+    label: "V2 visual acceptance pages",
+    suffix: "visual-page",
+    requiredChecks: [
+      "visual acceptance page loaded",
+      "visual acceptance page has every built-in pet card",
+      "visual acceptance page has food and item review sheets",
+      "visual acceptance page has six review criteria",
+      "visual acceptance page pet names match built-in roster",
+      "visual acceptance page images load",
+      "visual acceptance screenshot captured",
+      "pet animation gallery loaded",
+      "pet animation gallery has every built-in pet card",
+      "pet animation gallery has every core animation row",
+      "pet animation gallery pet names match built-in roster",
+      "pet animation gallery sprites reference committed spritesheets",
+      "pet animation gallery pause control works",
+      "pet animation gallery play control works",
+      "pet animation gallery preview images load",
+      "pet animation gallery screenshot captured"
+    ]
+  },
+  {
     key: "v2-scope",
     label: "V2 user-facing scope",
     suffix: "v2-scope",
@@ -254,7 +277,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Feed picker uses icon-first food choices and selected food appears in eating feedback.",
     evidence: "overlay QA plus item contact sheets",
-    automatedKeys: ["overlay"],
+    automatedKeys: ["overlay", "visual-page"],
     artifactLabels: ["Food icon contact sheet", "Full item icon contact sheet"],
     manualRequired: true
   },
@@ -277,6 +300,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles.",
     evidence: "pet asset contact sheets and visual acceptance page",
+    automatedKeys: ["visual-page"],
     artifactLabels: [
       "Bao contact sheet",
       "Miso contact sheet",

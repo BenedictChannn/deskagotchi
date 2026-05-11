@@ -29,6 +29,8 @@
     "qa:v2:manual-page": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs",
     "qa:v2:manual-page:update": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs --update-screenshot",
     "qa:v2:scope": "node scripts/qa/v2-scope-qa.mjs",
+    "qa:v2:visual-page": "node scripts/qa/v2-visual-page-smoke.mjs",
+    "qa:v2:visual-page:update": "node scripts/qa/v2-visual-page-smoke.mjs --update-screenshot",
     "qa": "node scripts/qa/run-all.mjs",
     "lint": "eslint . --max-warnings=0",
     "build": "npm run typecheck && electron-vite build",

@@ -223,6 +223,7 @@ npm.cmd run package:win
 npm.cmd run qa:release
 DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
 npm.cmd run qa:v2:scope
+npm.cmd run qa:v2:visual-page
 npm.cmd run qa:v2:audit:smoke
 npm.cmd run qa:v2:closeout
 ```

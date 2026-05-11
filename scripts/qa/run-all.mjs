@@ -12,6 +12,7 @@ const COMMANDS = [
   ["npm.cmd", ["run", "qa:assets:pets"]],
   ["npm.cmd", ["run", "qa:assets:items"]],
   ["npm.cmd", ["run", "qa:v2:scope"]],
+  ["npm.cmd", ["run", "qa:v2:visual-page"]],
   ["npm.cmd", ["run", "qa:v2:manual-page"]]
 ];
 

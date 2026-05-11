@@ -40,7 +40,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Area | Evidence | Current status |
 | --- | --- | --- |
 | Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 58 tests. |
-| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, and manual acceptance page smoke. |
+| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, visual page, and manual acceptance page smoke. |
 | Launch | `.qa-runs/2026-05-11T08-06-17Z-launch/report.md` | Passed. |
 | Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T08-06-31Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
@@ -53,7 +53,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Pet package validation | `npm.cmd run validate:pets` through full QA | Passed. |
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
 | Food/item icon contact sheets | `docs/qa/lcd-food-icons-contact-sheet.png`, `docs/qa/lcd-item-icons-contact-sheet.png` | Present and regenerated. |
-| Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png` | Generated from current pet and item manifests; screenshot confirms image paths render. |
+| Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png`, `npm.cmd run qa:v2:visual-page` | Generated from current pet and item manifests; browser smoke confirms current pet cards, food sheets, gallery animation cells, controls, and image paths render. |
 | Manual acceptance form | `docs/qa/v2-manual-acceptance.html`, `docs/qa/v2-manual-acceptance-screenshot.png`, `npm.cmd run qa:v2:manual-page` | Ready for remaining physical/manual signoff and JSON export; browser smoke confirms gate counts, required run context blocking, deferral approver blocking, export JSON, and screenshot rendering. |
 
 ## Prompt-To-Artifact Checklist

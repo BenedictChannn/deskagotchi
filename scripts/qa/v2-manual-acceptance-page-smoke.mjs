@@ -1,10 +1,9 @@
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { chromium } from "playwright";
+import { launchQaBrowser } from "./browser-smoke-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -32,7 +31,7 @@ async function main() {
   const startedAt = new Date().toISOString();
   const checks = [];
   const artifacts = [];
-  const browser = await launchBrowser();
+  const browser = await launchQaBrowser("manual acceptance page smoke");
   const context = await browser.newContext({
     viewport: { width: 1280, height: 1600 },
     deviceScaleFactor: 1
@@ -217,37 +216,6 @@ ${artifacts}
 
 ${summary.uncoveredConditions.map((condition) => `- ${condition}`).join("\n")}
 `;
-}
-
-async function launchBrowser() {
-  const executablePath = findBrowserExecutable();
-  try {
-    return await chromium.launch({
-      executablePath,
-      headless: true
-    });
-  } catch (error) {
-    if (executablePath !== undefined) {
-      throw error;
-    }
-    throw new Error(
-      "Could not launch Playwright Chromium. Install Playwright browsers or Chrome/Edge for manual acceptance page smoke.",
-      { cause: error }
-    );
-  }
-}
-
-function findBrowserExecutable() {
-  const candidates = [
-    process.env.CHROME_PATH,
-    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-    path.join(os.homedir(), "AppData", "Local", "Google", "Chrome", "Application", "chrome.exe"),
-    "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
-  ].filter((candidate) => candidate !== undefined);
-
-  return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
 async function setAllGates(page, checked) {
