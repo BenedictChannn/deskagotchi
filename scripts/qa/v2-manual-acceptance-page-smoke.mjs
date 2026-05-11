@@ -23,7 +23,16 @@ const REQUIRED_FIELD_FIXTURE = {
   date: "2026-05-11",
   windowsVersion: "Windows smoke fixture",
   build: "manual-page-smoke",
-  monitorSetup: "single-display smoke fixture"
+  monitorSetup: "single-display smoke fixture",
+  installerPath: "release/Deskagotchi Setup 0.1.0.exe"
+};
+const REQUIRED_EVIDENCE_NOTE_FIXTURE = {
+  visualNotes: "Visual acceptance smoke evidence notes.",
+  installerNotes: "Installer smoke evidence notes.",
+  startupNotes: "Startup smoke evidence notes.",
+  monitorNotes: "Monitor smoke evidence notes.",
+  sleepNotes: "Sleep/wake smoke evidence notes.",
+  environmentNotes: "Environment smoke evidence notes."
 };
 
 async function main() {
@@ -52,7 +61,8 @@ async function main() {
 
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",
-      "5 required run context fields missing.",
+      "6 required run context fields missing.",
+      "Required evidence notes complete.",
       "Manual pass is still blocked."
     ]);
     recordPass(checks, "blank run context blocks manual pass");
@@ -60,26 +70,31 @@ async function main() {
     await setAllGates(page, true);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
-      "5 required run context fields missing.",
+      "6 required run context fields missing.",
+      "6 required evidence notes missing.",
       "Manual pass is still blocked."
     ]);
     recordPass(checks, "all gates without run context blocks manual pass");
 
     await fillRequiredFields(page);
+    await fillRequiredEvidenceNotes(page);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
       "Required run context complete.",
+      "Required evidence notes complete.",
       "Manual pass ready to export."
     ]);
 
     const passingReport = await exportReport(page);
     assertEqual(passingReport.manualPass, true, "manual pass after fields");
     assertEqual(passingReport.fieldFailures.length, 0, "field failures after fields");
+    assertEqual(passingReport.evidenceFailures.length, 0, "evidence failures after notes");
     assertEqual(passingReport.blockingChecks.length, 0, "blocking gates after fields");
     recordPass(checks, "all gates with run context exports manual pass");
 
     await page.locator("[data-action='clear']").click();
     await fillRequiredFields(page);
+    await fillRequiredEvidenceNotes(page);
     await setAllGates(page, true);
     await page.locator('[data-check="visual.pets"]').uncheck();
     await page.locator('[data-deferral="visual.pets"]').check();
@@ -89,6 +104,7 @@ async function main() {
     await assertStatusIncludes(page, [
       "18/19 gates resolved.",
       "1 required run context field missing.",
+      "Required evidence notes complete.",
       "Manual pass is still blocked."
     ]);
 
@@ -113,6 +129,7 @@ async function main() {
     const deferredReport = await exportReport(page);
     assertEqual(deferredReport.manualPass, true, "manual pass with deferral approver");
     assertEqual(deferredReport.fieldFailures.length, 0, "deferral field failures");
+    assertEqual(deferredReport.evidenceFailures.length, 0, "deferral evidence failures");
     assertEqual(deferredReport.blockingChecks.length, 0, "deferral blocking gates");
     recordPass(checks, "deferral with approver exports manual pass");
 
@@ -228,6 +245,12 @@ async function setAllGates(page, checked) {
 
 async function fillRequiredFields(page) {
   for (const [fieldName, value] of Object.entries(REQUIRED_FIELD_FIXTURE)) {
+    await page.locator(`[data-field="${fieldName}"]`).fill(value);
+  }
+}
+
+async function fillRequiredEvidenceNotes(page) {
+  for (const [fieldName, value] of Object.entries(REQUIRED_EVIDENCE_NOTE_FIXTURE)) {
     await page.locator(`[data-field="${fieldName}"]`).fill(value);
   }
 }

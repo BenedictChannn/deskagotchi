@@ -249,7 +249,17 @@ const REQUIRED_MANUAL_FIELDS = [
   "date",
   "windowsVersion",
   "build",
-  "monitorSetup"
+  "monitorSetup",
+  "installerPath"
+];
+
+const REQUIRED_MANUAL_EVIDENCE_FIELDS = [
+  ["visual", "visualNotes"],
+  ["installer", "installerNotes"],
+  ["startup", "startupNotes"],
+  ["monitors", "monitorNotes"],
+  ["sleep", "sleepNotes"],
+  ["environment", "environmentNotes"]
 ];
 
 function resolveQaRunsDir() {
@@ -639,11 +649,23 @@ function auditManualAcceptance() {
     if (hasDeferrals && acceptedOutOfScopeBy.length === 0) {
       fieldFailures.push("Missing manual context field: acceptedOutOfScopeBy");
     }
+    const computedEvidenceFailures = REQUIRED_MANUAL_EVIDENCE_FIELDS
+      .filter(([section]) => isManualSectionTouched(manualReport, section, expectedCheckKeys))
+      .filter(([, fieldName]) => !hasNonEmptyManualField(manualReport, fieldName))
+      .map(([, fieldName]) => `Missing manual evidence note: ${fieldName}`);
+    const reportedEvidenceFailures = Array.isArray(manualReport.evidenceFailures)
+      ? manualReport.evidenceFailures.map((failure) => `Reported evidence failure: ${failure}`)
+      : [];
+    const evidenceFailures = [
+      ...computedEvidenceFailures,
+      ...reportedEvidenceFailures
+    ];
     const checkFailures = expectedChecks
       .filter((check) => !isManualGateResolved(manualReport, check.key, acceptedOutOfScopeBy))
       .map((check) => `Missing, unchecked, or unresolved manual gate: ${formatManualCheck(check)}`);
     const blockingChecks = [
       ...fieldFailures,
+      ...evidenceFailures,
       ...checkFailures,
       ...(manualReport.blockingChecks ?? []).map(
         (checkKey) => `Reported blocking check: ${formatManualCheck(
@@ -708,6 +730,16 @@ function formatManualCheck(check) {
 
 function hasNonEmptyManualField(manualReport, fieldName) {
   return getManualField(manualReport, fieldName).length > 0;
+}
+
+function isManualSectionTouched(manualReport, section, expectedCheckKeys) {
+  return expectedCheckKeys
+    .filter((checkKey) => checkKey.startsWith(`${section}.`))
+    .some(
+      (checkKey) =>
+        manualReport.checks?.[checkKey] === true ||
+        manualReport.deferrals?.[checkKey]?.accepted === true
+    );
 }
 
 function getManualField(manualReport, fieldName) {

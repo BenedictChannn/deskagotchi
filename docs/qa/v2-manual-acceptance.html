@@ -426,7 +426,40 @@
         "date",
         "windowsVersion",
         "build",
-        "monitorSetup"
+        "monitorSetup",
+        "installerPath"
+      ];
+      const sectionEvidenceFields = [
+        {
+          section: "visual",
+          label: "Visual acceptance notes",
+          field: "visualNotes"
+        },
+        {
+          section: "installer",
+          label: "Installer notes",
+          field: "installerNotes"
+        },
+        {
+          section: "startup",
+          label: "Startup notes",
+          field: "startupNotes"
+        },
+        {
+          section: "monitors",
+          label: "Monitor run IDs / notes",
+          field: "monitorNotes"
+        },
+        {
+          section: "sleep",
+          label: "Sleep/wake notes",
+          field: "sleepNotes"
+        },
+        {
+          section: "environment",
+          label: "Environment notes",
+          field: "environmentNotes"
+        }
       ];
       const fieldLabels = Object.fromEntries(
         fields.map((field) => [
@@ -510,6 +543,7 @@
         const hasDeferrals = Object.values(state.deferrals).some((deferral) => deferral.accepted);
         const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
         const fieldFailures = buildFieldFailures(state, hasDeferrals);
+        const evidenceFailures = buildEvidenceFailures(state);
         const blockingChecks = checks
           .map((check) => check.dataset.check)
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
@@ -517,10 +551,12 @@
           ...state,
           expectedChecks: checks.map((check) => check.dataset.check),
           requiredFields: requiredManualFields,
+          requiredEvidenceFields: sectionEvidenceFields,
           fieldFailures,
+          evidenceFailures,
           blockingChecks,
           hasDeferrals,
-          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0
+          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0
         };
       }
 
@@ -551,14 +587,19 @@
           .map((check) => check.dataset.check)
           .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
         const fieldFailures = buildFieldFailures(state, hasDeferrals);
+        const evidenceFailures = buildEvidenceFailures(state);
         const passed = checks.length - blockingChecks.length;
+        const contextFailureCount = fieldFailures.length + evidenceFailures.length;
         const fieldStatus = fieldFailures.length === 0
           ? "Required run context complete."
           : `${fieldFailures.length} required run context field${fieldFailures.length === 1 ? "" : "s"} missing.`;
-        const passStatus = blockingChecks.length === 0 && fieldFailures.length === 0
+        const evidenceStatus = evidenceFailures.length === 0
+          ? "Required evidence notes complete."
+          : `${evidenceFailures.length} required evidence note${evidenceFailures.length === 1 ? "" : "s"} missing.`;
+        const passStatus = blockingChecks.length === 0 && contextFailureCount === 0
           ? "Manual pass ready to export."
           : "Manual pass is still blocked.";
-        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${passStatus}`;
+        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${evidenceStatus} ${passStatus}`;
         exportStatus.textContent = message ? `${prefix} ${message}` : prefix;
       }
 
@@ -570,6 +611,22 @@
           failures.push("Missing run context field: Accepted out of scope by");
         }
         return failures;
+      }
+
+      function buildEvidenceFailures(state) {
+        return sectionEvidenceFields
+          .filter((sectionEvidence) => isSectionTouched(sectionEvidence.section, state))
+          .filter((sectionEvidence) => !state.fields[sectionEvidence.field]?.trim())
+          .map((sectionEvidence) => `Missing evidence note: ${sectionEvidence.label}`);
+      }
+
+      function isSectionTouched(section, state) {
+        const sectionChecks = Array.from(
+          document.querySelectorAll(`[data-section="${section}"] [data-check]`)
+        ).map((check) => check.dataset.check);
+        return sectionChecks.some(
+          (key) => state.checks[key] || state.deferrals[key]?.accepted
+        );
       }
 
       function isGateResolved(key, state, acceptedOutOfScopeBy) {

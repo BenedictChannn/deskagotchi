@@ -234,6 +234,9 @@ function main() {
   if (!missingFieldsReport.includes("Missing manual context field: date")) {
     throw new Error("Missing-fields report did not include required context blockers.");
   }
+  if (!missingFieldsReport.includes("Missing manual evidence note: visualNotes")) {
+    throw new Error("Missing-fields report did not include required evidence-note blockers.");
+  }
 
   const completeReportPath = path.join(SMOKE_DIR, "report-complete.md");
   const completeRun = runAudit([
@@ -367,7 +370,8 @@ function assertManualPageGuardsRunContext() {
   const requiredSnippets = [
     "const requiredManualFields =",
     "fieldFailures",
-    "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0",
+    "evidenceFailures",
+    "manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0",
     "Manual pass is still blocked."
   ];
   for (const snippet of requiredSnippets) {
@@ -416,6 +420,13 @@ function writeManualReport(filePath, checkKeys, options) {
         windowsVersion: "Windows smoke fixture",
         build: "smoke-fixture",
         monitorSetup: "smoke fixture",
+        installerPath: "release/Deskagotchi Setup 0.1.0.exe",
+        visualNotes: "Visual fixture notes.",
+        installerNotes: "Installer fixture notes.",
+        startupNotes: "Startup fixture notes.",
+        monitorNotes: "Monitor fixture notes.",
+        sleepNotes: "Sleep fixture notes.",
+        environmentNotes: "Environment fixture notes.",
         acceptedOutOfScopeBy: options.deferredCheck === undefined
           ? ""
           : "V2 smoke approver"
@@ -444,6 +455,7 @@ function writeManualReport(filePath, checkKeys, options) {
         checks,
         deferrals,
         expectedChecks: checkKeys,
+        evidenceFailures: [],
         blockingChecks,
         manualPass: blockingChecks.length === 0,
         exportedAt: new Date().toISOString()
