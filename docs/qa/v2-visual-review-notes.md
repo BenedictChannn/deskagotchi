@@ -34,7 +34,7 @@ sleep/wake, unusual monitor layouts, RDP, taskbar, or SmartScreen behavior.
 | Every pet reads as its intended animal at overlay size. | Pass for current assets. | Bao reads as shih tzu, Miso as cat, Mochi as monkey, Peanut as elephant, and Puddles as duck. Peanut's trunk and Puddles's beak remain visible in the reviewed rows. |
 | Animation rows have visible expression or motion changes. | Pass for current assets. | Happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, and attention rows show visible pose or expression changes. |
 | Frame size and anchor shifts are not distracting. | Pass with minor tolerance. | Miso and Mochi are now consistent enough across rows. Bao has larger source-frame detail than the other pets, but the page-scale presentation remains coherent. |
-| Food icons are roughly identifiable without labels. | Pass with residual ambiguity. | Bowl, rice ball, fish, banana, sugarcane, melon, candy, and cake read clearly. Bun, dumpling, leafy bundle, peas, corn, apple slice, mango cube, and chicken bite are acceptable in context but benefit from the compact labels already used in the feed picker. |
+| Food icons are roughly identifiable without labels. | Pass with minor ambiguity. | Bowl, rice ball, fish, banana, sugarcane, melon, candy, cake, chicken bite, peas, corn, apple slice, and mango cube read clearly enough from silhouette. Bun, dumpling, and leafy bundle remain the most abstract, but their broad food category is still readable at contact-sheet size. |
 | Eating cues match the selected item well enough to notice. | Automated pass, visual spot-check acceptable. | Overlay QA verifies selected-food cues; reviewed sheets keep food cues in the same LCD icon style. |
 | Overall LCD style is cohesive across pets and food. | Pass. | All reviewed assets use the same monochrome green LCD palette and compact pixel-art-adjacent proportions. |
 
@@ -56,11 +56,12 @@ monochrome 24x24 source grid does not support much detail. The V2 acceptance
 claim should therefore be:
 
 ```text
-Food icons are recognizable enough for the Deskagotchi V2 feed picker when
-shown with the existing compact item names.
+Food icons are roughly recognizable in the Deskagotchi V2 feed picker, with
+compact item names available for the few intentionally abstract LCD shapes.
 ```
 
-Avoid claiming that every food icon is self-explanatory in isolation.
+Avoid claiming that every food icon is self-explanatory in isolation, but the
+current set is no longer dependent on labels for the broad food category.
 
 Most recognizable without labels:
 
@@ -72,23 +73,23 @@ Most recognizable without labels:
 - Melon slice
 - Candy
 - Cake
+- Chicken bite
+- Peas
+- Corn kernels
+- Apple slice
+- Mango cube
 
 Acceptable with context or compact labels:
 
 - Steamed bun
 - Dumpling
-- Chicken bite
 - Leafy bundle
-- Peas
-- Corn kernels
-- Apple slice
 - Milk
-- Mango cube
 - Biscuit
 
 ## Remaining Visual Risk
 
-The visual surface is good enough for V2, but future food work should improve
-icon differentiation for bun versus dumpling and apple slice versus mango cube.
-That improvement is not a blocker while the feed picker keeps compact labels
-available beside the icons.
+The visual surface is good enough for V2, but future food work can still improve
+icon differentiation for bun versus dumpling and leafy bundle versus generic
+greens. That improvement is not a blocker while the feed picker keeps compact
+labels available beside the icons.

@@ -3,7 +3,7 @@
   "itemSetId": "lcd-core",
   "name": "Deskagotchi LCD Core Items",
   "description": "Original monochrome LCD item icons for MVP care interactions.",
-  "assetVersion": "0.3.0",
+  "assetVersion": "0.3.1",
   "atlas": "items.png",
   "cellWidth": 48,
   "cellHeight": 48,
