@@ -91,6 +91,10 @@ artifact; it does not mark any manual gate as passed. Paste the generated
 `manual-context.json` into the manual checklist's context import box to prefill
 fields without checking any gate.
 
+Use `docs/qa/v2-manual-acceptance-runbook.md` while executing the checklist.
+It maps every manual gate ID to the required physical action, evidence note,
+and deferral rule.
+
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
 for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it
 for release closeout.

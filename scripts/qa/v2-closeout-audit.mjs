@@ -211,6 +211,10 @@ const REQUIRED_ARTIFACTS = [
     path: "docs/qa/v2-manual-acceptance.html"
   },
   {
+    label: "V2 manual acceptance runbook",
+    path: "docs/qa/v2-manual-acceptance-runbook.md"
+  },
+  {
     label: "V2 manual acceptance screenshot",
     path: "docs/qa/v2-manual-acceptance-screenshot.png"
   },

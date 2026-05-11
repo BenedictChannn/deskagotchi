@@ -200,6 +200,12 @@ Use the manual V2 checklist for physical acceptance work:
 docs/qa/v2-manual-acceptance.html
 ```
 
+Use the manual V2 runbook while executing the checklist:
+
+```text
+docs/qa/v2-manual-acceptance-runbook.md
+```
+
 The checklist can download `v2-manual-acceptance-export.json`. Keep that JSON
 with the release evidence or pass it to the V2 audit with `--manual`.
 

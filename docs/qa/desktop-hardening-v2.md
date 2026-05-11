@@ -100,8 +100,9 @@ human pass through the interactive installer UI or SmartScreen behavior.
 
 ## Manual Acceptance Form
 
-Use `docs/qa/v2-manual-acceptance.html` for the full V2 manual pass. The
-minimal text form below is kept for quick notes during desktop-only checks:
+Use `docs/qa/v2-manual-acceptance-runbook.md` and
+`docs/qa/v2-manual-acceptance.html` for the full V2 manual pass. The minimal
+text form below is kept for quick notes during desktop-only checks:
 
 ```text
 automation_run_id:
