@@ -127,6 +127,23 @@ drag QA, but physical stacked layout remains untested for this release.
 
 After resolving every manual gate, choose one evidence flow.
 
+Run the focused manual preflight whenever you want to see only the manual
+acceptance blockers before trying final closeout:
+
+```powershell
+npm.cmd run qa:v2:manual-preflight
+```
+
+For an export stored outside the repo:
+
+```powershell
+npm.cmd run qa:v2:manual-preflight -- --manual C:\path\to\v2-manual-acceptance-export.json
+```
+
+The preflight writes `.qa-runs/<run-id>-manual-preflight/report.md` plus the
+underlying closeout report used for the verdict. It does not execute or mark
+physical gates.
+
 ### Option A: Commit The Manual Evidence
 
 1. Click `Export Report` or `Download JSON`.
