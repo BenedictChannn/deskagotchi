@@ -1211,7 +1211,16 @@ $processes = Get-CimInstance Win32_Process |
     ($_.CommandLine -like "*$qaRoot*")
   }
 $count = @($processes).Count
-$processes | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+$processes | ForEach-Object {
+  $process = Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue
+  if ($process) {
+    try {
+      $process.Kill()
+      $process.WaitForExit(2000) | Out-Null
+    } catch {
+    }
+  }
+}
 Start-Sleep -Milliseconds 800
 Get-CimInstance Win32_Process |
   Where-Object {
@@ -1219,7 +1228,16 @@ Get-CimInstance Win32_Process |
     ($_.Name -eq 'electron.exe') -and
     ($_.CommandLine -like "*$qaRoot*")
   } |
-  ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+  ForEach-Object {
+    $process = Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue
+    if ($process) {
+      try {
+        $process.Kill()
+        $process.WaitForExit(2000) | Out-Null
+      } catch {
+      }
+    }
+  }
 $count
 `;
   const output = runPowerShell(script, { allowFailure: true }).trim();
@@ -1258,18 +1276,32 @@ async function closeApp(app, run) {
   } catch {
     // Playwright may report close failure after app.quit completes.
   }
-  await delay(800);
+  await waitForProcessTreeExit(pid, 2_500);
   let rootRunning = isProcessRunning(pid);
   let descendants = getDescendantProcesses(pid);
   if (!rootRunning && descendants.length === 0) {
     run.pass("QA process tree cleaned up", { pid });
     return;
   }
+  forceKillProcessIds([
+    ...descendants.map((processInfo) => processInfo.ProcessId),
+    ...(rootRunning ? [pid] : [])
+  ]);
+  await waitForProcessTreeExit(pid, 3_000);
+  rootRunning = isProcessRunning(pid);
+  descendants = getDescendantProcesses(pid);
+  if (!rootRunning && descendants.length === 0) {
+    run.pass("QA process tree cleaned up", {
+      pid,
+      forcedCleanup: true
+    });
+    return;
+  }
   if (IS_WINDOWS) {
     spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
       stdio: "ignore"
     });
-    await delay(500);
+    await waitForProcessTreeExit(pid, 3_000);
   }
   rootRunning = isProcessRunning(pid);
   descendants = getDescendantProcesses(pid);
@@ -1281,6 +1313,48 @@ async function closeApp(app, run) {
     return;
   }
   run.fail("QA process tree cleaned up", { pid, rootRunning, descendants });
+}
+
+async function waitForProcessTreeExit(pid, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!isProcessRunning(pid) && getDescendantProcesses(pid).length === 0) {
+      return;
+    }
+    await delay(250);
+  }
+}
+
+function forceKillProcessIds(processIds) {
+  const uniqueIds = [...new Set(processIds)]
+    .map((processId) => Number(processId))
+    .filter((processId) => Number.isInteger(processId) && processId > 0);
+  for (const processId of uniqueIds) {
+    try {
+      process.kill(processId);
+    } catch {
+      // Process already exited or cannot be signaled by this harness.
+    }
+  }
+  if (IS_WINDOWS && uniqueIds.length > 0) {
+    const idList = uniqueIds.join(", ");
+    runPowerShell(
+      `
+$ids = @(${idList})
+foreach ($id in $ids) {
+  $process = Get-Process -Id $id -ErrorAction SilentlyContinue
+  if ($process) {
+    try {
+      $process.Kill()
+      $process.WaitForExit(2000) | Out-Null
+    } catch {
+    }
+  }
+}
+`,
+      { allowFailure: true }
+    );
+  }
 }
 
 function isProcessRunning(pid) {
