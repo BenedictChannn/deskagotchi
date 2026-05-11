@@ -23,6 +23,7 @@ const MANUAL_RUNBOOK_PATH = path.join(
 const SCENARIO = "manual-context";
 const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-${SCENARIO}`;
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
+const ARGS = parseArgs(process.argv.slice(2));
 const SCENARIOS = [
   "launch",
   "drag",
@@ -54,6 +55,7 @@ function main() {
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   fs.writeFileSync(reportPath, renderReport(context, summary), "utf8");
 
+  const openResult = ARGS.open ? openManualSession(LATEST_SESSION_PATH) : null;
   console.log(
     JSON.stringify(
       {
@@ -63,6 +65,8 @@ function main() {
         latestContext: path.relative(ROOT_DIR, LATEST_CONTEXT_PATH),
         latestSession: path.relative(ROOT_DIR, LATEST_SESSION_PATH),
         latestSessionUrl: pathToLocalFileUrl(LATEST_SESSION_PATH),
+        openedLatestSession: openResult?.ok ?? false,
+        openError: openResult?.ok === false ? openResult.error : undefined,
         report: path.relative(ROOT_DIR, reportPath),
         summary: path.relative(ROOT_DIR, summaryPath),
         manualPage: context.manualAcceptance.page,
@@ -74,6 +78,12 @@ function main() {
       2
     )
   );
+}
+
+function parseArgs(args) {
+  return {
+    open: args.includes("--open")
+  };
 }
 
 function buildManualContext(startedAt) {
@@ -282,6 +292,54 @@ function readManualGateKeys() {
 
 function pathToLocalFileUrl(filePath) {
   return pathToFileURL(filePath).href;
+}
+
+function openManualSession(filePath) {
+  const url = pathToLocalFileUrl(filePath);
+  const command = buildOpenCommand(url);
+  if (command === null) {
+    return {
+      ok: false,
+      error: `Opening the manual session is not supported on ${process.platform}.`
+    };
+  }
+
+  const result = spawnSync(command.command, command.args, {
+    cwd: ROOT_DIR,
+    encoding: "utf8",
+    stdio: "pipe",
+    windowsHide: true
+  });
+  if (result.status === 0) {
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    error: result.stderr.trim() || result.stdout.trim() || "Open command failed."
+  };
+}
+
+function buildOpenCommand(url) {
+  if (process.platform === "win32") {
+    return {
+      command: "cmd.exe",
+      args: ["/c", "start", "", url]
+    };
+  }
+  if (process.platform === "darwin") {
+    return {
+      command: "open",
+      args: [url]
+    };
+  }
+  if (process.platform === "linux") {
+    return {
+      command: "xdg-open",
+      args: [url]
+    };
+  }
+  return null;
 }
 
 function formatRun(run) {

@@ -36,6 +36,12 @@ Open:
 docs/qa/v2-manual-acceptance.html
 ```
 
+You can also generate the context and open the latest session page in one step:
+
+```powershell
+npm.cmd run qa:v2:manual-open
+```
+
 Prefer opening `.qa-runs/latest-v2-manual-acceptance.html`, or the generated
 `.qa-runs/<run-id>-manual-context/manual-acceptance-session.html` if you want
 the immutable run-specific copy. Both embed the latest manual context and fill
