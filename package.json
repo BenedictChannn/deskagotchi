@@ -34,7 +34,6 @@
     "qa:v2:manual-page:update": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs --update-screenshot",
     "qa:v2:manual-preflight": "node scripts/qa/v2-manual-preflight.mjs",
     "qa:v2:manual-preflight:smoke": "node scripts/qa/v2-manual-preflight-smoke.mjs",
-    "qa:v2:manual-status": "node scripts/qa/v2-manual-status.mjs",
     "qa:v2:scope": "node scripts/qa/v2-scope-qa.mjs",
     "qa:v2:visual-page": "node scripts/qa/v2-visual-page-smoke.mjs",
     "qa:v2:visual-page:update": "node scripts/qa/v2-visual-page-smoke.mjs --update-screenshot",

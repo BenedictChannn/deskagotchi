@@ -3,11 +3,6 @@
 This runbook is the execution guide for the remaining manual V2 gates in
 `docs/qa/v2-manual-acceptance.html`.
 
-For a shorter execution-only worksheet, use
-`docs/qa/v2-manual-acceptance-checklist.md`. The checklist is easier to keep
-open beside the acceptance page; this runbook remains the source of detailed
-rules and closeout behavior.
-
 Use it after the automated QA evidence is green. Do not check a manual gate
 unless the named behavior was actually tested in the described environment. If a
 gate cannot be tested for V2, use a deferral with an approver and a concrete

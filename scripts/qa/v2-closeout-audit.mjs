@@ -299,10 +299,6 @@ const REQUIRED_ARTIFACTS = [
     path: "docs/qa/v2-manual-acceptance.html"
   },
   {
-    label: "V2 manual acceptance checklist",
-    path: "docs/qa/v2-manual-acceptance-checklist.md"
-  },
-  {
     label: "V2 manual acceptance runbook",
     path: "docs/qa/v2-manual-acceptance-runbook.md"
   },
