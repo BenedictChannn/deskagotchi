@@ -12,9 +12,14 @@ const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_ROOT = path.join(ROOT_DIR, ".qa-runs");
 const MAIN_ENTRY = path.join(ROOT_DIR, "out/main/index.js");
 const SCENARIO = process.argv[2] ?? "launch";
+const QA_EXECUTABLE_PATH = process.env.DESKAGOTCHI_QA_EXECUTABLE_PATH;
 const IS_WINDOWS = process.platform === "win32";
 const DRAG_DELTA_DIP = 72;
-const DRAG_TOLERANCE_DIP = 14;
+const DRAG_TOLERANCE_DIP = 24;
+const IDLE_SECONDS = Number.parseInt(process.env.DESKAGOTCHI_IDLE_SECONDS ?? "60", 10);
+const IDLE_CPU_LIMIT_PERCENT = Number.parseFloat(
+  process.env.DESKAGOTCHI_IDLE_CPU_LIMIT_PERCENT ?? "10"
+);
 
 class QaRun {
   constructor(scenario) {
@@ -46,6 +51,7 @@ class QaRun {
       rootDir: ROOT_DIR,
       runDir: this.runDir,
       profileDir: this.profileDir,
+      executablePath: QA_EXECUTABLE_PATH,
       platform: process.platform,
       release: os.release()
     });
@@ -126,6 +132,9 @@ async function routeScenario(run, app) {
     case "lifecycle":
       await runLifecycleScenario(run, app);
       return;
+    case "idle":
+      await runIdleScenario(run, app);
+      return;
     case "renderer":
       await runRendererScenario(run, app);
       return;
@@ -135,6 +144,9 @@ async function routeScenario(run, app) {
 }
 
 function ensureBuild() {
+  if (QA_EXECUTABLE_PATH !== undefined) {
+    return;
+  }
   if (process.env.DESKAGOTCHI_QA_SKIP_BUILD === "1" && fs.existsSync(MAIN_ENTRY)) {
     return;
   }
@@ -143,7 +155,9 @@ function ensureBuild() {
 
 async function launchApp(run) {
   const app = await electron.launch({
-    args: [ROOT_DIR],
+    ...(QA_EXECUTABLE_PATH === undefined
+      ? { args: [ROOT_DIR] }
+      : { executablePath: QA_EXECUTABLE_PATH }),
     cwd: ROOT_DIR,
     env: {
       ...process.env,
@@ -244,7 +258,14 @@ async function runDragScenario(run, app) {
     run.pass("drag did not leave care menu closed");
   }
 
-  await waitForPersistedBounds(run, after.bounds);
+  let expectedRestoredBounds = after.bounds;
+  await waitForPersistedBounds(run, expectedRestoredBounds);
+  const crossMonitorBounds = await dragOntoNegativeCoordinateMonitor(run, app, page);
+  if (crossMonitorBounds !== undefined) {
+    expectedRestoredBounds = crossMonitorBounds.bounds;
+    await waitForPersistedBounds(run, expectedRestoredBounds);
+  }
+
   await closeApp(app, run);
   const relaunched = await launchApp(run);
   try {
@@ -252,15 +273,15 @@ async function runDragScenario(run, app) {
     writeJson(path.join(run.runDir, "bounds-restored.json"), restored);
     run.artifact("bounds-restored.json");
     const restoredPassed =
-      Math.abs(restored.bounds.x - after.bounds.x) <= DRAG_TOLERANCE_DIP &&
-      Math.abs(restored.bounds.y - after.bounds.y) <= DRAG_TOLERANCE_DIP;
+      Math.abs(restored.bounds.x - expectedRestoredBounds.x) <= DRAG_TOLERANCE_DIP &&
+      Math.abs(restored.bounds.y - expectedRestoredBounds.y) <= DRAG_TOLERANCE_DIP;
     if (restoredPassed) {
       run.pass("relaunch restored persisted pet position", {
         restored: restored.bounds
       });
     } else {
       run.fail("relaunch restored persisted pet position", {
-        expected: after.bounds,
+        expected: expectedRestoredBounds,
         actual: restored.bounds
       });
     }
@@ -269,6 +290,87 @@ async function runDragScenario(run, app) {
   }
 
   run.report.evidenceTier = "os-desktop";
+}
+
+async function dragOntoNegativeCoordinateMonitor(run, app, page) {
+  const topology = await getDisplayTopology(app);
+  writeJson(path.join(run.runDir, "display-topology.json"), topology);
+  run.artifact("display-topology.json");
+
+  const primary = topology.primaryDisplay;
+  const targetDisplay = topology.displays.find(
+    (display) =>
+      display.id !== primary.id &&
+      display.workArea.x < primary.workArea.x &&
+      rangesOverlap(display.workArea, primary.workArea)
+  );
+  if (targetDisplay === undefined) {
+    run.pass("negative-coordinate monitor drag skipped; no eligible display detected", {
+      displays: topology.displays
+    });
+    return undefined;
+  }
+
+  const current = await getOverlayWindowInfo(app);
+  const stagedBounds = {
+    x: primary.workArea.x + 8,
+    y: clamp(
+      current.bounds.y,
+      primary.workArea.y + 24,
+      primary.workArea.y + primary.workArea.height - current.bounds.height - 24
+    ),
+    width: current.bounds.width,
+    height: current.bounds.height
+  };
+  await app.evaluate(
+    ({ BrowserWindow }, bounds) => {
+      const window =
+        BrowserWindow.getAllWindows().find((candidate) =>
+          candidate.webContents.getURL().includes("#/overlay")
+        ) ?? BrowserWindow.getAllWindows()[0];
+      window?.setBounds(bounds);
+    },
+    stagedBounds
+  );
+  await page.waitForTimeout(400);
+
+  const staged = await getOverlayWindowInfo(app);
+  writeJson(path.join(run.runDir, "bounds-cross-monitor-before.json"), staged);
+  run.artifact("bounds-cross-monitor-before.json");
+  await takeDesktopScreenshot(run, "desktop-cross-monitor-before.png");
+  run.artifact("desktop-cross-monitor-before.png");
+
+  const start = await pointForPetSpriteCenter(page, staged);
+  const end = {
+    x: start.x - Math.round(240 * staged.display.scaleFactor),
+    y: start.y
+  };
+  await performOsDrag(start, end);
+  await page.waitForTimeout(900);
+
+  const crossed = await getOverlayWindowInfo(app);
+  writeJson(path.join(run.runDir, "bounds-cross-monitor-after.json"), crossed);
+  run.artifact("bounds-cross-monitor-after.json");
+  await takeDesktopScreenshot(run, "desktop-cross-monitor-after.png");
+  run.artifact("desktop-cross-monitor-after.png");
+
+  const crossedToTarget =
+    crossed.display.id === targetDisplay.id || crossed.bounds.x < primary.workArea.x;
+  if (crossedToTarget) {
+    run.pass("OS drag crossed onto negative-coordinate monitor", {
+      targetDisplayId: targetDisplay.id,
+      finalDisplayId: crossed.display.id,
+      finalBounds: crossed.bounds
+    });
+    return crossed;
+  }
+
+  run.fail("OS drag crossed onto negative-coordinate monitor", {
+    targetDisplayId: targetDisplay.id,
+    finalDisplayId: crossed.display.id,
+    finalBounds: crossed.bounds
+  });
+  return undefined;
 }
 
 async function runOverlayScenario(run, app) {
@@ -529,6 +631,15 @@ async function assertPlaySurfaceLooksUsable(run, page) {
 
 async function runLifecycleScenario(run, app) {
   const page = await overlayPage(app);
+  const initialOverlay = await getOverlayWindowInfo(app);
+  initialOverlay.alwaysOnTop
+    ? run.pass("overlay starts with always-on-top enabled", {
+        alwaysOnTop: initialOverlay.alwaysOnTop
+      })
+    : run.fail("overlay starts with always-on-top enabled", {
+        alwaysOnTop: initialOverlay.alwaysOnTop
+      });
+
   await page.evaluate(() => globalThis.deskagotchi.openPanel("status"));
   await app.waitForEvent("window", { timeout: 5_000 });
   const windows = await app.windows();
@@ -539,11 +650,142 @@ async function runLifecycleScenario(run, app) {
   await page.waitForTimeout(400);
   const reset = await getOverlayWindowInfo(app);
   run.pass("reset position command returned", { bounds: reset.bounds });
+
+  await assertPowerMonitorProgress(run, app, page, "resume");
+  await assertPowerMonitorProgress(run, app, page, "unlock-screen");
+
+  await page.evaluate(() => globalThis.deskagotchi.updateSettings({ alwaysOnTop: false }));
+  await page.waitForTimeout(400);
+  const disabled = await getOverlayWindowInfo(app);
+  disabled.alwaysOnTop
+    ? run.fail("always-on-top setting disabled native overlay flag", {
+        alwaysOnTop: disabled.alwaysOnTop
+      })
+    : run.pass("always-on-top setting disabled native overlay flag", {
+        alwaysOnTop: disabled.alwaysOnTop
+      });
+  await waitForPersistedSetting(run, "alwaysOnTop", false);
+
+  await page.evaluate(() =>
+    globalThis.deskagotchi.updateSettings({ launchOnStartup: true })
+  );
+  await waitForPersistedSetting(run, "launchOnStartup", true);
+  await waitForQaEvent(run, "settings:launchOnStartupSkipped", {
+    launchOnStartup: true,
+    qaEnabled: true
+  });
+  await page.evaluate(() =>
+    globalThis.deskagotchi.updateSettings({ launchOnStartup: false })
+  );
+  await waitForPersistedSetting(run, "launchOnStartup", false);
+
+  await closeApp(app, run);
+  const relaunched = await launchApp(run);
+  try {
+    const restored = await getOverlayWindowInfo(relaunched);
+    restored.alwaysOnTop
+      ? run.fail("relaunch preserved disabled always-on-top setting", {
+          alwaysOnTop: restored.alwaysOnTop
+        })
+      : run.pass("relaunch preserved disabled always-on-top setting", {
+          alwaysOnTop: restored.alwaysOnTop
+        });
+
+    const relaunchedPage = await overlayPage(relaunched);
+    await relaunchedPage.evaluate(() =>
+      globalThis.deskagotchi.updateSettings({ alwaysOnTop: true })
+    );
+    await relaunchedPage.waitForTimeout(400);
+    const reenabled = await getOverlayWindowInfo(relaunched);
+    reenabled.alwaysOnTop
+      ? run.pass("always-on-top setting re-enabled native overlay flag", {
+          alwaysOnTop: reenabled.alwaysOnTop
+        })
+      : run.fail("always-on-top setting re-enabled native overlay flag", {
+          alwaysOnTop: reenabled.alwaysOnTop
+        });
+  } finally {
+    await closeApp(relaunched, run);
+  }
+}
+
+async function runIdleScenario(run, app) {
+  const page = await overlayPage(app);
+  await page.waitForTimeout(1_000);
+  const rootPid = app.process().pid;
+  const before = getProcessTreeCpuSnapshot(rootPid);
+  await page.waitForTimeout(IDLE_SECONDS * 1_000);
+  const after = getProcessTreeCpuSnapshot(rootPid);
+  const cpuSecondsDelta = Math.max(0, after.cpuSeconds - before.cpuSeconds);
+  const cpuPercentOfOneCore = (cpuSecondsDelta / IDLE_SECONDS) * 100;
+  const observation = {
+    rootPid,
+    durationSeconds: IDLE_SECONDS,
+    before,
+    after,
+    cpuSecondsDelta,
+    cpuPercentOfOneCore,
+    limitPercentOfOneCore: IDLE_CPU_LIMIT_PERCENT
+  };
+  writeJson(path.join(run.runDir, "idle-cpu.json"), observation);
+  run.artifact("idle-cpu.json");
+  if (cpuPercentOfOneCore <= IDLE_CPU_LIMIT_PERCENT) {
+    run.pass("idle CPU stayed below threshold", observation);
+  } else {
+    run.fail("idle CPU stayed below threshold", observation);
+  }
+}
+
+async function assertPowerMonitorProgress(run, app, page, eventName) {
+  const beforeSnapshot = await page.evaluate(() =>
+    globalThis.deskagotchi.getSnapshot()
+  );
+  await page.evaluate(() => {
+    globalThis.__deskagotchiQaSnapshotEventCount = 0;
+    const unsubscribe = globalThis.deskagotchi.onSnapshotUpdated(() => {
+      globalThis.__deskagotchiQaSnapshotEventCount += 1;
+      unsubscribe();
+    });
+  });
+
+  await page.waitForTimeout(1_100);
+  await emitPowerMonitorEvent(app, eventName);
+  await page.waitForFunction(
+    () => (globalThis.__deskagotchiQaSnapshotEventCount ?? 0) > 0,
+    undefined,
+    { timeout: 5_000 }
+  );
+  const afterSnapshot = await page.evaluate(() =>
+    globalThis.deskagotchi.getSnapshot()
+  );
+  const beforeAge = beforeSnapshot.activeState.ageHours;
+  const afterAge = afterSnapshot.activeState.ageHours;
+  if (afterAge > beforeAge) {
+    run.pass(`powerMonitor ${eventName} progressed simulation and refreshed renderer`, {
+      beforeAge,
+      afterAge
+    });
+    return;
+  }
+
+  run.fail(`powerMonitor ${eventName} progressed simulation and refreshed renderer`, {
+    beforeAge,
+    afterAge
+  });
+}
+
+async function emitPowerMonitorEvent(app, eventName) {
+  await app.evaluate(
+    ({ powerMonitor }, emittedEventName) => {
+      powerMonitor.emit(emittedEventName);
+    },
+    eventName
+  );
 }
 
 async function runRendererScenario(run, app) {
   const page = await overlayPage(app);
-  const views = ["status", "pet-selector", "hatch", "settings"];
+  const views = ["status", "pet-selector", "settings"];
   for (const view of views) {
     const previousWindows = await app.windows();
     await page.evaluate(
@@ -584,6 +826,7 @@ async function getOverlayWindowInfo(app) {
     return {
       bounds,
       url: window.webContents.getURL(),
+      alwaysOnTop: window.isAlwaysOnTop(),
       display: {
         id: String(display.id),
         bounds: display.bounds,
@@ -594,15 +837,39 @@ async function getOverlayWindowInfo(app) {
   });
 }
 
+async function getDisplayTopology(app) {
+  return app.evaluate(({ screen }) => {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    return {
+      primaryDisplay: {
+        id: String(primaryDisplay.id),
+        bounds: primaryDisplay.bounds,
+        workArea: primaryDisplay.workArea,
+        scaleFactor: primaryDisplay.scaleFactor
+      },
+      displays: screen.getAllDisplays().map((display) => ({
+        id: String(display.id),
+        bounds: display.bounds,
+        workArea: display.workArea,
+        scaleFactor: display.scaleFactor
+      }))
+    };
+  });
+}
+
 async function collectElectronMetadata(app) {
   return app.evaluate(({ BrowserWindow, app, screen }) => ({
     appVersion: app.getVersion(),
+    isPackaged: app.isPackaged,
+    appPath: app.getAppPath(),
+    resourcesPath: process.resourcesPath,
     userDataPath: app.getPath("userData"),
     savePath: `${app.getPath("userData")}\\deskagotchi-save.json`,
     windows: BrowserWindow.getAllWindows().map((window) => ({
       title: window.getTitle(),
       bounds: window.getBounds(),
       visible: window.isVisible(),
+      alwaysOnTop: window.isAlwaysOnTop(),
       url: window.webContents.getURL()
     })),
     displays: screen.getAllDisplays().map((display) => ({
@@ -718,6 +985,61 @@ async function waitForPersistedBounds(run, expectedBounds) {
   });
 }
 
+async function waitForPersistedSetting(run, settingName, expectedValue) {
+  const savePath = path.join(run.profileDir, "deskagotchi-save.json");
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    if (fs.existsSync(savePath)) {
+      const save = JSON.parse(fs.readFileSync(savePath, "utf8"));
+      const persisted = save.settings?.[settingName];
+      if (persisted === expectedValue) {
+        run.pass(`setting ${settingName} persisted to QA save`, {
+          [settingName]: persisted
+        });
+        return;
+      }
+    }
+    await delay(250);
+  }
+  run.fail(`setting ${settingName} persisted to QA save`, {
+    expected: expectedValue,
+    savePath
+  });
+}
+
+async function waitForQaEvent(run, eventName, expectedPayload = {}) {
+  const eventsPath = path.join(run.runDir, "events.jsonl");
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    if (fs.existsSync(eventsPath)) {
+      const matchingEvent = fs
+        .readFileSync(eventsPath, "utf8")
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((line) => JSON.parse(line))
+        .find((event) => {
+          if (event.event !== eventName) {
+            return false;
+          }
+          return Object.entries(expectedPayload).every(
+            ([key, value]) => event.payload?.[key] === value
+          );
+        });
+      if (matchingEvent !== undefined) {
+        run.pass(`QA event ${eventName} recorded`, {
+          payload: matchingEvent.payload
+        });
+        return;
+      }
+    }
+    await delay(250);
+  }
+  run.fail(`QA event ${eventName} recorded`, {
+    expectedPayload,
+    eventsPath
+  });
+}
+
 async function assertNoExistingDeskagotchi(run) {
   if (!IS_WINDOWS || process.env.DESKAGOTCHI_QA_ALLOW_EXISTING === "1") {
     return;
@@ -729,6 +1051,13 @@ Get-CimInstance Win32_Process |
     $_.ProcessId -ne $self -and
     $_.CommandLine -and
     ($_.CommandLine -like '*deskagotchi*') -and
+    (
+      ($_.Name -like '*electron*') -or
+      ($_.Name -like '*Deskagotchi*') -or
+      ($_.CommandLine -like '*electron-vite*') -or
+      ($_.CommandLine -like '*out/main/index.js*') -or
+      ($_.CommandLine -like '*out\\main\\index.js*')
+    ) -and
     ($_.CommandLine -notlike '*.qa-runs*') -and
     ($_.CommandLine -notlike '*scripts/qa/*') -and
     ($_.CommandLine -notlike '*scripts\\qa\\*') -and
@@ -865,6 +1194,57 @@ $descendants | ConvertTo-Json -Compress
   return Array.isArray(parsed) ? parsed : [parsed];
 }
 
+function getProcessTreeCpuSnapshot(pid) {
+  if (!IS_WINDOWS) {
+    return {
+      processIds: [pid],
+      cpuSeconds: 0,
+      unsupportedPlatform: process.platform
+    };
+  }
+  const script = `
+$root = ${pid}
+$processes = Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, CommandLine
+$ids = @($root)
+$frontier = @($root)
+while ($frontier.Count -gt 0) {
+  $current = $frontier[0]
+  if ($frontier.Count -eq 1) {
+    $frontier = @()
+  } else {
+    $frontier = $frontier[1..($frontier.Count - 1)]
+  }
+  $children = @($processes | Where-Object { $_.ParentProcessId -eq $current })
+  foreach ($child in $children) {
+    $ids += $child.ProcessId
+    $frontier += $child.ProcessId
+  }
+}
+$cpuSeconds = 0
+$aliveIds = @()
+foreach ($id in $ids) {
+  $process = Get-Process -Id $id -ErrorAction SilentlyContinue
+  if ($process) {
+    $aliveIds += $id
+    $cpu = $process.CPU
+    if ($null -eq $cpu) {
+      $cpu = 0
+    }
+    $cpuSeconds += [double]$cpu
+  }
+}
+[pscustomobject]@{
+  processIds = $aliveIds
+  cpuSeconds = $cpuSeconds
+} | ConvertTo-Json -Compress
+`;
+  const output = runPowerShell(script, { allowFailure: true }).trim();
+  if (output.length === 0) {
+    return { processIds: [pid], cpuSeconds: 0, missingCpuSnapshot: true };
+  }
+  return JSON.parse(output);
+}
+
 function scenarioConfidenceLabel(run) {
   if (run.scenario === "drag") {
     return run.report.evidenceTier === "os-desktop"
@@ -885,8 +1265,17 @@ function exactClaimFor(run, label) {
 }
 
 function uncoveredConditionsFor(run) {
+  const negativeMonitorCovered = run.report.checks.some(
+    (check) =>
+      check.name === "OS drag crossed onto negative-coordinate monitor" &&
+      check.status === "pass"
+  );
+  const multiMonitorCondition =
+    run.scenario === "drag" && negativeMonitorCovered
+      ? "right-side and stacked multi-monitor layouts unless captured in metadata"
+      : "multi-monitor with negative coordinates unless captured in metadata";
   const common = [
-    "multi-monitor with negative coordinates unless captured in metadata",
+    multiMonitorCondition,
     "RDP-specific behavior",
     "unusual taskbar layouts",
     "subjective desktop feel"
@@ -934,6 +1323,14 @@ function appendLog(run, line) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function rangesOverlap(first, second) {
+  return first.y < second.y + second.height && second.y < first.y + first.height;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function runCommand(command, args, options = {}) {

@@ -7,6 +7,7 @@ const COMMANDS = [
   ["npm.cmd", ["run", "qa:desktop:drag"]],
   ["npm.cmd", ["run", "qa:desktop:overlay"]],
   ["npm.cmd", ["run", "qa:desktop:play"]],
+  ["npm.cmd", ["run", "qa:desktop:lifecycle"]],
   ["npm.cmd", ["run", "qa:renderer"]],
   ["npm.cmd", ["run", "qa:assets:pets"]],
   ["npm.cmd", ["run", "qa:assets:items"]]

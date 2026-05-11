@@ -2,12 +2,12 @@
 
 Deskagotchi is a Windows-first desktop virtual pet companion built with Electron, React, TypeScript, Vite, and a manifest-driven pet package system.
 
-The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, built-in original pets, and a Hatch MVP for local custom pets.
+The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, built-in original pets, and local custom pet import/export boundaries.
 
 ## Current Capabilities
 
 - Transparent frameless pet overlay window.
-- Tray menu with show, hide, reset position, feed, play, clean, sleep, health, pet selector, Hatch, settings, and quit.
+- Tray menu with show, hide, reset position, feed, play, clean, sleep, health, pet selector, settings, and quit.
 - Single-instance app behavior.
 - Multi-monitor-safe position recovery.
 - Crash-safe local save file with backup recovery.
@@ -22,7 +22,7 @@ The app runs as a small transparent frameless pet window with tray controls, loc
 - Built-in pets ship with the full MVP animation row set and pet-specific food preferences.
 - Shared package schema for built-in and custom pets.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
-- Local Hatch draft creator with prompt/IP guardrails.
+- Hatch/custom pet generation is deferred for V2 while the package validation and import/export boundary stays in place.
 - Custom pet import/export as `.deskagotchi-pet`.
 - Settings for always-on-top, startup, sound, reduced motion, low maintenance, and notifications.
 
@@ -47,7 +47,6 @@ During dev, the renderer is pinned to `http://localhost:5187` so browser-based c
 ```text
 http://localhost:5187/#/panel/status
 http://localhost:5187/#/panel/pet-selector
-http://localhost:5187/#/panel/hatch
 http://localhost:5187/#/panel/settings
 http://localhost:5187/#/
 ```
@@ -85,11 +84,74 @@ and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
 `docs/qa/using-qa.md` for when to run each targeted QA command and how to
 interpret the reports.
 
+Run the idle CPU observation separately because it intentionally waits:
+
+```powershell
+npm.cmd run qa:desktop:idle
+```
+
+Set `DESKAGOTCHI_IDLE_SECONDS=300` for the V2 five-minute idle observation.
+
+Run release QA after packaging changes:
+
+```powershell
+npm.cmd run qa:release
+```
+
+This rebuilds the Windows installer, checks that packaged resources include the
+runtime pet and item assets, launches `release/win-unpacked/Deskagotchi.exe`,
+silently installs into `.qa-runs/`, launches the installed executable, and runs
+the generated uninstaller.
+
+Generate the V2 closeout report from the latest QA evidence:
+
+```powershell
+npm.cmd run qa:v2:audit
+```
+
+This writes `docs/qa/v2-closeout-report.md`. Use `-- --strict` on a release
+branch; strict mode exits non-zero until the manual V2 acceptance JSON is also
+exported and passing.
+
+If the manual checklist JSON is downloaded outside the repo, pass it directly:
+
+```powershell
+npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
+```
+
+Smoke-test the audit's strict-mode behavior without changing the real closeout
+report:
+
+```powershell
+npm.cmd run qa:v2:audit:smoke
+```
+
+Manual checklist checkboxes mean the gate was tested and passed. If a gate is
+accepted as out of scope for V2, mark its deferral in the checklist and fill in
+the approver plus rationale; unresolved deferrals still block strict mode.
+Strict V2 closeout also requires a clean Git worktree so QA evidence is not
+claimed against uncommitted local changes.
+
 Regenerate LCD item icons:
 
 ```powershell
 npm.cmd run generate:items
 ```
+
+Regenerate the V2 visual acceptance page:
+
+```powershell
+npm.cmd run generate:visual-qa
+```
+
+Use the manual V2 checklist for physical acceptance work:
+
+```text
+docs/qa/v2-manual-acceptance.html
+```
+
+The checklist can download `v2-manual-acceptance-export.json`. Keep that JSON
+with the release evidence or pass it to the V2 audit with `--manual`.
 
 Regenerate the Windows app icon:
 
@@ -174,19 +236,12 @@ Important `pet.json` fields:
 
 Imported packages are treated as untrusted. Archives are rejected if they contain unsafe paths, oversized entries, executable/script files, invalid manifests, missing assets, duplicate package ids, or wrong package source metadata.
 
-## Hatch MVP
+## Deferred Hatch Research
 
-Open Hatch from the tray or Pets panel. The current Hatch flow accepts:
-
-- Name
-- Description
-- Species/concept
-- Personality
-- Preferred colors
-- Optional accessory
-- Optional theme
-
-The MVP creates a local placeholder pet package and installs it after validation. It blocks obvious protected/IP-confusing or unsafe terms before creating the package.
+User-facing Hatch/custom pet generation is archived for the V2 release path.
+The earlier prototype proved local package installation mechanics, but a real
+custom pet flow still needs a full generation, approval, QA, packaging,
+moderation, and failure-recovery design before it should be exposed in the app.
 
 The image generation replacement path should use the `$imagegen` skill:
 
@@ -229,10 +284,10 @@ For a fully featured built-in pet, include:
 
 ## Architecture
 
-- `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, Hatch draft creation.
+- `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, and archived Hatch draft research code.
 - `src/preload/`: Typed IPC bridge.
 - `src/renderer/`: Overlay and panel React UI.
-- `src/shared/`: Domain schemas, Hatch validation, package validation, IPC types, deterministic simulation.
+- `src/shared/`: Domain schemas, archived Hatch validation, package validation, IPC types, deterministic simulation.
 - `resources/pets/`: Built-in pet packages.
 - `resources/items/`: Built-in item icon atlases and care item manifests.
 - `scripts/`: App icon, item atlas, and QA utility scripts.

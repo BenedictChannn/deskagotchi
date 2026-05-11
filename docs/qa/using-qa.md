@@ -17,9 +17,10 @@ This runs:
 3. `npm.cmd run qa:desktop:drag`
 4. `npm.cmd run qa:desktop:overlay`
 5. `npm.cmd run qa:desktop:play`
-6. `npm.cmd run qa:renderer`
-7. `npm.cmd run qa:assets:pets`
-8. `npm.cmd run qa:assets:items`
+6. `npm.cmd run qa:desktop:lifecycle`
+7. `npm.cmd run qa:renderer`
+8. `npm.cmd run qa:assets:pets`
+9. `npm.cmd run qa:assets:items`
 
 Use this before claiming a feature is ready when the change affects multiple surfaces.
 
@@ -34,9 +35,26 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:desktop:overlay` | Changing compact overlay menus, feed, health, care flows, or in-place overlay UI. |
 | `npm.cmd run qa:desktop:play` | Changing Ball play, full-monitor overlay behavior, transient play bounds, or play exit restore. |
 | `npm.cmd run qa:desktop:lifecycle` | Changing panel launch, reset position, hide/show, quit, or app lifecycle behavior. |
-| `npm.cmd run qa:renderer` | Changing panel routes, renderer-only UI, Hatch form, settings, or pet selector UI. |
+| `npm.cmd run qa:renderer` | Changing panel routes, renderer-only UI, settings, or pet selector UI. |
 | `npm.cmd run qa:assets:pets` | Changing pet packages, pet manifests, or built-in pet assets. |
 | `npm.cmd run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
+| `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
+| `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
+
+When the manual V2 checklist JSON is downloaded outside the repo, pass it
+directly:
+
+```powershell
+npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
+```
+
+Manual checklist checkboxes mean tested and passed. If a V2 gate is accepted as
+out of scope, use the checklist deferral controls and include the approver plus
+rationale; the closeout audit rejects unresolved deferrals.
+
+Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
+for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it
+for release closeout.
 
 ## Where Evidence Goes
 
@@ -89,7 +107,7 @@ Before implementation, classify the change:
 | Risk | Examples | Minimum QA |
 | --- | --- | --- |
 | P0 native desktop | Drag, click-through, bounds, tray, always-on-top, startup, persistence. | Relevant `qa:desktop:*` command plus manual acceptance when feel matters. |
-| P1 interaction | Overlay care flows, Ball play, import/export, Hatch interactions. | Desktop or renderer QA plus screenshots/state evidence. |
+| P1 interaction | Overlay care flows, Ball play, import/export, and in-place transient UI. | Desktop or renderer QA plus screenshots/state evidence. |
 | P2 renderer | Panel routes, forms, layout, visual regressions. | `qa:renderer` or focused browser/renderer evidence. |
 | P3 domain | Simulation, validation, package parsing, storage schemas. | Unit or integration tests. |
 

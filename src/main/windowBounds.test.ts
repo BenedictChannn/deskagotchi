@@ -17,6 +17,10 @@ describe("window bounds helpers", () => {
     id: "stacked",
     workArea: { x: 0, y: -900, width: 1600, height: 900 }
   };
+  const stackedBelow: DisplayBounds = {
+    id: "stacked-below",
+    workArea: { x: 120, y: 1040, width: 1600, height: 900 }
+  };
 
   it("clamps oversized or offscreen bounds onto the fallback display", () => {
     const bounds = ensureVisibleBounds(
@@ -72,5 +76,39 @@ describe("window bounds helpers", () => {
 
     expect(bounds.y).toBe(-240);
     expect(selectDisplay(bounds, [stacked, primary], primary).id).toBe("stacked");
+  });
+
+  it("supports displays stacked below the primary display", () => {
+    const bounds = ensureVisibleBounds(
+      { x: 600, y: 960, width: 240, height: 240 },
+      [primary, stackedBelow],
+      primary,
+      { x: 700, y: 1064 }
+    );
+
+    expect(bounds.y).toBe(1040);
+    expect(selectDisplay(bounds, [primary, stackedBelow], primary).id).toBe(
+      "stacked-below"
+    );
+  });
+
+  it("uses largest intersection when pointer and center are outside displays", () => {
+    const display = selectDisplay(
+      { x: 1800, y: 120, width: 360, height: 360 },
+      [primary, right],
+      primary
+    );
+
+    expect(display.id).toBe("right");
+  });
+
+  it("falls back when saved bounds do not intersect any display", () => {
+    const bounds = ensureVisibleBounds(
+      { x: -6000, y: -6000, width: 240, height: 240 },
+      [primary, right],
+      primary
+    );
+
+    expect(bounds).toEqual({ x: 0, y: 0, width: 240, height: 240 });
   });
 });
