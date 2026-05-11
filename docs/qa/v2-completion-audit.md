@@ -48,7 +48,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Ball play mode | `.qa-runs/2026-05-11T09-43-29Z-play/report.md` | Passed. |
 | Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T10-27-25Z-lifecycle/report.md` | Passed. |
 | Renderer panel routes | `.qa-runs/2026-05-11T09-43-55Z-renderer/report.md` | Passed. |
-| Packaged release and installer smoke | `.qa-runs/2026-05-11T10-27-16Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, silent install, installed launch, and silent uninstall. |
+| Packaged release and installer smoke | `.qa-runs/2026-05-11T10-57-21Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, current source resource byte checks, silent install, installed launch, and silent uninstall. |
 | Five-minute idle CPU | `.qa-runs/2026-05-11T07-37-17Z-idle/report.md` | Passed at 2.61 percent of one CPU core over 300 seconds. |
 | Pet package validation | `npm.cmd run validate:pets` through full QA | Passed. |
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
