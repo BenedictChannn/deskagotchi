@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
-const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
+const QA_RUNS_DIR = resolveQaRunsDir();
 const ARGS = parseArgs(process.argv.slice(2));
 const REPORT_PATH = path.isAbsolute(ARGS.reportPath)
   ? ARGS.reportPath
@@ -251,6 +251,16 @@ const REQUIRED_MANUAL_FIELDS = [
   "build",
   "monitorSetup"
 ];
+
+function resolveQaRunsDir() {
+  const configuredPath = process.env.DESKAGOTCHI_QA_RUNS_DIR;
+  if (configuredPath === undefined || configuredPath.trim().length === 0) {
+    return path.join(ROOT_DIR, ".qa-runs");
+  }
+  return path.isAbsolute(configuredPath)
+    ? configuredPath
+    : path.join(ROOT_DIR, configuredPath);
+}
 
 const V2_DELIVERABLES = [
   "Companion surface: compact transparent pet overlay, in-place care controls, click and drag behavior.",

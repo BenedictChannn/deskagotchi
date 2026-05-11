@@ -1,22 +1,160 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const SMOKE_DIR = path.join(ROOT_DIR, ".qa-runs", "v2-closeout-audit-smoke");
+const SMOKE_QA_RUNS_DIR = path.join(SMOKE_DIR, "qa-runs");
 const IN_PROGRESS_MANUAL_PAGE_RUN_ID = "9999-12-31T23-59-59Z-manual-page";
 const IN_PROGRESS_MANUAL_PAGE_RUN_DIR = path.join(
-  ROOT_DIR,
-  ".qa-runs",
+  SMOKE_QA_RUNS_DIR,
   IN_PROGRESS_MANUAL_PAGE_RUN_ID
 );
 const MANUAL_PAGE_PATH = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
 const AUDIT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-closeout-audit.mjs");
+const AUTOMATED_FIXTURES = [
+  {
+    suffix: "launch",
+    checks: [
+      "no existing non-QA Deskagotchi process detected",
+      "electron launched",
+      "overlay rendered pet sprite",
+      "userData path is isolated",
+      "overlay window role detected"
+    ]
+  },
+  {
+    suffix: "drag",
+    checks: [
+      "OS drag moved native overlay bounds",
+      "drag did not leave care menu closed",
+      "drag bounds persisted to QA save",
+      "relaunch restored persisted pet position",
+      "OS drag crossed onto negative-coordinate monitor"
+    ]
+  },
+  {
+    suffix: "overlay",
+    checks: [
+      "overlay menu opened",
+      "feed picker shows scoped food choices",
+      "meal eating feedback uses selected food cue",
+      "snack eating feedback uses selected food cue",
+      "health opens compact overlay card",
+      "overlay health did not open a panel window"
+    ]
+  },
+  {
+    suffix: "play",
+    checks: [
+      "play mode expanded overlay bounds",
+      "play stage has no visible boundary",
+      "play controls and sprites are desktop-readable",
+      "play exit restored compact overlay size"
+    ]
+  },
+  {
+    suffix: "lifecycle",
+    checks: [
+      "no existing non-QA Deskagotchi process detected",
+      "overlay starts with always-on-top enabled",
+      "powerMonitor resume progressed simulation and refreshed renderer",
+      "powerMonitor unlock-screen progressed simulation and refreshed renderer",
+      "always-on-top setting disabled native overlay flag",
+      "relaunch preserved disabled always-on-top setting",
+      "always-on-top setting re-enabled native overlay flag",
+      "QA process tree cleaned up"
+    ]
+  },
+  {
+    suffix: "renderer",
+    checks: [
+      "panel route status rendered",
+      "panel route pet-selector rendered",
+      "panel route settings rendered"
+    ]
+  },
+  {
+    suffix: "idle",
+    checks: ["idle CPU stayed below threshold"],
+    checkDetails: {
+      "idle CPU stayed below threshold": {
+        durationSeconds: 300,
+        cpuPercentOfOneCore: 1.2,
+        limitPercentOfOneCore: 10
+      }
+    },
+    artifacts: ["idle-cpu.json"]
+  },
+  {
+    suffix: "release",
+    checks: [
+      "Windows installer exists",
+      "packaged executable exists",
+      "packaged executable launches with isolated QA profile",
+      "silent installer completed",
+      "installed executable launches with isolated QA profile",
+      "silent uninstaller completed",
+      "silent uninstaller removed installed executable"
+    ]
+  },
+  {
+    suffix: "manual-page",
+    checks: [
+      "manual acceptance page loaded",
+      "manual gate count matched",
+      "blank run context blocks manual pass",
+      "all gates without run context blocks manual pass",
+      "all gates with run context exports manual pass",
+      "deferral without approver blocks manual pass",
+      "deferral with approver exports manual pass",
+      "manual acceptance screenshot captured"
+    ]
+  },
+  {
+    suffix: "visual-page",
+    checks: [
+      "visual acceptance page loaded",
+      "visual acceptance page has every built-in pet card",
+      "visual acceptance page has food and item review sheets",
+      "visual acceptance page has six review criteria",
+      "visual acceptance page pet names match built-in roster",
+      "visual acceptance page images load",
+      "visual acceptance screenshot captured",
+      "pet animation gallery loaded",
+      "pet animation gallery has every built-in pet card",
+      "pet animation gallery has every core animation row",
+      "pet animation gallery pet names match built-in roster",
+      "pet animation gallery sprites reference committed spritesheets",
+      "pet animation gallery pause control works",
+      "pet animation gallery play control works",
+      "pet animation gallery preview images load",
+      "pet animation gallery screenshot captured"
+    ]
+  },
+  {
+    suffix: "v2-scope",
+    checks: [
+      "IPC contract has no Hatch generation channel",
+      "preload bridge exposes no Hatch generation method",
+      "main process registers no Hatch IPC handler",
+      "renderer router has no Hatch panel route",
+      "management panel has no Hatch tab",
+      "overlay has no Hatch action",
+      "README marks Hatch/custom generation deferred for V2",
+      "README archives user-facing Hatch for the V2 release path",
+      "V2 roadmap archives custom pet generation",
+      "V2 success criteria exclude user-facing custom generation"
+    ]
+  }
+];
 
 function main() {
   fs.mkdirSync(SMOKE_DIR, { recursive: true });
+  writeCompleteAutomatedEvidence();
   assertManualPageGuardsRunContext();
   const checkKeys = readManualCheckKeys();
   const incompleteManualPath = path.join(SMOKE_DIR, "manual-incomplete.json");
@@ -116,6 +254,9 @@ function main() {
   if (!completeReport.includes("Completion status: **complete**")) {
     throw new Error("Complete smoke report did not record complete status.");
   }
+  if (!completeReport.includes("V2 visual acceptance pages")) {
+    throw new Error("Complete smoke report did not include visual-page evidence.");
+  }
   if (completeReport.includes(IN_PROGRESS_MANUAL_PAGE_RUN_ID)) {
     throw new Error("Complete smoke report used an in-progress manual-page QA run.");
   }
@@ -171,6 +312,45 @@ function main() {
       2
     )
   );
+}
+
+function writeCompleteAutomatedEvidence() {
+  fs.rmSync(SMOKE_QA_RUNS_DIR, { recursive: true, force: true });
+  fs.mkdirSync(SMOKE_QA_RUNS_DIR, { recursive: true });
+  for (const fixture of AUTOMATED_FIXTURES) {
+    writeAutomatedRun(fixture);
+  }
+}
+
+function writeAutomatedRun(fixture) {
+  const runId = `9999-12-31T23-58-59Z-${fixture.suffix}`;
+  const runDir = path.join(SMOKE_QA_RUNS_DIR, runId);
+  fs.mkdirSync(runDir, { recursive: true });
+  const artifacts = fixture.artifacts ?? [];
+  const summary = {
+    scenario: fixture.suffix,
+    runId,
+    startedAt: "9999-12-31T23:58:00.000Z",
+    confidenceLabel: "automated-pass",
+    evidenceTier: "smoke-fixture",
+    checks: fixture.checks.map((name) => ({
+      name,
+      status: "pass",
+      details: fixture.checkDetails?.[name] ?? {}
+    })),
+    artifacts,
+    finishedAt: "9999-12-31T23:58:30.000Z",
+    exactClaimAllowed: `smoke fixture for ${fixture.suffix}`,
+    uncoveredConditions: []
+  };
+  fs.writeFileSync(path.join(runDir, "summary.json"), JSON.stringify(summary, null, 2));
+  fs.writeFileSync(path.join(runDir, "report.md"), `# ${fixture.suffix} smoke fixture\n`);
+  if (fixture.suffix === "idle") {
+    fs.writeFileSync(
+      path.join(runDir, "idle-cpu.json"),
+      JSON.stringify({ durationSeconds: 300, cpuPercentOfOneCore: 1.2 }, null, 2)
+    );
+  }
 }
 
 function writeInProgressManualPageRun() {
@@ -277,6 +457,10 @@ function writeManualReport(filePath, checkKeys, options) {
 function runAudit(args) {
   return spawnSync("node", [AUDIT_SCRIPT, ...args], {
     cwd: ROOT_DIR,
+    env: {
+      ...process.env,
+      DESKAGOTCHI_QA_RUNS_DIR: SMOKE_QA_RUNS_DIR
+    },
     encoding: "utf8",
     stdio: "pipe"
   });
