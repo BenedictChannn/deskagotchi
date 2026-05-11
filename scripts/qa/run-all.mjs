@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import process from "node:process";
 
 const COMMANDS = [
-  ["npm.cmd", ["run", "check"]],
+  ["npm.cmd", ["run", "qa:check"]],
   ["npm.cmd", ["run", "qa:desktop:launch"]],
   ["npm.cmd", ["run", "qa:desktop:drag"]],
   ["npm.cmd", ["run", "qa:desktop:overlay"]],
@@ -26,7 +26,7 @@ for (const [command, args] of COMMANDS) {
     env: {
       ...process.env,
       DESKAGOTCHI_QA_SKIP_BUILD:
-        args.includes("check") || args.includes("qa:desktop:launch") ? "0" : "1"
+        args.includes("qa:check") || args.includes("qa:desktop:launch") ? "0" : "1"
     }
   });
   if (child.status !== 0) {

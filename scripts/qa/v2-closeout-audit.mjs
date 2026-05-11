@@ -112,6 +112,16 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
+    key: "check",
+    label: "Lint, typecheck, and unit tests",
+    suffix: "check",
+    requiredChecks: [
+      "lint passed",
+      "typecheck passed",
+      "test suite passed"
+    ]
+  },
+  {
     key: "assets-pets",
     label: "Built-in pet asset QA",
     suffix: "assets-pets",
@@ -382,6 +392,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts.",
     evidence: "src/main/windowBounds.test.ts through npm.cmd run check",
+    automatedKeys: ["check"],
     artifactPaths: ["src/main/windowBounds.test.ts", "docs/architecture/pet-overlay-boundaries.md"]
   },
   {
@@ -402,7 +413,18 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   {
     requirement: "Care simulation is deterministic, documented, and tested for V2 rules.",
     evidence: "simulation docs and test suite through npm.cmd run check",
+    automatedKeys: ["check"],
     artifactPaths: ["docs/simulation/care-simulation-v2.md", "src/shared/simulation.test.ts"]
+  },
+  {
+    requirement: "Package validation and persistence safety remain covered by the checked test suite.",
+    evidence: "package, runtime, and storage tests through npm.cmd run check",
+    automatedKeys: ["check"],
+    artifactPaths: [
+      "src/main/packageRegistry.test.ts",
+      "src/main/runtime.test.ts",
+      "src/main/storage.test.ts"
+    ]
   },
   {
     requirement: "Custom generation is deferred from user-facing V2 while package boundaries remain.",

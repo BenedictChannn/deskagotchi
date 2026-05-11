@@ -20,6 +20,7 @@
     "qa:desktop:lifecycle": "node scripts/qa/desktop-qa.mjs lifecycle",
     "qa:desktop:idle": "node scripts/qa/desktop-qa.mjs idle",
     "qa:renderer": "node scripts/qa/desktop-qa.mjs renderer",
+    "qa:check": "node scripts/qa/check-qa.mjs",
     "qa:assets:pets": "node scripts/qa/assets-qa.mjs pets",
     "qa:assets:items": "node scripts/qa/assets-qa.mjs items",
     "qa:release": "npm run package:win && node scripts/qa/release-qa.mjs",

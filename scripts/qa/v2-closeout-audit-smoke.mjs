@@ -106,6 +106,14 @@ const AUTOMATED_FIXTURES = [
     ]
   },
   {
+    suffix: "check",
+    checks: [
+      "lint passed",
+      "typecheck passed",
+      "test suite passed"
+    ]
+  },
+  {
     suffix: "assets-pets",
     checks: [
       "built-in pet package registry validation passed",
