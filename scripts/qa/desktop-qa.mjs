@@ -93,35 +93,29 @@ class QaRun {
 async function main() {
   const run = new QaRun(SCENARIO);
   run.setup();
+  let app;
 
   try {
     ensureBuild();
     cleanupOrphanedQaProcesses(run);
     await assertNoExistingDeskagotchi(run);
-    const app = await launchApp(run);
-    try {
-      await routeScenario(run, app);
-      const label =
-        run.report.checks.some((check) => check.status === "fail")
-          ? "failed"
-          : scenarioConfidenceLabel(run);
-      run.finish(label, {
-        exactClaimAllowed: exactClaimFor(run, label),
-        uncoveredConditions: uncoveredConditionsFor(run)
-      });
-      process.exitCode = label === "failed" ? 1 : 0;
-    } finally {
-      await closeApp(app, run);
-    }
+    app = await launchApp(run);
+    await routeScenario(run, app);
   } catch (error) {
     run.fail("scenario threw", {
       message: error instanceof Error ? error.message : String(error)
     });
-    run.finish("failed", {
-      exactClaimAllowed: "No fixed claim allowed.",
+  } finally {
+    await closeApp(app, run);
+    const label =
+      run.report.checks.some((check) => check.status === "fail")
+        ? "failed"
+        : scenarioConfidenceLabel(run);
+    run.finish(label, {
+      exactClaimAllowed: exactClaimFor(run, label),
       uncoveredConditions: uncoveredConditionsFor(run)
     });
-    process.exitCode = 1;
+    process.exitCode = label === "failed" ? 1 : 0;
   }
 }
 
