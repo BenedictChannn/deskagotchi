@@ -39,16 +39,16 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 | Area | Evidence | Current status |
 | --- | --- | --- |
-| Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 58 tests. |
+| Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 59 tests. |
 | Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, visual page, and manual acceptance page smoke. |
-| Launch | `.qa-runs/2026-05-11T08-06-17Z-launch/report.md` | Passed. |
-| Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T08-06-31Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
+| Launch | `.qa-runs/2026-05-11T10-28-00Z-launch/report.md` | Passed. |
+| Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T09-42-57Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
-| Overlay care UI | `.qa-runs/2026-05-11T08-06-51Z-overlay/report.md` | Passed. |
-| Ball play mode | `.qa-runs/2026-05-11T08-06-59Z-play/report.md` | Passed. |
-| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T08-07-08Z-lifecycle/report.md` | Passed. |
-| Renderer panel routes | `.qa-runs/2026-05-11T08-07-22Z-renderer/report.md` | Passed. |
-| Packaged release and installer smoke | `.qa-runs/2026-05-11T07-57-16Z-release/report.md` | Passed; includes packaged launch, silent install, installed launch, and silent uninstall. |
+| Overlay care UI | `.qa-runs/2026-05-11T09-43-20Z-overlay/report.md` | Passed. |
+| Ball play mode | `.qa-runs/2026-05-11T09-43-29Z-play/report.md` | Passed. |
+| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T10-27-25Z-lifecycle/report.md` | Passed. |
+| Renderer panel routes | `.qa-runs/2026-05-11T09-43-55Z-renderer/report.md` | Passed. |
+| Packaged release and installer smoke | `.qa-runs/2026-05-11T10-27-16Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, silent install, installed launch, and silent uninstall. |
 | Five-minute idle CPU | `.qa-runs/2026-05-11T07-37-17Z-idle/report.md` | Passed at 2.61 percent of one CPU core over 300 seconds. |
 | Pet package validation | `npm.cmd run validate:pets` through full QA | Passed. |
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
@@ -69,7 +69,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Pet animation rows exist and render | Pet validation, asset QA, contact sheets | Final subjective visual acceptance still needed. |
 | Food choices are icon-first and selected food renders while eating | Overlay QA and item contact sheets | Final recognizability acceptance still needed. |
 | Deterministic simulation is documented | `docs/simulation/care-simulation-v2.md` | Keep updated with future rule changes. |
-| Offline progression, deadlines, action effects, growth, and storage have tests | `npm.cmd run check` | None known for current scope. |
+| Offline progression, low-maintenance mode, deadlines, action effects, growth, and storage have tests | `npm.cmd run check` | None known for current scope. |
 | Hatch/custom generation deferred | README, roadmap, `PanelView`, IPC channel surface, `npm.cmd run qa:v2:scope` | User-facing generation has no panel route, preload API, IPC channel, panel tab, or overlay action; archived local draft helpers remain as package-boundary research code. |
 | Always-on-top persists across relaunch | Lifecycle QA | None known. |
 | Sleep/wake resume and unlock refresh simulation | Lifecycle QA synthetic `powerMonitor` checks | Real machine sleep/wake manual pass still useful. |
