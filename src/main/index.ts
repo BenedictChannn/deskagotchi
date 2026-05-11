@@ -125,7 +125,7 @@ let suppressPetWindowBoundsPersistence = false;
 let petWindowStartupMetadata: Record<string, unknown> = {};
 
 if (!app.requestSingleInstanceLock()) {
-  app.quit();
+  app.exit(0);
 } else {
   app.on("second-instance", () => {
     resetPetWindow();
