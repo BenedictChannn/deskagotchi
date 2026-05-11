@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T12:24:22.586Z
+Generated: 2026-05-11T12:28:52.480Z
 
 Completion status: **incomplete**
 
@@ -31,7 +31,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Renderer panel routes | PASS | .qa-runs/2026-05-11T09-43-55Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T10-57-21Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
-| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-11T12-23-54Z-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
+| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-11T12-28-25Z-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
 | Built-in pet asset QA | PASS | .qa-runs/2026-05-11T12-17-26Z-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
 | Food and item asset QA | PASS | .qa-runs/2026-05-11T12-17-26Z-assets-items/report.md | automated-pass | passed assets-items static asset QA |
 | Manual acceptance page export | PASS | .qa-runs/2026-05-11T12-06-28Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
@@ -61,7 +61,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `54f6586`
+Commit: `b5f2132`
 
 Workspace is clean.
 
