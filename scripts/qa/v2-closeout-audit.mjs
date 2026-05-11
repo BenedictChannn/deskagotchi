@@ -885,6 +885,17 @@ function validateManualBuildIdentity(manualReport) {
     failures.push("Manual acceptance JSON build does not match manualContextSignature.");
   }
 
+  const version = extractManualBuildVersion(build);
+  const expectedVersion = readPackageVersion();
+  if (version === null) {
+    failures.push("Manual acceptance JSON build field must include the package version.");
+  } else if (version !== expectedVersion) {
+    failures.push(
+      `Manual acceptance JSON build version does not match package.json version: ${version} ` +
+      `(expected ${expectedVersion})`
+    );
+  }
+
   const commit = extractManualBuildCommit(build);
   if (commit === null) {
     failures.push("Manual acceptance JSON build field must include a git commit hash.");
@@ -903,6 +914,21 @@ function validateManualBuildIdentity(manualReport) {
   }
 
   return failures;
+}
+
+function readPackageVersion() {
+  const packageJson = readJson(path.join(ROOT_DIR, "package.json"));
+  const version = packageJson?.version;
+  return typeof version === "string" ? version : "unknown-version";
+}
+
+function extractManualBuildVersion(build) {
+  const separatorIndex = build.indexOf("/");
+  if (separatorIndex === -1) {
+    return null;
+  }
+  const trimmedVersion = build.slice(0, separatorIndex).trim();
+  return trimmedVersion.length > 0 ? trimmedVersion : null;
 }
 
 function extractManualBuildCommit(build) {

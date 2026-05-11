@@ -173,6 +173,7 @@ function main() {
   const staleGateManualPath = path.join(SMOKE_DIR, "manual-stale-gate.json");
   const missingMetadataManualPath = path.join(SMOKE_DIR, "manual-missing-metadata.json");
   const invalidBuildManualPath = path.join(SMOKE_DIR, "manual-invalid-build.json");
+  const invalidVersionManualPath = path.join(SMOKE_DIR, "manual-invalid-version.json");
   const mismatchedBuildManualPath = path.join(SMOKE_DIR, "manual-mismatched-build.json");
   const completeManualPath = path.join(SMOKE_DIR, "manual-complete.json");
   const deferredManualPath = path.join(SMOKE_DIR, "manual-deferred.json");
@@ -204,6 +205,11 @@ function main() {
     complete: true,
     includeRequiredFields: true,
     invalidBuildCommit: true
+  });
+  writeManualReport(invalidVersionManualPath, checkKeys, {
+    complete: true,
+    includeRequiredFields: true,
+    invalidBuildVersion: true
   });
   writeManualReport(mismatchedBuildManualPath, checkKeys, {
     complete: true,
@@ -369,6 +375,25 @@ function main() {
     throw new Error("Invalid-build manual report did not include missing commit blocker.");
   }
 
+  const invalidVersionReportPath = path.join(SMOKE_DIR, "report-invalid-version.md");
+  const invalidVersionRun = runAudit([
+    "--manual",
+    invalidVersionManualPath,
+    "--strict",
+    "--allow-dirty",
+    "--report",
+    invalidVersionReportPath
+  ]);
+  if (invalidVersionRun.status !== 1) {
+    throw new Error(
+      `Expected invalid-version manual evidence to fail strict mode, got ${invalidVersionRun.status}.`
+    );
+  }
+  const invalidVersionReport = fs.readFileSync(invalidVersionReportPath, "utf8");
+  if (!invalidVersionReport.includes("Manual acceptance JSON build version does not match")) {
+    throw new Error("Invalid-version manual report did not include package version blocker.");
+  }
+
   const mismatchedBuildReportPath = path.join(SMOKE_DIR, "report-mismatched-build.md");
   const mismatchedBuildRun = runAudit([
     "--manual",
@@ -459,6 +484,7 @@ function main() {
         staleGateStrictExit: staleGateRun.status,
         missingMetadataStrictExit: missingMetadataRun.status,
         invalidBuildStrictExit: invalidBuildRun.status,
+        invalidVersionStrictExit: invalidVersionRun.status,
         mismatchedBuildStrictExit: mismatchedBuildRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
@@ -555,10 +581,13 @@ function readManualCheckKeys() {
 }
 
 function writeManualReport(filePath, checkKeys, options) {
+  const buildVersion = options.invalidBuildVersion === true
+    ? "99.99.99-smoke"
+    : readPackageVersion();
   const buildCommit = options.invalidBuildCommit === true
     ? "0000000000000000000000000000000000000000"
     : readCurrentCommit();
-  const build = `0.1.0 / ${buildCommit}`;
+  const build = `${buildVersion} / ${buildCommit}`;
   const signatureBuild = options.mismatchedBuildSignature === true
     ? "0.1.0 / 1111111111111111111111111111111111111111"
     : build;
@@ -663,6 +692,11 @@ function writeManualReport(filePath, checkKeys, options) {
       2
     )
   );
+}
+
+function readPackageVersion() {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf8"));
+  return packageJson.version;
 }
 
 function readCurrentCommit() {
