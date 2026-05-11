@@ -6,6 +6,12 @@ import { fileURLToPath } from "node:url";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const SMOKE_DIR = path.join(ROOT_DIR, ".qa-runs", "v2-closeout-audit-smoke");
+const IN_PROGRESS_MANUAL_PAGE_RUN_ID = "9999-12-31T23-59-59Z-manual-page";
+const IN_PROGRESS_MANUAL_PAGE_RUN_DIR = path.join(
+  ROOT_DIR,
+  ".qa-runs",
+  IN_PROGRESS_MANUAL_PAGE_RUN_ID
+);
 const MANUAL_PAGE_PATH = path.join(ROOT_DIR, "docs", "qa", "v2-manual-acceptance.html");
 const AUDIT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-closeout-audit.mjs");
 
@@ -35,6 +41,7 @@ function main() {
     includeRequiredFields: true,
     deferredCheck: checkKeys[0]
   });
+  writeInProgressManualPageRun();
 
   const incompleteRun = runAudit([
     "--manual",
@@ -109,6 +116,9 @@ function main() {
   if (!completeReport.includes("Completion status: **complete**")) {
     throw new Error("Complete smoke report did not record complete status.");
   }
+  if (completeReport.includes(IN_PROGRESS_MANUAL_PAGE_RUN_ID)) {
+    throw new Error("Complete smoke report used an in-progress manual-page QA run.");
+  }
 
   const checkOnlyReportPath = path.join(SMOKE_DIR, "report-check-only.md");
   fs.rmSync(checkOnlyReportPath, { force: true });
@@ -152,6 +162,7 @@ function main() {
         missingManualStrictExit: missingManualRun.status,
         missingFieldsStrictExit: missingFieldsRun.status,
         completeStrictExit: completeRun.status,
+        inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,
         deferredStrictExit: deferredRun.status,
         report: path.relative(ROOT_DIR, completeReportPath)
@@ -159,6 +170,15 @@ function main() {
       null,
       2
     )
+  );
+}
+
+function writeInProgressManualPageRun() {
+  fs.rmSync(IN_PROGRESS_MANUAL_PAGE_RUN_DIR, { recursive: true, force: true });
+  fs.mkdirSync(IN_PROGRESS_MANUAL_PAGE_RUN_DIR, { recursive: true });
+  fs.writeFileSync(
+    path.join(IN_PROGRESS_MANUAL_PAGE_RUN_DIR, "report.md"),
+    "# In-progress manual-page QA run\n\nNo summary.json has been written yet.\n"
   );
 }
 

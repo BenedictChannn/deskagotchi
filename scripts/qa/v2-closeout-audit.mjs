@@ -721,7 +721,16 @@ function findLatestRunDir(suffix) {
     .filter((entry) => entry.isDirectory() && entry.name.endsWith(`-${suffix}`))
     .map((entry) => entry.name)
     .sort((left, right) => right.localeCompare(left));
-  return runDirs[0] ?? null;
+  return runDirs.find(hasCompleteSummary) ?? null;
+}
+
+function hasCompleteSummary(runDir) {
+  const summary = readJson(path.join(QA_RUNS_DIR, runDir, "summary.json"));
+  return (
+    summary !== null &&
+    typeof summary.finishedAt === "string" &&
+    Array.isArray(summary.checks)
+  );
 }
 
 function failScenario(scenario, failure, runId = null) {
