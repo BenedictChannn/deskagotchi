@@ -18,6 +18,7 @@ const AUTOMATED_SCENARIOS = [
     label: "Launch",
     suffix: "launch",
     requiredChecks: [
+      "no existing non-QA Deskagotchi process detected",
       "electron launched",
       "overlay rendered pet sprite",
       "userData path is isolated",
@@ -65,12 +66,14 @@ const AUTOMATED_SCENARIOS = [
     label: "Lifecycle, always-on-top, resume, unlock",
     suffix: "lifecycle",
     requiredChecks: [
+      "no existing non-QA Deskagotchi process detected",
       "overlay starts with always-on-top enabled",
       "powerMonitor resume progressed simulation and refreshed renderer",
       "powerMonitor unlock-screen progressed simulation and refreshed renderer",
       "always-on-top setting disabled native overlay flag",
       "relaunch preserved disabled always-on-top setting",
-      "always-on-top setting re-enabled native overlay flag"
+      "always-on-top setting re-enabled native overlay flag",
+      "QA process tree cleaned up"
     ]
   },
   {
