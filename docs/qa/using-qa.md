@@ -83,7 +83,9 @@ npm.cmd run qa:v2:manual-context
 This writes `.qa-runs/<run-id>-manual-context/report.md` with the current
 commit, package version, Windows version, installer candidate, latest QA run
 IDs, monitor topology from drag QA, and starter notes. It is only a prep
-artifact; it does not mark any manual gate as passed.
+artifact; it does not mark any manual gate as passed. Paste the generated
+`manual-context.json` into the manual checklist's context import box to prefill
+fields without checking any gate.
 
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
 for fixture smoke checks such as `npm.cmd run qa:v2:audit:smoke`; do not use it

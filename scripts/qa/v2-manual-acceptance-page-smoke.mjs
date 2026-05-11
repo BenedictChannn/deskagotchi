@@ -34,6 +34,10 @@ const REQUIRED_EVIDENCE_NOTE_FIXTURE = {
   sleepNotes: "Sleep/wake smoke evidence notes.",
   environmentNotes: "Environment smoke evidence notes."
 };
+const MANUAL_CONTEXT_FIXTURE = {
+  fields: REQUIRED_FIELD_FIXTURE,
+  evidenceNoteStarters: REQUIRED_EVIDENCE_NOTE_FIXTURE
+};
 
 async function main() {
   fs.mkdirSync(RUN_DIR, { recursive: true });
@@ -67,6 +71,26 @@ async function main() {
     ]);
     recordPass(checks, "blank run context blocks manual pass");
 
+    await applyManualContext(page);
+    await assertStatusIncludes(page, [
+      "0/19 gates resolved.",
+      "Required run context complete.",
+      "Required evidence notes complete.",
+      "Manual pass is still blocked."
+    ]);
+    const importedCheckedGates = await page.locator("[data-check]:checked").count();
+    assertEqual(importedCheckedGates, 0, "manual context import checked gates");
+    const importedReport = await exportReport(page);
+    assertEqual(importedReport.manualPass, false, "manual pass after context import");
+    assertEqual(importedReport.fieldFailures.length, 0, "field failures after context import");
+    assertEqual(
+      importedReport.blockingChecks.length,
+      gateCount,
+      "blocking gates after context import"
+    );
+    recordPass(checks, "manual context import prefills without resolving gates");
+
+    await page.locator("[data-action='clear']").click();
     await setAllGates(page, true);
     await assertStatusIncludes(page, [
       "19/19 gates resolved.",
@@ -253,6 +277,13 @@ async function fillRequiredEvidenceNotes(page) {
   for (const [fieldName, value] of Object.entries(REQUIRED_EVIDENCE_NOTE_FIXTURE)) {
     await page.locator(`[data-field="${fieldName}"]`).fill(value);
   }
+}
+
+async function applyManualContext(page) {
+  await page
+    .locator("[data-context-import]")
+    .fill(JSON.stringify(MANUAL_CONTEXT_FIXTURE));
+  await page.locator("[data-action='apply-context']").click();
 }
 
 async function exportReport(page) {

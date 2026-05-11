@@ -115,6 +115,7 @@ const AUTOMATED_SCENARIOS = [
       "manual acceptance page loaded",
       "manual gate count matched",
       "blank run context blocks manual pass",
+      "manual context import prefills without resolving gates",
       "all gates without run context blocks manual pass",
       "all gates with run context exports manual pass",
       "deferral without approver blocks manual pass",

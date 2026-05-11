@@ -117,6 +117,10 @@
         box-shadow: inset 0 0 0 3px rgba(125, 77, 0, 0.22);
       }
 
+      .context-import {
+        margin-top: 14px;
+      }
+
       .meta {
         display: flex;
         flex-wrap: wrap;
@@ -288,6 +292,18 @@
           <a href="./v2-completion-audit.md">Completion audit</a>
           <a href="./v2-visual-acceptance.html">Visual acceptance</a>
           <a href="./desktop-hardening-v2.md">Desktop hardening plan</a>
+        </div>
+        <div class="card context-import">
+          <h3>Manual Context Import</h3>
+          <p class="status-line">
+            Run `npm.cmd run qa:v2:manual-context`, paste the generated
+            `manual-context.json` here, and apply it to prefill context and
+            evidence-note starters. This never checks manual gates.
+          </p>
+          <label class="field">Context JSON <textarea data-context-import></textarea></label>
+          <div class="actions">
+            <button type="button" data-action="apply-context">Apply Context</button>
+          </div>
         </div>
       </section>
 
@@ -660,12 +676,39 @@
       }
       document.querySelector("[data-action='export']").addEventListener("click", exportReport);
       document.querySelector("[data-action='download']").addEventListener("click", downloadReport);
+      document.querySelector("[data-action='apply-context']").addEventListener("click", applyManualContext);
       document.querySelector("[data-action='clear']").addEventListener("click", () => {
         localStorage.removeItem(storageKey);
         restoreState();
         exportOutput.value = "";
         updateProgress();
       });
+
+      function applyManualContext() {
+        const input = document.querySelector("[data-context-import]");
+        let context;
+        try {
+          context = JSON.parse(input.value || "{}");
+        } catch {
+          updateProgress("Manual context import failed: JSON could not be parsed.");
+          return;
+        }
+
+        for (const [fieldName, value] of Object.entries(context.fields || {})) {
+          const field = document.querySelector(`[data-field="${fieldName}"]`);
+          if (field && typeof value === "string") {
+            field.value = value;
+          }
+        }
+        for (const [fieldName, value] of Object.entries(context.evidenceNoteStarters || {})) {
+          const field = document.querySelector(`[data-field="${fieldName}"]`);
+          if (field && typeof value === "string") {
+            field.value = value;
+          }
+        }
+        saveState();
+        updateProgress("Manual context imported. Manual gates still require human checks or explicit deferrals.");
+      }
     </script>
   </body>
 </html>

@@ -172,7 +172,9 @@ npm.cmd run qa:v2:manual-context
 
 This writes `.qa-runs/<run-id>-manual-context/report.md` with the current build,
 installer candidate, latest QA run IDs, monitor topology, and starter evidence
-notes. It is manual-prep only and does not mark any manual gate as passed.
+notes. Paste the generated `manual-context.json` into the manual checklist's
+context import box to prefill fields. It is manual-prep only and does not mark
+any manual gate as passed.
 
 Regenerate LCD item icons:
 
