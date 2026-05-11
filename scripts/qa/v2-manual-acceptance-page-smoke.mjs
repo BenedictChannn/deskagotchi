@@ -82,6 +82,10 @@ async function main() {
     assertEqual(gateCount, 19, "manual gate count");
     recordPass(checks, "manual gate count matched", { gateCount });
 
+    const batchCount = await page.locator("[data-batch]").count();
+    assertEqual(batchCount, 6, "manual gate batch count");
+    recordPass(checks, "manual gate batch progress rendered", { batchCount });
+
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",
       "7 required run context issues.",
@@ -106,6 +110,16 @@ async function main() {
     assertEqual(sessionCheckedGates, 0, "embedded manual context checked gates");
     const sessionReport = await exportReport(page);
     assertEqual(sessionReport.manualPass, false, "manual pass after embedded context");
+    assertEqual(
+      sessionReport.manualExecutionBatches.length,
+      6,
+      "manual execution batch export count"
+    );
+    assertEqual(
+      sessionReport.manualExecutionBatches.filter((batch) => batch.status === "open").length,
+      6,
+      "manual execution open batch export count"
+    );
     assertEqual(sessionReport.fieldFailures.length, 0, "field failures after embedded context");
     assertEqual(
       sessionReport.blockingChecks.length,
@@ -250,6 +264,11 @@ async function main() {
 
     const passingReport = await exportReport(page);
     assertEqual(passingReport.manualPass, true, "manual pass after fields");
+    assertEqual(
+      passingReport.manualExecutionBatches.filter((batch) => batch.status === "complete").length,
+      6,
+      "manual execution complete batch export count"
+    );
     assertEqual(passingReport.fieldFailures.length, 0, "field failures after fields");
     assertEqual(passingReport.evidenceFailures.length, 0, "evidence failures after notes");
     assertEqual(passingReport.blockingChecks.length, 0, "blocking gates after fields");

@@ -154,6 +154,53 @@
         margin-top: 12px;
       }
 
+      .batch-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .batch-card {
+        display: grid;
+        gap: 8px;
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 10px;
+      }
+
+      .batch-card[data-status="complete"] {
+        background: var(--white);
+      }
+
+      .batch-card header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: start;
+        border: 0;
+        padding: 0;
+      }
+
+      .batch-card h3 {
+        font-size: 13px;
+      }
+
+      .batch-count {
+        border: 1px solid var(--mid);
+        background: var(--white);
+        padding: 2px 5px;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .batch-list {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
       label.check {
         display: grid;
         grid-template-columns: 18px 1fr;
@@ -250,7 +297,8 @@
       @media (max-width: 880px) {
         header,
         .grid,
-        .field-grid {
+        .field-grid,
+        .batch-grid {
           grid-template-columns: 1fr;
         }
 
@@ -314,6 +362,15 @@
             <button type="button" data-action="apply-context">Apply Context</button>
           </div>
         </div>
+      </section>
+
+      <section class="section">
+        <h2>Gate Batches</h2>
+        <p class="summary">
+          Work through these batches in order. The counts update when a gate is
+          checked or explicitly deferred with rationale and approver.
+        </p>
+        <div class="batch-grid" id="batch-progress"></div>
       </section>
 
       <section class="section">
@@ -454,6 +511,7 @@
       let currentManualContextSignature = "";
       const fields = Array.from(document.querySelectorAll("[data-field]"));
       const checks = Array.from(document.querySelectorAll("[data-check]"));
+      const batchProgress = document.querySelector("#batch-progress");
       const deferralGrid = document.querySelector("#deferral-grid");
       const exportOutput = document.querySelector("#export-output");
       const exportStatus = document.querySelector("#export-status");
@@ -495,6 +553,57 @@
           section: "environment",
           label: "Environment notes",
           field: "environmentNotes"
+        }
+      ];
+      const manualBatches = [
+        {
+          name: "Visual acceptance",
+          gateIds: [
+            "visual.pets",
+            "visual.animations",
+            "visual.food",
+            "visual.cohesion"
+          ]
+        },
+        {
+          name: "Interactive installer",
+          gateIds: [
+            "installer.install",
+            "installer.launch",
+            "installer.uninstall"
+          ]
+        },
+        {
+          name: "Startup on login",
+          gateIds: [
+            "startup.enable",
+            "startup.login",
+            "startup.disable"
+          ]
+        },
+        {
+          name: "Sleep and recovery",
+          gateIds: [
+            "sleep.visible",
+            "sleep.state",
+            "sleep.process"
+          ]
+        },
+        {
+          name: "Physical monitor layouts",
+          gateIds: [
+            "monitors.right",
+            "monitors.stacked",
+            "monitors.dpi"
+          ]
+        },
+        {
+          name: "Environment caveats",
+          gateIds: [
+            "environment.rdp",
+            "environment.taskbar",
+            "environment.smartscreen"
+          ]
         }
       ];
       const fieldLabels = Object.fromEntries(
@@ -591,6 +700,7 @@
           expectedChecks: checks.map((check) => check.dataset.check),
           requiredFields: requiredManualFields,
           requiredEvidenceFields: sectionEvidenceFields,
+          manualExecutionBatches: buildManualBatchReport(state, acceptedOutOfScopeBy),
           fieldFailures,
           evidenceFailures,
           conflictFailures,
@@ -644,7 +754,62 @@
           ? "Manual pass ready to export."
           : "Manual pass is still blocked.";
         const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${evidenceStatus}${conflictStatus} ${passStatus}`;
+        renderBatchProgress(state, acceptedOutOfScopeBy);
         exportStatus.textContent = message ? `${prefix} ${message}` : prefix;
+      }
+
+      function renderBatchProgress(state, acceptedOutOfScopeBy) {
+        batchProgress.innerHTML = buildManualBatchReport(state, acceptedOutOfScopeBy)
+          .map((batch) => {
+            const openItems = batch.blockingGateIds.length === 0
+              ? "<li>Ready for export.</li>"
+              : batch.blockingGateIds
+                  .map((gateId) => `<li><code>${escapeHtml(gateId)}</code> ${escapeHtml(gateLabel(gateId))}</li>`)
+                  .join("");
+            return `
+              <article class="batch-card" data-batch="${escapeHtml(batch.name)}" data-status="${batch.status}">
+                <header>
+                  <h3>${escapeHtml(batch.name)}</h3>
+                  <span class="batch-count">${batch.resolvedCount}/${batch.totalCount}</span>
+                </header>
+                <ol class="batch-list">${openItems}</ol>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function buildManualBatchReport(state, acceptedOutOfScopeBy) {
+        return manualBatches.map((batch) => {
+          const blockingGateIds = batch.gateIds.filter(
+            (key) => !isGateResolved(key, state, acceptedOutOfScopeBy)
+          );
+          return {
+            name: batch.name,
+            gateIds: batch.gateIds,
+            resolvedCount: batch.gateIds.length - blockingGateIds.length,
+            totalCount: batch.gateIds.length,
+            status: blockingGateIds.length === 0 ? "complete" : "open",
+            blockingGateIds
+          };
+        });
+      }
+
+      function gateLabel(key) {
+        return document
+          .querySelector(`[data-check="${key}"]`)
+          ?.closest(".check")
+          ?.querySelector("span")
+          ?.textContent || key;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
       function buildFieldFailures(state, hasDeferrals) {
