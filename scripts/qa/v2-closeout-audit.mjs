@@ -202,6 +202,16 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
+    key: "manual-preflight-smoke",
+    label: "Manual acceptance preflight guard",
+    suffix: "manual-preflight-smoke",
+    requiredChecks: [
+      "closeout smoke fixture setup passed",
+      "manual preflight fails without manual evidence",
+      "manual preflight passes with complete manual evidence"
+    ]
+  },
+  {
     key: "visual-page",
     label: "V2 visual acceptance pages",
     suffix: "visual-page",

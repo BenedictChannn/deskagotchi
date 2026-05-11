@@ -186,6 +186,14 @@ const AUTOMATED_FIXTURES = [
     ]
   },
   {
+    suffix: "manual-preflight-smoke",
+    checks: [
+      "closeout smoke fixture setup passed",
+      "manual preflight fails without manual evidence",
+      "manual preflight passes with complete manual evidence"
+    ]
+  },
+  {
     suffix: "visual-page",
     checks: [
       "visual acceptance page loaded",
