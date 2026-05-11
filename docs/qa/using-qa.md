@@ -12,7 +12,7 @@ npm.cmd run qa
 
 This runs:
 
-1. `npm.cmd run check`
+1. `npm.cmd run qa:check`
 2. `npm.cmd run qa:desktop:launch`
 3. `npm.cmd run qa:desktop:drag`
 4. `npm.cmd run qa:desktop:overlay`
@@ -22,8 +22,10 @@ This runs:
 8. `npm.cmd run qa:assets:pets`
 9. `npm.cmd run qa:assets:items`
 10. `npm.cmd run qa:v2:scope`
-11. `npm.cmd run qa:v2:visual-page`
-12. `npm.cmd run qa:v2:manual-page`
+11. `npm.cmd run qa:v2:manual-context:smoke`
+12. `npm.cmd run qa:v2:manual-preflight:smoke`
+13. `npm.cmd run qa:v2:visual-page`
+14. `npm.cmd run qa:v2:manual-page`
 
 Use this before claiming a feature is ready when the change affects multiple surfaces.
 
@@ -33,6 +35,7 @@ Use targeted commands while iterating:
 
 | Command | Use When |
 | --- | --- |
+| `npm.cmd run qa:check` | Writing persisted QA evidence for lint, typecheck, and unit tests. |
 | `npm.cmd run qa:desktop:launch` | Checking the QA harness, isolated profile, startup metadata, preload bridge, and clean shutdown. |
 | `npm.cmd run qa:desktop:drag` | Changing drag, overlay bounds, pointer handling, DPI behavior, persistence, or window movement. |
 | `npm.cmd run qa:desktop:overlay` | Changing compact overlay menus, feed, health, care flows, or in-place overlay UI. |
@@ -46,8 +49,11 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
 | `npm.cmd run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
 | `npm.cmd run qa:v2:manual-context` | Collecting the current build, installer candidate, monitor topology, latest QA run IDs, and starter evidence notes before filling the manual checklist. |
+| `npm.cmd run qa:v2:manual-context:smoke` | Verifying manual-context generation fails when required automated evidence is missing and succeeds with complete fixture evidence. |
 | `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
 | `npm.cmd run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
+| `npm.cmd run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
+| `npm.cmd run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
 | `npm.cmd run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
 | `npm.cmd run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
 | `npm.cmd run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
@@ -89,9 +95,20 @@ This writes `.qa-runs/<run-id>-manual-context/report.md` with the current
 commit, package version, Windows version, installer candidate, latest QA run
 IDs, monitor topology from drag QA, manual acceptance page/runbook paths, gate
 count, closeout commands, and starter notes. It is only a prep artifact; it
-does not mark any manual gate as passed. Paste the generated
+does not mark any manual gate as passed. It exits non-zero if required
+automated evidence is missing or not `automated-pass`. Paste the generated
 `manual-context.json` into the manual checklist's context import box to prefill
 fields without checking any gate.
+
+Before final closeout, run:
+
+```powershell
+npm.cmd run qa:v2:manual-preflight
+```
+
+This writes a focused manual blocker report under `.qa-runs/` and exits
+non-zero until the manual JSON exists and the closeout audit has no unresolved
+manual blockers.
 
 Use `docs/qa/v2-manual-acceptance-runbook.md` while executing the checklist.
 It maps every manual gate ID to the required physical action, evidence note,

@@ -17,6 +17,15 @@ closeout check does not rewrite the tracked report while it verifies the clean
 worktree gate. Strict mode exits non-zero until automated evidence, required
 artifacts, and manual acceptance JSON are all present and passing.
 
+Before running strict closeout, use the focused manual blocker view:
+
+```powershell
+npm.cmd run qa:v2:manual-preflight
+```
+
+That command writes `.qa-runs/<run-id>-manual-preflight/report.md` and exits
+non-zero until the exported manual JSON resolves every manual gate.
+
 When the manual acceptance JSON was downloaded outside the repository, pass it
 directly:
 
@@ -39,22 +48,26 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 | Area | Evidence | Current status |
 | --- | --- | --- |
-| Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 59 tests. |
-| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, visual page, and manual acceptance page smoke. |
-| Launch | `.qa-runs/2026-05-11T10-28-00Z-launch/report.md` | Passed. |
+| Lint, typecheck, unit tests | `.qa-runs/2026-05-11T12-44-42Z-check/report.md`, produced by `npm.cmd run qa:check` | Passed, 59 tests. |
+| Full automated QA gate | `npm.cmd run qa` | Includes persisted check evidence, launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, manual-context smoke, manual-preflight smoke, visual page, and manual acceptance page smoke. Release and five-minute idle remain targeted commands because they are slower and environment-sensitive. |
+| Launch | `.qa-runs/2026-05-11T10-58-03Z-launch/report.md` | Passed. |
 | Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T09-42-57Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
 | Overlay care UI | `.qa-runs/2026-05-11T10-49-46Z-overlay/report.md` | Passed with updated food atlas and selected-food eating cues. |
 | Ball play mode | `.qa-runs/2026-05-11T09-43-29Z-play/report.md` | Passed. |
-| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T10-27-25Z-lifecycle/report.md` | Passed. |
+| Lifecycle, always-on-top, resume, unlock, startup setting safety | `.qa-runs/2026-05-11T10-57-31Z-lifecycle/report.md` | Passed. |
 | Renderer panel routes | `.qa-runs/2026-05-11T09-43-55Z-renderer/report.md` | Passed. |
 | Packaged release and installer smoke | `.qa-runs/2026-05-11T10-57-21Z-release/report.md` | Passed; includes packaged launch, packaged lifecycle recovery, current source resource byte checks, silent install, installed launch, and silent uninstall. |
-| Five-minute idle CPU | `.qa-runs/2026-05-11T07-37-17Z-idle/report.md` | Passed at 2.61 percent of one CPU core over 300 seconds. |
-| Pet package validation | `npm.cmd run validate:pets` through full QA | Passed. |
+| Five-minute idle CPU | `.qa-runs/2026-05-11T07-37-17Z-idle/report.md` | Passed over 300 seconds. |
+| Pet package validation and asset QA | `.qa-runs/2026-05-11T12-17-26Z-assets-pets/report.md` | Passed for Bao, Miso, Mochi, Peanut, and Puddles package files, preview/icon assets, contact sheets, retro-LCD capability, and palette limits. |
+| Food/item asset QA | `.qa-runs/2026-05-11T12-17-26Z-assets-items/report.md` | Passed for item manifest parsing, food item presence, item atlas, and contact-sheet artifacts. |
 | Pet asset contact sheets | `docs/qa/*-contact-sheet.png` | Present for Bao, Miso, Mochi, Peanut, and Puddles. |
 | Food/item icon contact sheets | `docs/qa/lcd-food-icons-contact-sheet.png`, `docs/qa/lcd-item-icons-contact-sheet.png` | Present and regenerated. |
 | Combined visual acceptance surface | `docs/qa/v2-visual-acceptance.html`, `docs/qa/v2-visual-acceptance-screenshot.png`, `.qa-runs/2026-05-11T10-49-32Z-visual-page/report.md` | Generated from current pet and item manifests; browser smoke confirms current pet cards, food sheets, gallery animation cells, controls, and image paths render. |
 | Manual acceptance form | `docs/qa/v2-manual-acceptance.html`, `docs/qa/v2-manual-acceptance-screenshot.png`, `npm.cmd run qa:v2:manual-page` | Ready for remaining physical/manual signoff and JSON export; browser smoke confirms gate counts, required run context blocking, generated session context preload, stale-context reset behavior, pass/defer mutual exclusion, deferral approver blocking, export JSON, and screenshot rendering. |
+| Manual context guard | `.qa-runs/2026-05-11T12-35-05Z-manual-context-smoke/report.md` | Passed; manual context generation rejects missing automated evidence and succeeds with complete fixture evidence. |
+| Manual preflight guard | `.qa-runs/2026-05-11T12-44-42Z-manual-preflight-smoke/report.md` | Passed; manual preflight rejects missing manual JSON and accepts complete fixture JSON. |
+| Manual preflight current state | `npm.cmd run qa:v2:manual-preflight` | Fails as expected with 19 unresolved manual gates because no real manual export exists yet. |
 
 ## Prompt-To-Artifact Checklist
 
@@ -95,11 +108,11 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 - SmartScreen/signing reputation caveat.
 
 Use `docs/qa/v2-manual-acceptance.html` to record these remaining checks. The
-closeout report now lists every unresolved manual gate by checklist ID and
-label until the exported JSON resolves it. The manual page itself blocks
-`manualPass` until the required run context fields are filled. Paste the
-exported JSON into this audit or the release PR before making a V2 complete
-claim.
+closeout report and `npm.cmd run qa:v2:manual-preflight` list every unresolved
+manual gate by checklist ID and label until the exported JSON resolves it. The
+manual page itself blocks `manualPass` until the required run context fields are
+filled. Paste the exported JSON into this audit or the release PR before making
+a V2 complete claim.
 
 ## Exact Current Claim
 
