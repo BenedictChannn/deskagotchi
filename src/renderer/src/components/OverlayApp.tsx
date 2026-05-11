@@ -14,6 +14,8 @@ import { ItemIcon } from "./ItemIcon";
 import { PetSprite } from "./PetSprite";
 import { PlayStage } from "./PlayStage";
 
+const DRAG_CLICK_SUPPRESSION_MS = 500;
+
 /** Props for the always-on-desktop pet overlay. */
 interface OverlayAppProps {
   /** Current simulation snapshot used to render pet state and actions. */
@@ -59,6 +61,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     totalDelta: number;
   }>();
   const suppressNextClick = useRef(false);
+  const suppressClicksUntil = useRef(0);
   const eatingCueTimeout = useRef<number | undefined>();
   const activeEatingItem =
     snapshot.activeState.mood === Mood.Eating ? eatingCueItem : undefined;
@@ -207,6 +210,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     });
     if (currentDrag.totalDelta > 4) {
       suppressNextClick.current = true;
+      suppressClicksUntil.current =
+        window.performance.now() + DRAG_CLICK_SUPPRESSION_MS;
       setMenuOpen(false);
       setHealthOpen(false);
       setFeedOpen(false);
@@ -240,12 +245,20 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       },
       menuOpen
     });
+    if (currentDrag.totalDelta > 4) {
+      suppressNextClick.current = true;
+      suppressClicksUntil.current =
+        window.performance.now() + DRAG_CLICK_SUPPRESSION_MS;
+    }
     dragState.current = undefined;
     void window.deskagotchi.finishPetWindowDrag();
   };
 
   const toggleMenu = (): void => {
-    if (suppressNextClick.current) {
+    if (
+      suppressNextClick.current ||
+      window.performance.now() < suppressClicksUntil.current
+    ) {
       suppressNextClick.current = false;
       return;
     }

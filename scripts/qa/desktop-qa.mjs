@@ -25,6 +25,8 @@ const LOCAL_ELECTRON_EXECUTABLE = path.join(
 );
 const DRAG_DELTA_DIP = 72;
 const DRAG_TOLERANCE_DIP = 24;
+const CROSS_MONITOR_STAGE_INSET_DIP = 80;
+const CROSS_MONITOR_DRAG_DIP = 320;
 const IDLE_SECONDS = Number.parseInt(process.env.DESKAGOTCHI_IDLE_SECONDS ?? "60", 10);
 const IDLE_CPU_LIMIT_PERCENT = Number.parseFloat(
   process.env.DESKAGOTCHI_IDLE_CPU_LIMIT_PERCENT ?? "10"
@@ -317,7 +319,7 @@ async function dragOntoNegativeCoordinateMonitor(run, app, page) {
 
   const current = await getOverlayWindowInfo(app);
   const stagedBounds = {
-    x: primary.workArea.x + 8,
+    x: primary.workArea.x + CROSS_MONITOR_STAGE_INSET_DIP,
     y: clamp(
       current.bounds.y,
       primary.workArea.y + 24,
@@ -346,7 +348,7 @@ async function dragOntoNegativeCoordinateMonitor(run, app, page) {
 
   const start = await pointForPetSpriteCenter(page, staged);
   const end = {
-    x: start.x - Math.round(240 * staged.display.scaleFactor),
+    x: start.x - Math.round(CROSS_MONITOR_DRAG_DIP * staged.display.scaleFactor),
     y: start.y
   };
   await performOsDrag(start, end);
