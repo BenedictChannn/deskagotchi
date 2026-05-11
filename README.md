@@ -97,6 +97,12 @@ Smoke-test the visual acceptance and pet animation gallery pages:
 npm.cmd run qa:v2:visual-page
 ```
 
+Current pet and food visual review notes live in:
+
+```text
+docs/qa/v2-visual-review-notes.md
+```
+
 Run the idle CPU observation separately because it intentionally waits:
 
 ```powershell

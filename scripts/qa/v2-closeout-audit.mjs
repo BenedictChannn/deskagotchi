@@ -203,6 +203,10 @@ const REQUIRED_ARTIFACTS = [
     path: "docs/qa/v2-visual-acceptance-screenshot.png"
   },
   {
+    label: "V2 visual review notes",
+    path: "docs/qa/v2-visual-review-notes.md"
+  },
+  {
     label: "V2 manual acceptance page",
     path: "docs/qa/v2-manual-acceptance.html"
   },
@@ -328,7 +332,8 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
       "Mochi contact sheet",
       "Peanut contact sheet",
       "Puddles contact sheet",
-      "V2 visual acceptance page"
+      "V2 visual acceptance page",
+      "V2 visual review notes"
     ],
     manualRequired: true
   },

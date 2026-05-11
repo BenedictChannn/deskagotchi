@@ -51,6 +51,10 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
 | `npm.cmd run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
 
+The current visual review notes live in
+`docs/qa/v2-visual-review-notes.md`. Update that file whenever pet or food
+assets materially change.
+
 When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:
 
