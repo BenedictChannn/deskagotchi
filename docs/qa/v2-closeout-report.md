@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T11:32:11.489Z
+Generated: 2026-05-11T11:36:33.771Z
 
 Completion status: **incomplete**
 
@@ -31,7 +31,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Renderer panel routes | PASS | .qa-runs/2026-05-11T09-43-55Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T10-57-21Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
-| Manual acceptance page export | PASS | .qa-runs/2026-05-11T11-31-20Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
+| Manual acceptance page export | PASS | .qa-runs/2026-05-11T11-35-10Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
 | V2 visual acceptance pages | PASS | .qa-runs/2026-05-11T10-49-32Z-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
 | V2 user-facing scope | PASS | .qa-runs/2026-05-11T09-44-07Z-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
 
@@ -57,7 +57,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `a4cd142`
+Commit: `ad62646`
 
 Workspace is clean.
 
