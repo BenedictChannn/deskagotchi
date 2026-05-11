@@ -12,13 +12,14 @@ note.
 
 - Acceptance page: `.qa-runs/latest-v2-manual-acceptance.html`
 - Current release candidate: `release\Deskagotchi Setup 0.1.0.exe`
-- Latest generated build context: `0.1.0 / dc45531`
+- Generated build context: use `.qa-runs/latest-v2-manual-context.json` or
+  the prefilled acceptance page header.
 - Required export path: `docs\qa\v2-manual-acceptance-export.json`
 - Final gate after export: `npm.cmd run qa:v2:closeout`
 
-Keep the generated build and installer fields unchanged. If a newer app,
-package, source, or asset change is made, regenerate manual context before
-testing.
+Keep the generated build, installer, and QA run fields unchanged from the
+acceptance page. If a newer app, package, source, or asset change is made,
+regenerate manual context before testing.
 
 ## Batch 1: Visual Acceptance
 
@@ -123,8 +124,8 @@ Suggested evidence note:
 
 ```text
 Monitor setup: <arrangement and scale factors>. Dragged the pet across displays,
-quit, and relaunched. Restore behavior was acceptable: <observation>. Related
-automated drag evidence: 2026-05-11T14-33-54Z-drag.
+quit, and relaunched. Restore behavior was acceptable: <observation>.
+Related automated drag evidence: <drag run ID from the acceptance page>.
 ```
 
 Suggested deferral note for unavailable layouts:
