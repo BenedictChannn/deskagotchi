@@ -162,6 +162,28 @@ describe("runtime import and hatch safety", () => {
     );
   });
 
+  it("applies low-maintenance offline catch-up when the setting is enabled", async () => {
+    const standardRuntime = await createInitializedRuntime();
+    const lowMaintenanceRuntime = await createInitializedRuntime();
+    const fiveDaysLater = new Date("2026-05-11T00:00:00.000Z");
+
+    const standardSnapshot = await standardRuntime.runtime.progressAndGetSnapshot(
+      fiveDaysLater
+    );
+    await lowMaintenanceRuntime.runtime.updateSettings(
+      { lowMaintenanceMode: true },
+      new Date("2026-05-06T00:00:00.000Z")
+    );
+    const lowMaintenanceSnapshot =
+      await lowMaintenanceRuntime.runtime.progressAndGetSnapshot(fiveDaysLater);
+
+    expect(standardSnapshot.activeState.offlineDebtHours).toBeCloseTo(84, 3);
+    expect(lowMaintenanceSnapshot.activeState.offlineDebtHours).toBeCloseTo(102, 3);
+    expect(lowMaintenanceSnapshot.activeState.stats.hunger).toBeGreaterThan(
+      standardSnapshot.activeState.stats.hunger
+    );
+  });
+
   it("serializes overlapping save writes from runtime mutations", async () => {
     const { runtime, userDataDir } = await createInitializedRuntime();
 

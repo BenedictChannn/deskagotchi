@@ -43,6 +43,16 @@ Current default constants:
 | Teen threshold | `240h` | Age at which teen threshold is crossed. |
 | Adult threshold | `504h` | Age at which adult threshold is crossed. |
 
+Low-maintenance mode keeps the same stage thresholds and care deadlines, but it
+uses a gentler runtime balance:
+
+| Constant | Low-maintenance value | Meaning |
+| --- | ---: | --- |
+| `maxOfflineCatchupHours` | `18` | Full stat decay is capped earlier while extra elapsed time still ages the pet. |
+| Hunger, happiness, cleanliness decay | `55%` of default | Needs decline more slowly. |
+| Energy decay | `65%` of default | Tiredness still matters, but with a slower decline. |
+| Health penalty | `50%` of default | Neglect remains visible without being as punishing. |
+
 Stats currently tracked:
 
 - Hunger.
@@ -86,6 +96,10 @@ Example:
 The cap exists so a user is not punished with unbounded damage after a holiday
 or a long shutdown. The pet can age, but hunger, health, and mess do not stack
 for weeks.
+
+When low-maintenance mode is enabled, the full-decay window is 18 hours instead
+of 36 hours. The remaining elapsed time is still added to age, so growth timing
+does not stall just because the user picked a gentler care profile.
 
 V2 should keep a cap, but make its product behavior clearer:
 
