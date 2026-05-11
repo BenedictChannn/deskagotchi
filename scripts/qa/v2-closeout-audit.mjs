@@ -869,7 +869,7 @@ ${manualRows}
 Run this audit with strict mode when preparing a release branch:
 
 \`\`\`powershell
-npm.cmd run qa:v2:audit -- --strict --check-only
+npm.cmd run qa:v2:closeout
 \`\`\`
 
 Use \`--check-only\` for final release validation so the tracked report does not

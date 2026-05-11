@@ -114,7 +114,7 @@ release branch so final validation does not rewrite the tracked report while it
 checks the clean worktree gate:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --strict --check-only
+npm.cmd run qa:v2:closeout
 ```
 
 Strict mode exits non-zero until the manual V2 acceptance JSON is also exported
@@ -136,7 +136,7 @@ npm.cmd run qa:v2:audit:smoke
 Smoke-test the manual acceptance page export logic and refresh its screenshot:
 
 ```powershell
-npm.cmd run qa:v2:manual-page -- --update-screenshot
+npm.cmd run qa:v2:manual-page:update
 ```
 
 Routine `npm.cmd run qa:v2:manual-page` runs without changing tracked

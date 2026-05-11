@@ -41,7 +41,9 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
 | `npm.cmd run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
 | `npm.cmd run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
+| `npm.cmd run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
 | `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
+| `npm.cmd run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
 
 When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:
@@ -53,7 +55,7 @@ npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
 For final release validation, use strict check-only mode:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --strict --check-only
+npm.cmd run qa:v2:closeout
 ```
 
 Check-only mode runs the same closeout checks but does not rewrite the tracked

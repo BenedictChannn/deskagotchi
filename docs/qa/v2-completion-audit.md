@@ -12,11 +12,10 @@ npm.cmd run qa:v2:audit
 ```
 
 The generated report is written to `docs/qa/v2-closeout-report.md`. Use
-`npm.cmd run qa:v2:audit -- --strict --check-only` when preparing a release
-branch so the final closeout check does not rewrite the tracked report while it
-verifies the clean worktree gate. Strict mode exits non-zero until automated
-evidence, required artifacts, and manual acceptance JSON are all present and
-passing.
+`npm.cmd run qa:v2:closeout` when preparing a release branch so the final
+closeout check does not rewrite the tracked report while it verifies the clean
+worktree gate. Strict mode exits non-zero until automated evidence, required
+artifacts, and manual acceptance JSON are all present and passing.
 
 When the manual acceptance JSON was downloaded outside the repository, pass it
 directly:

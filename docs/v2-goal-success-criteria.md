@@ -219,17 +219,28 @@ exception:
 npm.cmd run check
 npm.cmd run validate:pets
 npm.cmd run qa
-npm.cmd run build
 npm.cmd run package:win
+npm.cmd run qa:release
+DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
+npm.cmd run qa:v2:audit:smoke
+npm.cmd run qa:v2:closeout
 ```
 
 Required manual evidence:
 
-- Desktop hardening acceptance form.
-- Food icon recognizability review.
-- Pet animation gallery review.
-- Installer smoke note.
-- Idle CPU observation note.
+- `docs/qa/v2-manual-acceptance.html` export with every required gate either
+  passed or explicitly deferred with approver and rationale.
+- Food icon recognizability review against
+  `docs/qa/lcd-food-icons-contact-sheet.png`.
+- Pet animation gallery review against
+  `docs/qa/pet-animation-gallery.html`.
+- Installer launch, install, startup, and uninstall acceptance.
+- Multi-monitor, high-DPI, sleep/wake, RDP, taskbar, and SmartScreen
+  acceptance where available in the test environment.
+
+`npm.cmd run qa:v2:closeout` is the final gate. It runs the closeout audit in
+strict check-only mode, so it must not rewrite tracked evidence and it must fail
+until the manual acceptance JSON is present and passing.
 
 ## Exact Completion Claim
 
