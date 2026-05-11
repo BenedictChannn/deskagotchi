@@ -121,6 +121,23 @@ const AUTOMATED_SCENARIOS = [
       "deferral with approver exports manual pass",
       "manual acceptance screenshot captured"
     ]
+  },
+  {
+    key: "v2-scope",
+    label: "V2 user-facing scope",
+    suffix: "v2-scope",
+    requiredChecks: [
+      "IPC contract has no Hatch generation channel",
+      "preload bridge exposes no Hatch generation method",
+      "main process registers no Hatch IPC handler",
+      "renderer router has no Hatch panel route",
+      "management panel has no Hatch tab",
+      "overlay has no Hatch action",
+      "README marks Hatch/custom generation deferred for V2",
+      "README archives user-facing Hatch for the V2 release path",
+      "V2 roadmap archives custom pet generation",
+      "V2 success criteria exclude user-facing custom generation"
+    ]
   }
 ];
 
@@ -277,7 +294,8 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   },
   {
     requirement: "Custom generation is deferred from user-facing V2 while package boundaries remain.",
-    evidence: "README and renderer route removal reflected in current code",
+    evidence: "README, renderer route removal, and V2 scope QA",
+    automatedKeys: ["v2-scope"],
     artifactPaths: ["README.md", "src/shared/hatch.ts", "src/shared/ipc.ts"]
   },
   {

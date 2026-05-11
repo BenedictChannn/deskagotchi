@@ -32,6 +32,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Five-minute idle CPU | PASS | .qa-runs/2026-05-11T07-37-17Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
 | Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T07-57-16Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
 | Manual acceptance page export | PASS | .qa-runs/2026-05-11T08-59-44Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
+| V2 user-facing scope | PASS | .qa-runs/2026-05-11T09-23-02Z-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
 
 ## Prompt-To-Artifact Checklist
 
@@ -45,7 +46,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through npm.cmd run check |  |
 | Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | MANUAL OPEN | pet asset contact sheets and visual acceptance page | manual acceptance JSON is not passing yet |
 | Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through npm.cmd run check |  |
-| Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README and renderer route removal reflected in current code |  |
+| Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README, renderer route removal, and V2 scope QA |  |
 | Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
 | Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
 | Windows packaging includes runtime resources and installer smoke evidence. | MANUAL OPEN | latest release QA report | manual acceptance JSON is not passing yet |

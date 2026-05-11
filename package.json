@@ -28,6 +28,7 @@
     "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
     "qa:v2:manual-page": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs",
     "qa:v2:manual-page:update": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs --update-screenshot",
+    "qa:v2:scope": "node scripts/qa/v2-scope-qa.mjs",
     "qa": "node scripts/qa/run-all.mjs",
     "lint": "eslint . --max-warnings=0",
     "build": "npm run typecheck && electron-vite build",

@@ -21,7 +21,8 @@ This runs:
 7. `npm.cmd run qa:renderer`
 8. `npm.cmd run qa:assets:pets`
 9. `npm.cmd run qa:assets:items`
-10. `npm.cmd run qa:v2:manual-page`
+10. `npm.cmd run qa:v2:scope`
+11. `npm.cmd run qa:v2:manual-page`
 
 Use this before claiming a feature is ready when the change affects multiple surfaces.
 
@@ -44,6 +45,7 @@ Use targeted commands while iterating:
 | `npm.cmd run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
 | `npm.cmd run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
 | `npm.cmd run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
+| `npm.cmd run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
 
 When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:

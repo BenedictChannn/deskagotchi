@@ -84,6 +84,13 @@ and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
 `docs/qa/using-qa.md` for when to run each targeted QA command and how to
 interpret the reports.
 
+Verify that deferred Hatch/custom generation has not returned to the
+user-facing V2 surface:
+
+```powershell
+npm.cmd run qa:v2:scope
+```
+
 Run the idle CPU observation separately because it intentionally waits:
 
 ```powershell

@@ -40,7 +40,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Area | Evidence | Current status |
 | --- | --- | --- |
 | Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 58 tests. |
-| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, and manual acceptance page smoke. |
+| Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, item assets, V2 scope, and manual acceptance page smoke. |
 | Launch | `.qa-runs/2026-05-11T08-06-17Z-launch/report.md` | Passed. |
 | Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T08-06-31Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
 | Multi-monitor geometry | `src/main/windowBounds.test.ts` through `npm.cmd run check` | Pure bounds coverage for right-side, negative-coordinate, stacked-above, stacked-below, largest-intersection, and fallback layouts. |
@@ -70,7 +70,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Food choices are icon-first and selected food renders while eating | Overlay QA and item contact sheets | Final recognizability acceptance still needed. |
 | Deterministic simulation is documented | `docs/simulation/care-simulation-v2.md` | Keep updated with future rule changes. |
 | Offline progression, deadlines, action effects, growth, and storage have tests | `npm.cmd run check` | None known for current scope. |
-| Hatch/custom generation deferred | README, roadmap, `PanelView`, and IPC channel surface | User-facing generation has no panel route or preload API; archived local draft helpers remain as package-boundary research code. |
+| Hatch/custom generation deferred | README, roadmap, `PanelView`, IPC channel surface, `npm.cmd run qa:v2:scope` | User-facing generation has no panel route, preload API, IPC channel, panel tab, or overlay action; archived local draft helpers remain as package-boundary research code. |
 | Always-on-top persists across relaunch | Lifecycle QA | None known. |
 | Sleep/wake resume and unlock refresh simulation | Lifecycle QA synthetic `powerMonitor` checks | Real machine sleep/wake manual pass still useful. |
 | Frozen-window/process cleanup | Desktop QA process cleanup checks | RDP and unusual taskbar behavior untested. |
