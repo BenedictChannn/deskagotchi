@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T08:27:36.670Z
+Generated: 2026-05-11T08:31:14.467Z
 
 Completion status: **incomplete**
 
@@ -52,55 +52,15 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 ## Workspace State
 
-Status: **FAIL**
+Status: **PASS**
 
-Commit: `1c9f14b`
+Commit: `c5a2d7c`
 
-Workspace is dirty; closeout evidence may be stale relative to local changes.
+Workspace is clean.
 
-Dirty entries: 48
+Dirty entries: 0
 
-- `M README.md`
-- ` M docs/architecture/management-panel.md`
-- ` M docs/architecture/pet-overlay-boundaries.md`
-- ` M docs/design/monochrome-lcd-style.md`
-- ` M docs/qa/feature-qa-contract.md`
-- ` M docs/qa/lcd-food-icons-contact-sheet.png`
-- ` M docs/qa/lcd-item-icons-contact-sheet.png`
-- ` M docs/qa/lcd-item-icons-smoke.md`
-- ` M docs/qa/panel-lifecycle-smoke.md`
-- ` M docs/qa/using-qa.md`
-- ` M package.json`
-- ` M resources/items/lcd-core/items.png`
-- ` M scripts/generate-lcd-item-icons.mjs`
-- ` M scripts/qa/assets-qa.mjs`
-- ` M scripts/qa/desktop-qa.mjs`
-- ` M scripts/qa/run-all.mjs`
-- ` M src/main/index.ts`
-- ` M src/main/runtime.test.ts`
-- ` M src/main/runtime.ts`
-- ` M src/main/storage.test.ts`
-- ` M src/main/storage.ts`
-- ` M src/main/windowBounds.test.ts`
-- ` M src/preload/index.ts`
-- ` M src/renderer/src/App.tsx`
-- ` M src/renderer/src/components/OverlayApp.tsx`
-- ` M src/renderer/src/components/PanelApp.tsx`
-- ` M src/renderer/src/devDeskagotchiApi.ts`
-- ` M src/renderer/src/styles.css`
-- ` M src/shared/domain.ts`
-- ` M src/shared/hatch.ts`
-- ` M src/shared/ipc.ts`
-- ` M src/shared/simulation.test.ts`
-- ` M src/shared/simulation.ts`
-- `?? docs/design/lcd-food-icon-standards.md`
-- `?? docs/qa/deskagotchi-v2-roadmap.html`
-- `?? docs/qa/desktop-hardening-v2.md`
-- `?? docs/qa/v2-closeout-report.md`
-- `?? docs/qa/v2-completion-audit.md`
-- `?? docs/qa/v2-manual-acceptance-screenshot.png`
-- `?? docs/qa/v2-manual-acceptance.html`
-- ...and 8 more entries
+- None
 
 ## Required Artifacts
 
