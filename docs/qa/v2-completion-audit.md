@@ -12,9 +12,11 @@ npm.cmd run qa:v2:audit
 ```
 
 The generated report is written to `docs/qa/v2-closeout-report.md`. Use
-`npm.cmd run qa:v2:audit -- --strict` when preparing a release branch; strict
-mode exits non-zero until automated evidence, required artifacts, and manual
-acceptance JSON are all present and passing.
+`npm.cmd run qa:v2:audit -- --strict --check-only` when preparing a release
+branch so the final closeout check does not rewrite the tracked report while it
+verifies the clean worktree gate. Strict mode exits non-zero until automated
+evidence, required artifacts, and manual acceptance JSON are all present and
+passing.
 
 When the manual acceptance JSON was downloaded outside the repository, pass it
 directly:
@@ -38,7 +40,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 
 | Area | Evidence | Current status |
 | --- | --- | --- |
-| Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 55 tests. |
+| Lint, typecheck, unit tests | `npm.cmd run check` | Passed, 58 tests. |
 | Full automated QA gate | `npm.cmd run qa` | Passed; includes launch, drag, overlay, play, lifecycle, renderer, pet assets, and item assets. |
 | Launch | `.qa-runs/2026-05-11T08-06-17Z-launch/report.md` | Passed. |
 | Drag and negative-coordinate monitor | `.qa-runs/2026-05-11T08-06-31Z-drag/report.md` | Passed on the current two-monitor layout with a left-side negative-coordinate display. |
@@ -69,7 +71,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Food choices are icon-first and selected food renders while eating | Overlay QA and item contact sheets | Final recognizability acceptance still needed. |
 | Deterministic simulation is documented | `docs/simulation/care-simulation-v2.md` | Keep updated with future rule changes. |
 | Offline progression, deadlines, action effects, growth, and storage have tests | `npm.cmd run check` | None known for current scope. |
-| Hatch/custom generation deferred | README, roadmap, renderer routes, IPC removal | None known. |
+| Hatch/custom generation deferred | README, roadmap, `PanelView`, and IPC channel surface | User-facing generation has no panel route or preload API; archived local draft helpers remain as package-boundary research code. |
 | Always-on-top persists across relaunch | Lifecycle QA | None known. |
 | Sleep/wake resume and unlock refresh simulation | Lifecycle QA synthetic `powerMonitor` checks | Real machine sleep/wake manual pass still useful. |
 | Frozen-window/process cleanup | Desktop QA process cleanup checks | RDP and unusual taskbar behavior untested. |
@@ -93,9 +95,10 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 - Unusual taskbar layouts.
 - SmartScreen/signing reputation caveat.
 
-Use `docs/qa/v2-manual-acceptance.html` to record these remaining checks. Paste
-the exported JSON into this audit or the release PR before making a V2 complete
-claim.
+Use `docs/qa/v2-manual-acceptance.html` to record these remaining checks. The
+closeout report now lists every unresolved manual gate by checklist ID and
+label until the exported JSON resolves it. Paste the exported JSON into this
+audit or the release PR before making a V2 complete claim.
 
 ## Exact Current Claim
 
