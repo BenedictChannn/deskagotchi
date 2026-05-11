@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T08:42:58.581Z
+Generated: 2026-05-11T08:52:40.275Z
 
 Completion status: **incomplete**
 
@@ -54,7 +54,7 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 
 Status: **PASS**
 
-Commit: `409e5b5`
+Commit: `e0d7054`
 
 Workspace is clean.
 
