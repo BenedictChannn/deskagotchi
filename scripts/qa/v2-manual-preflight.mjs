@@ -5,11 +5,12 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { buildManualExecutionBatches } from "./v2-manual-batches.mjs";
+import { createQaRunId, writeLatestRun } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = resolveQaRunsDir();
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-preflight`;
+const RUN_ID = createQaRunId("manual-preflight");
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const CLOSEOUT_AUDIT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-closeout-audit.mjs");
 const DEFAULT_MANUAL_PATHS = [
@@ -19,7 +20,7 @@ const DEFAULT_MANUAL_PATHS = [
 
 function main() {
   fs.mkdirSync(RUN_DIR, { recursive: true });
-  fs.writeFileSync(path.join(QA_RUNS_DIR, "latest.txt"), RUN_DIR, "utf8");
+  writeLatestRun(QA_RUNS_DIR, RUN_DIR);
   const startedAt = new Date().toISOString();
   const manualPath = resolveManualPath(process.argv.slice(2));
   const reportPath = path.join(RUN_DIR, "closeout-report.md");

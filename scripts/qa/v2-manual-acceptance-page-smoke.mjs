@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { launchQaBrowser } from "./browser-smoke-utils.mjs";
 import { readQaSourceState } from "./qa-git.mjs";
+import { createQaRunId, writeLatestRun } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -16,7 +17,7 @@ const SCREENSHOT_PATH = path.join(
   "qa",
   "v2-manual-acceptance-screenshot.png"
 );
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-page`;
+const RUN_ID = createQaRunId("manual-page");
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const SESSION_PAGE_PATH = path.join(RUN_DIR, "manual-acceptance-session.html");
 const UPDATE_SCREENSHOT = process.argv.includes("--update-screenshot");
@@ -45,6 +46,7 @@ const MANUAL_CONTEXT_FIXTURE = {
 
 async function main() {
   fs.mkdirSync(RUN_DIR, { recursive: true });
+  writeLatestRun(QA_RUNS_DIR, RUN_DIR);
   const startedAt = new Date().toISOString();
   const checks = [];
   const artifacts = [];

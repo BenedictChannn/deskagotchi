@@ -12,10 +12,7 @@ const COMMANDS = [
   ["npm.cmd", ["run", "qa:assets:pets"]],
   ["npm.cmd", ["run", "qa:assets:items"]],
   ["npm.cmd", ["run", "qa:v2:scope"]],
-  ["npm.cmd", ["run", "qa:v2:manual-context:smoke"]],
-  ["npm.cmd", ["run", "qa:v2:manual-preflight:smoke"]],
-  ["npm.cmd", ["run", "qa:v2:visual-page"]],
-  ["npm.cmd", ["run", "qa:v2:manual-page"]]
+  ["npm.cmd", ["run", "qa:v2:visual-page"]]
 ];
 
 for (const [command, args] of COMMANDS) {

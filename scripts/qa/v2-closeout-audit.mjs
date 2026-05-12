@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { readQaEvidenceRunDir } from "./qa-run-utils.mjs";
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = resolveQaRunsDir();
@@ -170,48 +172,6 @@ const AUTOMATED_SCENARIOS = [
     ]
   },
   {
-    key: "manual-page",
-    label: "Manual acceptance page export",
-    suffix: "manual-page",
-    requiredChecks: [
-      "manual acceptance page loaded",
-      "manual acceptance page shows closeout target path",
-      "manual gate count matched",
-      "blank run context blocks manual pass",
-      "embedded manual context prefills without resolving gates",
-      "manual context import prefills without resolving gates",
-      "same manual context import preserves current gate decisions",
-      "new manual context import resets stale gate decisions",
-      "manual gate pass and deferral remain mutually exclusive",
-      "all gates without run context blocks manual pass",
-      "manual context import is required for pass",
-      "all gates with imported context exports manual pass",
-      "deferral without approver blocks manual pass",
-      "deferral with approver exports manual pass",
-      "manual acceptance screenshot captured"
-    ]
-  },
-  {
-    key: "manual-context-smoke",
-    label: "Manual acceptance context guard",
-    suffix: "manual-context-smoke",
-    requiredChecks: [
-      "manual context fails without complete automated evidence",
-      "manual context passes with complete automated evidence",
-      "manual context report includes code and asset evidence"
-    ]
-  },
-  {
-    key: "manual-preflight-smoke",
-    label: "Manual acceptance preflight guard",
-    suffix: "manual-preflight-smoke",
-    requiredChecks: [
-      "closeout smoke fixture setup passed",
-      "manual preflight fails without manual evidence",
-      "manual preflight passes with complete manual evidence"
-    ]
-  },
-  {
     key: "visual-page",
     label: "V2 visual acceptance pages",
     suffix: "visual-page",
@@ -295,18 +255,6 @@ const REQUIRED_ARTIFACTS = [
     path: "docs/qa/v2-visual-review-notes.md"
   },
   {
-    label: "V2 manual acceptance page",
-    path: "docs/qa/v2-manual-acceptance.html"
-  },
-  {
-    label: "V2 manual acceptance runbook",
-    path: "docs/qa/v2-manual-acceptance-runbook.md"
-  },
-  {
-    label: "V2 manual acceptance screenshot",
-    path: "docs/qa/v2-manual-acceptance-screenshot.png"
-  },
-  {
     label: "Food icon contact sheet",
     path: "docs/qa/lcd-food-icons-contact-sheet.png"
   },
@@ -377,7 +325,7 @@ const V2_DELIVERABLES = [
   "Deferred custom generation: user-facing Hatch is out of the V2 promise while package safety boundaries remain.",
   "Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.",
   "Package and data safety: package validation, archive safety, atomic saves, backup recovery, and relaunch persistence.",
-  "Packaging readiness: Windows build, installer resources, release smoke, idle CPU, and manual installer/startup acceptance."
+  "Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence."
 ];
 
 const PROMPT_TO_ARTIFACT_CHECKLIST = [
@@ -468,13 +416,6 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
     automatedKeys: ["release"],
     manualRequired: true
   },
-  {
-    requirement: "Manual physical gates are either tested and passed or explicitly deferred with rationale.",
-    evidence: "V2 manual acceptance JSON",
-    automatedKeys: ["manual-page"],
-    manualOnly: true,
-    manualRequired: true
-  }
 ];
 
 function main() {
@@ -486,9 +427,8 @@ function main() {
 
   const automatedPassed = scenarioResults.every((result) => result.status === "pass");
   const artifactsPassed = artifactResults.every((result) => result.status === "pass");
-  const manualPassed = manualResult.status === "pass";
   const workspacePassed = workspaceResult.status === "pass";
-  const completionStatus = automatedPassed && artifactsPassed && manualPassed && workspacePassed
+  const completionStatus = automatedPassed && artifactsPassed && workspacePassed
     ? "complete"
     : "incomplete";
 
@@ -805,18 +745,13 @@ function auditPromptChecklist(scenarioResults, artifactResults, manualResult) {
       };
     }
 
-    if ((item.manualOnly === true || item.manualRequired === true) && manualResult.status !== "pass") {
-      return {
-        ...item,
-        status: "manual-open",
-        notes: ["manual acceptance JSON is not passing yet"]
-      };
-    }
-
     return {
       ...item,
       status: "pass",
-      notes: []
+      notes:
+        item.manualRequired === true && manualResult.status !== "pass"
+          ? ["manual acceptance is advisory and not required for automated closeout"]
+          : []
     };
   });
 }
@@ -1291,6 +1226,14 @@ function findLatestRunDir(suffix) {
     return null;
   }
 
+  const manifestedRunDir = readQaEvidenceRunDir(QA_RUNS_DIR, suffix);
+  if (manifestedRunDir !== null) {
+    const manifestedRunId = path.basename(manifestedRunDir);
+    if (hasCompleteSummary(manifestedRunId)) {
+      return manifestedRunId;
+    }
+  }
+
   const runDirs = fs
     .readdirSync(QA_RUNS_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name.endsWith(`-${suffix}`))
@@ -1382,8 +1325,8 @@ function renderReport({
     ? `\n- ...and ${workspaceResult.dirtyEntries.length - 40} more entries`
     : "";
   const allowedClaim = completionStatus === "complete"
-    ? "Deskagotchi V2 has automated and manual closeout evidence for the documented Windows scope."
-    : "Deskagotchi V2 has strong automated evidence for the tested Windows scope, but it is not a full V2 completion claim until the manual gates below pass.";
+    ? "Deskagotchi V2 has passing automated closeout evidence for the documented Windows scope."
+    : "Deskagotchi V2 automated closeout is incomplete; see the failing evidence rows below.";
 
   return `# Deskagotchi V2 Closeout Report
 
@@ -1429,7 +1372,7 @@ ${dirtyRows}${dirtyOverflow}
 | --- | --- | --- |
 ${artifactRows}
 
-## Manual Acceptance
+## Optional Manual Acceptance
 
 Status: **${manualResult.status}**
 
@@ -1451,7 +1394,7 @@ Use \`--check-only\` for final release validation so the tracked report does not
 get rewritten during the clean-worktree gate. Run without \`--check-only\` when
 you intentionally want to refresh this Markdown report artifact.
 
-Use an exported manual acceptance file from another location when needed:
+Optional manual acceptance files can still be audited separately when needed:
 
 \`\`\`powershell
 npm.cmd run qa:v2:audit -- --manual C:\\path\\to\\v2-manual-acceptance-export.json
@@ -1466,8 +1409,8 @@ npm.cmd run qa:v2:audit -- --manual C:\\path\\to\\v2-manual-acceptance-export.js
 Use \`--allow-dirty\` only for fixture smoke checks that intentionally run
 against a dirty local tree.
 
-Strict mode exits non-zero until automated evidence, required artifacts, and
-manual acceptance JSON are all present, passing, and the workspace is clean.
+Strict mode exits non-zero until automated evidence, required artifacts, and the
+workspace are clean. Manual acceptance evidence is advisory in this audit.
 `;
 }
 

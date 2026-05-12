@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { createQaRunId } from "./qa-run-utils.mjs";
 import { buildManualExecutionBatches } from "./v2-manual-batches.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -23,7 +24,7 @@ const MANUAL_RUNBOOK_PATH = path.join(
   "v2-manual-acceptance-runbook.md"
 );
 const SCENARIO = "manual-context";
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-${SCENARIO}`;
+const RUN_ID = createQaRunId(SCENARIO);
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const ARGS = parseArgs(process.argv.slice(2));
 const REQUIRED_AUTOMATED_SCENARIOS = [

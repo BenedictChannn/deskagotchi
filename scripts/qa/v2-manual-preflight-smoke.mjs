@@ -5,11 +5,12 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
+import { createQaRunId } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-preflight-smoke`;
+const RUN_ID = createQaRunId("manual-preflight-smoke");
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const CLOSEOUT_SMOKE_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-closeout-audit-smoke.mjs");
 const PREFLIGHT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-manual-preflight.mjs");

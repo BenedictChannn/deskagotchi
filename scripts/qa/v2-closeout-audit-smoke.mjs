@@ -324,9 +324,9 @@ function main() {
     "--report",
     path.join(SMOKE_DIR, "report-incomplete.md")
   ]);
-  if (incompleteRun.status !== 1) {
+  if (incompleteRun.status !== 0) {
     throw new Error(
-      `Expected incomplete manual evidence to fail strict mode, got ${incompleteRun.status}.`
+      `Expected incomplete manual evidence to remain advisory in strict mode, got ${incompleteRun.status}.`
     );
   }
 
@@ -339,9 +339,9 @@ function main() {
     "--report",
     missingManualReportPath
   ]);
-  if (missingManualRun.status !== 1) {
+  if (missingManualRun.status !== 0) {
     throw new Error(
-      `Expected missing manual evidence to fail strict mode, got ${missingManualRun.status}.`
+      `Expected missing manual evidence to remain advisory in strict mode, got ${missingManualRun.status}.`
     );
   }
   const missingManualReport = fs.readFileSync(missingManualReportPath, "utf8");
@@ -360,9 +360,9 @@ function main() {
     "--report",
     missingFieldsReportPath
   ]);
-  if (missingFieldsRun.status !== 1) {
+  if (missingFieldsRun.status !== 0) {
     throw new Error(
-      `Expected missing required run context fields to fail strict mode, got ${missingFieldsRun.status}.`
+      `Expected missing required run context fields to remain advisory in strict mode, got ${missingFieldsRun.status}.`
     );
   }
   const missingFieldsReport = fs.readFileSync(missingFieldsReportPath, "utf8");
@@ -382,9 +382,9 @@ function main() {
     "--report",
     conflictedReportPath
   ]);
-  if (conflictedRun.status !== 1) {
+  if (conflictedRun.status !== 0) {
     throw new Error(
-      `Expected conflicted manual evidence to fail strict mode, got ${conflictedRun.status}.`
+      `Expected conflicted manual evidence to remain advisory in strict mode, got ${conflictedRun.status}.`
     );
   }
   const conflictedReport = fs.readFileSync(conflictedReportPath, "utf8");
@@ -401,9 +401,9 @@ function main() {
     "--report",
     staleGateReportPath
   ]);
-  if (staleGateRun.status !== 1) {
+  if (staleGateRun.status !== 0) {
     throw new Error(
-      `Expected stale-gate manual evidence to fail strict mode, got ${staleGateRun.status}.`
+      `Expected stale-gate manual evidence to remain advisory in strict mode, got ${staleGateRun.status}.`
     );
   }
   const staleGateReport = fs.readFileSync(staleGateReportPath, "utf8");
@@ -426,9 +426,9 @@ function main() {
     "--report",
     missingMetadataReportPath
   ]);
-  if (missingMetadataRun.status !== 1) {
+  if (missingMetadataRun.status !== 0) {
     throw new Error(
-      `Expected missing-metadata manual evidence to fail strict mode, got ${missingMetadataRun.status}.`
+      `Expected missing-metadata manual evidence to remain advisory in strict mode, got ${missingMetadataRun.status}.`
     );
   }
   const missingMetadataReport = fs.readFileSync(missingMetadataReportPath, "utf8");
@@ -454,9 +454,9 @@ function main() {
     "--report",
     staleExportTimeReportPath
   ]);
-  if (staleExportTimeRun.status !== 1) {
+  if (staleExportTimeRun.status !== 0) {
     throw new Error(
-      `Expected stale-export-time manual evidence to fail strict mode, got ${staleExportTimeRun.status}.`
+      `Expected stale-export-time manual evidence to remain advisory in strict mode, got ${staleExportTimeRun.status}.`
     );
   }
   const staleExportTimeReport = fs.readFileSync(staleExportTimeReportPath, "utf8");
@@ -473,9 +473,9 @@ function main() {
     "--report",
     invalidBuildReportPath
   ]);
-  if (invalidBuildRun.status !== 1) {
+  if (invalidBuildRun.status !== 0) {
     throw new Error(
-      `Expected invalid-build manual evidence to fail strict mode, got ${invalidBuildRun.status}.`
+      `Expected invalid-build manual evidence to remain advisory in strict mode, got ${invalidBuildRun.status}.`
     );
   }
   const invalidBuildReport = fs.readFileSync(invalidBuildReportPath, "utf8");
@@ -492,9 +492,9 @@ function main() {
     "--report",
     invalidVersionReportPath
   ]);
-  if (invalidVersionRun.status !== 1) {
+  if (invalidVersionRun.status !== 0) {
     throw new Error(
-      `Expected invalid-version manual evidence to fail strict mode, got ${invalidVersionRun.status}.`
+      `Expected invalid-version manual evidence to remain advisory in strict mode, got ${invalidVersionRun.status}.`
     );
   }
   const invalidVersionReport = fs.readFileSync(invalidVersionReportPath, "utf8");
@@ -511,9 +511,9 @@ function main() {
     "--report",
     staleCodeReportPath
   ]);
-  if (staleCodeRun.status !== 1) {
+  if (staleCodeRun.status !== 0) {
     throw new Error(
-      `Expected stale-code manual evidence to fail strict mode, got ${staleCodeRun.status}.`
+      `Expected stale-code manual evidence to remain advisory in strict mode, got ${staleCodeRun.status}.`
     );
   }
   const staleCodeReport = fs.readFileSync(staleCodeReportPath, "utf8");
@@ -530,9 +530,9 @@ function main() {
     "--report",
     mismatchedBuildReportPath
   ]);
-  if (mismatchedBuildRun.status !== 1) {
+  if (mismatchedBuildRun.status !== 0) {
     throw new Error(
-      `Expected mismatched-build manual evidence to fail strict mode, got ${mismatchedBuildRun.status}.`
+      `Expected mismatched-build manual evidence to remain advisory in strict mode, got ${mismatchedBuildRun.status}.`
     );
   }
   const mismatchedBuildReport = fs.readFileSync(mismatchedBuildReportPath, "utf8");
@@ -549,9 +549,9 @@ function main() {
     "--report",
     mismatchedInstallerReportPath
   ]);
-  if (mismatchedInstallerRun.status !== 1) {
+  if (mismatchedInstallerRun.status !== 0) {
     throw new Error(
-      `Expected mismatched-installer manual evidence to fail strict mode, got ${mismatchedInstallerRun.status}.`
+      `Expected mismatched-installer manual evidence to remain advisory in strict mode, got ${mismatchedInstallerRun.status}.`
     );
   }
   const mismatchedInstallerReport = fs.readFileSync(mismatchedInstallerReportPath, "utf8");

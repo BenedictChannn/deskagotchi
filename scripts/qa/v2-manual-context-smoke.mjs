@@ -5,6 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
+import { createQaRunId } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -12,7 +13,7 @@ const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 const SMOKE_WORK_DIR = path.join(QA_RUNS_DIR, "v2-manual-context-smoke");
 const SMOKE_EVIDENCE_DIR = path.join(SMOKE_WORK_DIR, "qa-runs");
 const MANUAL_CONTEXT_SCRIPT = path.join(ROOT_DIR, "scripts", "qa", "v2-manual-context.mjs");
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-manual-context-smoke`;
+const RUN_ID = createQaRunId("manual-context-smoke");
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const REQUIRED_SUFFIXES = [
   "launch",

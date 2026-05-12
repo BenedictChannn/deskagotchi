@@ -4,6 +4,11 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
+import {
+  createQaRunId,
+  recordQaEvidence,
+  writeLatestRun
+} from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -62,11 +67,10 @@ function main() {
 }
 
 function createRun() {
-  const stamp = new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z");
-  const runId = `${stamp}-${SCENARIO}`;
+  const runId = createQaRunId(SCENARIO);
   const runDir = path.join(QA_ROOT, runId);
   fs.mkdirSync(runDir, { recursive: true });
-  fs.writeFileSync(path.join(QA_ROOT, "latest.txt"), runDir, "utf8");
+  writeLatestRun(QA_ROOT, runDir);
   return {
     scenario: SCENARIO,
     runId,
@@ -136,6 +140,7 @@ function finishRun(run) {
   run.artifacts.push("summary.json", "report.md");
   fs.writeFileSync(summaryPath, JSON.stringify(run, null, 2));
   fs.writeFileSync(reportPath, renderReport(run), "utf8");
+  recordQaEvidence(QA_ROOT, run.scenario, run.runDir);
   console.log(
     JSON.stringify(
       {
