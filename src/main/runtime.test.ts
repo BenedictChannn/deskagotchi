@@ -28,7 +28,7 @@ vi.mock("electron", () => ({
   }
 }));
 
-describe("runtime import and hatch safety", () => {
+describe("runtime import and simulation safety", () => {
   it("removes partial import folders when an archive path is unsafe", async () => {
     const { runtime, userDataDir } = await createInitializedRuntime();
     const archivePath = await writeArchive("unsafe-path", (archive) => {
@@ -102,49 +102,6 @@ describe("runtime import and hatch safety", () => {
     await expect(runtime.importPet()).rejects.toThrow("existing package id");
 
     await expectCustomPets(userDataDir, []);
-  });
-
-  it("rejects hatch drafts with empty required manifest fields before writing files", async () => {
-    const userDataDir = await mkdtemp(path.join(os.tmpdir(), "deskagotchi-user-"));
-    const runtime = new DeskagotchiRuntime(resourceRoot(), userDataDir);
-
-    const result = await runtime.hatchCreateDraft({
-      name: "Momo",
-      description: "",
-      species: "",
-      personality: "",
-      preferredColors: ["#4ecdc4", "#fff4d6"]
-    });
-
-    expect(result.installed).toBe(false);
-    expect(result.issues.map((issue) => issue.code)).toEqual(
-      expect.arrayContaining([
-        "hatch_description_invalid",
-        "hatch_species_invalid",
-        "hatch_personality_invalid"
-      ])
-    );
-    await expectCustomPets(userDataDir, []);
-  });
-
-  it("installs hatch drafts that satisfy the package animation contract", async () => {
-    const { runtime, userDataDir } = await createInitializedRuntime();
-
-    const result = await runtime.hatchCreateDraft({
-      name: "Momo",
-      description: "A small calm test companion.",
-      species: "Round desk pet",
-      personality: "Gentle and curious",
-      preferredColors: ["#4ecdc4", "#fff4d6"]
-    });
-    const snapshot = await runtime.getSnapshot();
-
-    expect(result.installed).toBe(true);
-    expect(result.issues).toEqual([]);
-    expect(snapshot.activePackage.petPackage.packageId).toBe(result.packageId);
-    expect(snapshot.activePackage.petPackage.animations.map((animation) => animation.id))
-      .toEqual(expect.arrayContaining(["idle", "happy", "walking", "sleeping", "sick"]));
-    await expectCustomPets(userDataDir, [result.packageId]);
   });
 
   it("keeps snapshot reads separate from simulation progression", async () => {

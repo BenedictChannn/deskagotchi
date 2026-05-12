@@ -9,22 +9,13 @@ import AdmZip from "adm-zip";
 import { app, dialog, Notification } from "electron";
 
 import {
-  AnimationId,
   CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   type PetInstanceState,
   type PetPackage,
-  PetSource,
-  type ValidationIssue
+  PetSource
 } from "@shared/domain";
-import {
-  createHatchPetPackage,
-  type HatchDraftInput,
-  type HatchDraftResult,
-  HATCH_PLACEHOLDER_ANIMATION_IDS,
-  validateHatchDraftInput
-} from "@shared/hatch";
 import {
   type CareActionRequest,
   type DeskagotchiSnapshot,
@@ -55,8 +46,7 @@ import {
   createStoragePaths,
   type StoragePaths,
   loadOrCreateSave,
-  writeDeskagotchiSave,
-  writeJsonAtomic
+  writeDeskagotchiSave
 } from "./storage";
 
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
@@ -290,79 +280,6 @@ export class DeskagotchiRuntime {
       title: "Deskagotchi needs attention",
       body: `${activeState.nickname} could use a quick check-in.`
     }).show();
-  }
-
-  /**
-   * Create and install a local placeholder pet package from hatch input.
-   *
-   * @param input - User-provided hatch prompt details and preferred colors.
-   * @returns Installation result and package validation issues.
-   */
-  async hatchCreateDraft(input: HatchDraftInput): Promise<HatchDraftResult> {
-    const safetyIssues = validateHatchDraftInput(input);
-    if (hasBlockingIssues(safetyIssues)) {
-      return {
-        packageId: "",
-        installed: false,
-        issues: safetyIssues
-      };
-    }
-
-    const packageId = slugify(`${input.name}-${randomUUID().slice(0, 8)}`);
-    const packageRoot = path.join(this.storagePaths.customPetsDir, packageId);
-    let loadedIssues: ValidationIssue[];
-    try {
-      await mkdir(packageRoot, { recursive: true });
-      const colorPalette = normalizePalette(input.preferredColors);
-      const petPackage = createHatchPetPackage({
-        input,
-        packageId,
-        colorPalette,
-        stageThresholdHours: DEFAULT_SIMULATION_CONFIG.stageThresholdHours,
-        createdAt: new Date().toISOString(),
-        assetHash: `${packageId}-local-placeholder`,
-        author: "Local user",
-        license: "Local custom Deskagotchi pet"
-      });
-      await writeJsonAtomic(path.join(packageRoot, "pet.json"), petPackage);
-      await writeFile(
-        path.join(packageRoot, "spritesheet.svg"),
-        createHatchSpriteSheet(input, colorPalette),
-        "utf8"
-      );
-      await writeFile(
-        path.join(packageRoot, "preview.svg"),
-        createHatchPreview(input, colorPalette, 192),
-        "utf8"
-      );
-      await writeFile(
-        path.join(packageRoot, "icon.svg"),
-        createHatchPreview(input, colorPalette, 96),
-        "utf8"
-      );
-
-      const loadedPackage = await loadPetPackage(packageRoot, PetSource.Custom);
-      loadedIssues = loadedPackage.issues;
-      if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
-        await rm(packageRoot, { recursive: true, force: true });
-        return {
-          packageId,
-          installed: false,
-          issues: loadedPackage.issues
-        };
-      }
-    } catch (error) {
-      await rm(packageRoot, { recursive: true, force: true });
-      throw error;
-    }
-
-    await this.reloadPackages();
-    await this.switchPet(packageId);
-    return {
-      packageId,
-      installed: true,
-      issues: loadedIssues
-    };
   }
 
   /**
@@ -778,70 +695,6 @@ export function createAssetUrl(
   }
 
   return `${assetPath}?v=${encodeURIComponent(assetVersion)}`;
-}
-
-/**
- * Render a deterministic SVG spritesheet for a local hatch draft.
- *
- * @param input - Hatch prompt details from the renderer.
- * @param palette - Normalized color palette.
- * @returns Complete SVG document for the placeholder spritesheet.
- */
-function createHatchSpriteSheet(input: HatchDraftInput, palette: string[]): string {
-  const frames = HATCH_PLACEHOLDER_ANIMATION_IDS.flatMap((animationId, rowIndex) =>
-    [0, 1, 2, 3].map(
-      (frame) =>
-        `<g transform="translate(${frame * 96} ${rowIndex * 96})">${hatchPetMarkup(input, palette, animationId, frame)}</g>`
-    )
-  );
-  const height = HATCH_PLACEHOLDER_ANIMATION_IDS.length * 96;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="${height}" viewBox="0 0 384 ${height}">${frames.join("")}</svg>\n`;
-}
-
-function createHatchPreview(
-  input: HatchDraftInput,
-  palette: string[],
-  size: number
-): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 96 96">${hatchPetMarkup(input, palette, AnimationId.Happy, 1)}</svg>\n`;
-}
-
-function hatchPetMarkup(
-  input: HatchDraftInput,
-  palette: string[],
-  animationId: AnimationId,
-  frame: number
-): string {
-  const [primary, secondary, outline, highlight] = palette;
-  const bob = Math.sin(frame * Math.PI * 0.5) * 2;
-  const sleepy = animationId === AnimationId.Sleeping;
-  const sick = animationId === AnimationId.Sick;
-  const happy = animationId === AnimationId.Happy;
-  const accessory = input.accessory
-    ? `<path d="M64 25 L77 15 L73 31 Z" fill="${highlight}" stroke="${outline}" stroke-width="3"/>`
-    : "";
-  const eyes = sleepy
-    ? `<path d="M33 43 Q39 39 45 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/><path d="M53 43 Q59 39 65 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<circle cx="39" cy="43" r="3.4" fill="${outline}"/><circle cx="59" cy="43" r="3.4" fill="${outline}"/>`;
-  const mouth = happy
-    ? `<path d="M39 58 Q49 67 59 58" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<path d="M43 60 Q49 57 55 60" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`;
-  const patch = sick
-    ? `<rect x="31" y="25" width="36" height="9" rx="4.5" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-
-  return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/><circle cx="49" cy="50" r="31" fill="none" stroke="${outline}" stroke-width="1.5" opacity="0.15"/>${eyes}${mouth}${accessory}${patch}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
-}
-
-function normalizePalette(colors: string[]): string[] {
-  const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
-  const palette = validColors.length >= 2 ? validColors : ["#9bdbd4", "#4ecdc4"];
-  return [
-    palette[0] ?? "#9bdbd4",
-    palette[1] ?? "#4ecdc4",
-    "#243447",
-    palette[2] ?? "#fff4d6"
-  ];
 }
 
 function slugify(value: string): string {
