@@ -1,11 +1,8 @@
 import {
-  AnimationId,
-  PetSource,
   DeskagotchiSaveSchema,
   PetPackageSchema,
   type DeskagotchiSave,
   type PetInstanceState,
-  type PetPackage
 } from "@shared/domain";
 import {
   type CareActionRequest,
@@ -24,6 +21,7 @@ import baoIconUrl from "../../../resources/pets/bao/icon.png?url";
 import baoManifest from "../../../resources/pets/bao/pet.json";
 import baoPreviewUrl from "../../../resources/pets/bao/preview.png?url";
 import baoSpritesheetUrl from "../../../resources/pets/bao/spritesheet.png?url";
+import builtInRoster from "../../../resources/pets/built-in-roster.json";
 import itemManifestData from "../../../resources/items/lcd-core/items.json";
 import misoIconUrl from "../../../resources/pets/miso/icon.png?url";
 import misoManifest from "../../../resources/pets/miso/pet.json";
@@ -44,9 +42,40 @@ import puddlesSpritesheetUrl from "../../../resources/pets/puddles/spritesheet.p
 import { shouldInstallDevDeskagotchiApi } from "./devBridgeGate";
 
 const STORAGE_KEY = "deskagotchi.dev.save.v2";
-const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
 const ITEM_MANIFEST = ItemIconManifestSchema.parse(itemManifestData);
+const BUILT_IN_PACKAGE_ASSETS = {
+  bao: {
+    manifest: baoManifest,
+    spritesheet: baoSpritesheetUrl,
+    preview: baoPreviewUrl,
+    icon: baoIconUrl
+  },
+  miso: {
+    manifest: misoManifest,
+    spritesheet: misoSpritesheetUrl,
+    preview: misoPreviewUrl,
+    icon: misoIconUrl
+  },
+  mochi: {
+    manifest: mochiManifest,
+    spritesheet: mochiSpritesheetUrl,
+    preview: mochiPreviewUrl,
+    icon: mochiIconUrl
+  },
+  peanut: {
+    manifest: peanutManifest,
+    spritesheet: peanutSpritesheetUrl,
+    preview: peanutPreviewUrl,
+    icon: peanutIconUrl
+  },
+  puddles: {
+    manifest: puddlesManifest,
+    spritesheet: puddlesSpritesheetUrl,
+    preview: puddlesPreviewUrl,
+    icon: puddlesIconUrl
+  }
+} as const;
 
 /**
  * Install a browser-only Deskagotchi bridge for Vite development.
@@ -305,7 +334,7 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
  * Remove save instances that reference unavailable packages and repair active selection.
  *
  * @param save - Parsed browser development save.
- * @param packages - Runtime packages available after loading persisted custom manifests.
+ * @param packages - Built-in runtime packages available in the browser adapter.
  * @returns A repaired save, or undefined when no saved instance can be resolved.
  */
 function repairDevSave(
@@ -336,282 +365,19 @@ function repairDevSave(
 /**
  * Create the built-in packages used by the browser adapter.
  *
- * @returns Runtime packages with generated PNG and SVG assets.
+ * @returns Runtime packages backed by the same committed PNG assets as Electron.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  const builtInPackages = [
-    createBaoRuntimePackage(),
-    createMisoRuntimePackage(),
-    createMochiRuntimePackage(),
-    createPeanutRuntimePackage(),
-    createPuddlesRuntimePackage()
-  ];
-
-  return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
-}
-
-/**
- * Attach Bao's imagegen-assisted shih tzu package to the browser adapter.
- *
- * @returns Runtime package using the same PNG files that Electron serves.
- */
-function createBaoRuntimePackage(): RuntimePetPackage {
-  return {
-    petPackage: PetPackageSchema.parse(baoManifest),
-    assetUrls: {
-      spritesheet: baoSpritesheetUrl,
-      preview: baoPreviewUrl,
-      icon: baoIconUrl
-    },
-    issues: []
-  };
-}
-
-/**
- * Attach Miso's imagegen-assisted cat package to the browser adapter.
- *
- * @returns Runtime package using the same PNG files that Electron serves.
- */
-function createMisoRuntimePackage(): RuntimePetPackage {
-  return {
-    petPackage: PetPackageSchema.parse(misoManifest),
-    assetUrls: {
-      spritesheet: misoSpritesheetUrl,
-      preview: misoPreviewUrl,
-      icon: misoIconUrl
-    },
-    issues: []
-  };
-}
-
-/**
- * Attach Mochi's imagegen-assisted monkey package to the browser adapter.
- *
- * @returns Runtime package using the same PNG files that Electron serves.
- */
-function createMochiRuntimePackage(): RuntimePetPackage {
-  return {
-    petPackage: PetPackageSchema.parse(mochiManifest),
-    assetUrls: {
-      spritesheet: mochiSpritesheetUrl,
-      preview: mochiPreviewUrl,
-      icon: mochiIconUrl
-    },
-    issues: []
-  };
-}
-
-/**
- * Attach Peanut's imagegen-assisted elephant package to the browser adapter.
- *
- * @returns Runtime package using the same PNG files that Electron serves.
- */
-function createPeanutRuntimePackage(): RuntimePetPackage {
-  return {
-    petPackage: PetPackageSchema.parse(peanutManifest),
-    assetUrls: {
-      spritesheet: peanutSpritesheetUrl,
-      preview: peanutPreviewUrl,
-      icon: peanutIconUrl
-    },
-    issues: []
-  };
-}
-
-/**
- * Attach Puddles' duck package to the browser adapter.
- *
- * @returns Runtime package using the same PNG files that Electron serves.
- */
-function createPuddlesRuntimePackage(): RuntimePetPackage {
-  return {
-    petPackage: PetPackageSchema.parse(puddlesManifest),
-    assetUrls: {
-      spritesheet: puddlesSpritesheetUrl,
-      preview: puddlesPreviewUrl,
-      icon: puddlesIconUrl
-    },
-    issues: []
-  };
-}
-
-/**
- * Load generated custom package manifests from browser storage.
- *
- * @returns Schema-valid custom pet packages created by the development hatch flow.
- */
-function loadCustomDevPackages(): PetPackage[] {
-  const stored = window.localStorage.getItem(CUSTOM_PACKAGES_STORAGE_KEY);
-  if (stored === null) {
-    return [];
-  }
-
-  try {
-    const parsed: unknown = JSON.parse(stored);
-    if (!Array.isArray(parsed)) {
-      window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-      return [];
-    }
-
-    return parsed.flatMap((candidate) => {
-      const parsedPackage = PetPackageSchema.safeParse(candidate);
-      if (!parsedPackage.success || parsedPackage.data.source !== PetSource.Custom) {
-        return [];
-      }
-      return [parsedPackage.data];
-    });
-  } catch {
-    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-    return [];
-  }
-}
-
-/**
- * Attach generated browser asset URLs to a pet package.
- *
- * @param petPackage - Package manifest to convert.
- * @returns Runtime package with spritesheet, preview, and icon data URLs.
- */
-function toRuntimePackage(petPackage: PetPackage): RuntimePetPackage {
-  const [primary, secondary, outline, highlight] = normalizeColors(petPackage.colorPalette);
-  const preview = createPetSvgDataUrl(primary, secondary, outline, highlight, AnimationId.Happy, 1);
-  return {
-    petPackage,
-    assetUrls: {
-      spritesheet: createSpritesheetDataUrl(petPackage.colorPalette),
-      preview,
-      icon: preview
-    },
-    issues: []
-  };
-}
-
-/**
- * Generate a data URL spritesheet for all supported animation rows.
- *
- * @param colors - Preferred package colors used to render the placeholder pet.
- * @returns Encoded SVG data URL for the development spritesheet.
- */
-function createSpritesheetDataUrl(colors: string[]): string {
-  const [primary, secondary, outline, highlight] = normalizeColors(colors);
-  const rows = Object.values(AnimationId).flatMap((animationId, rowIndex) =>
-    [0, 1, 2, 3].map(
-      (frame) =>
-        `<g transform="translate(${frame * 96} ${rowIndex * 96})">${createPetMarkup(
-          primary,
-          secondary,
-          outline,
-          highlight,
-          animationId,
-          frame
-        )}</g>`
-    )
-  );
-  return svgDataUrl(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="1056" viewBox="0 0 384 1056">${rows.join("")}</svg>`
-  );
-}
-
-/**
- * Generate a single-frame preview or icon data URL.
- *
- * @param primary - Primary body color.
- * @param secondary - Secondary accent color.
- * @param outline - Outline and facial feature color.
- * @param highlight - Highlight and accessory color.
- * @param animationId - Animation expression to render.
- * @param frame - Frame index used for simple motion offsets.
- * @returns Encoded SVG data URL for the preview frame.
- */
-function createPetSvgDataUrl(
-  primary: string,
-  secondary: string,
-  outline: string,
-  highlight: string,
-  animationId: AnimationId,
-  frame: number
-): string {
-  return svgDataUrl(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 96 96">${createPetMarkup(
-      primary,
-      secondary,
-      outline,
-      highlight,
-      animationId,
-      frame
-    )}</svg>`
-  );
-}
-
-/**
- * Generate reusable SVG markup for a placeholder pet frame.
- *
- * @param primary - Primary body color.
- * @param secondary - Secondary accent color.
- * @param outline - Outline and facial feature color.
- * @param highlight - Highlight and accessory color.
- * @param animationId - Animation expression to render.
- * @param frame - Frame index used for simple motion offsets.
- * @returns SVG fragment inserted into spritesheets and previews.
- */
-function createPetMarkup(
-  primary: string,
-  secondary: string,
-  outline: string,
-  highlight: string,
-  animationId: AnimationId,
-  frame: number
-): string {
-  const bob = Math.sin(frame * Math.PI * 0.5) * 2;
-  const sleeping = animationId === AnimationId.Sleeping;
-  const sick = animationId === AnimationId.Sick;
-  const happy =
-    animationId === AnimationId.Happy ||
-    animationId === AnimationId.Eating ||
-    animationId === AnimationId.Playing;
-  const hungry = animationId === AnimationId.Hungry;
-  const attention = animationId === AnimationId.Attention;
-  const eyes = sleeping
-    ? `<path d="M33 43 Q39 39 45 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/><path d="M53 43 Q59 39 65 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<circle cx="39" cy="43" r="3.4" fill="${outline}"/><circle cx="59" cy="43" r="3.4" fill="${outline}"/>`;
-  const mouth = happy
-    ? `<path d="M39 58 Q49 67 59 58" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : hungry
-      ? `<circle cx="49" cy="59" r="4" fill="none" stroke="${outline}" stroke-width="3"/>`
-      : `<path d="M43 61 Q49 57 55 61" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`;
-  const patch = sick
-    ? `<rect x="31" y="25" width="36" height="9" rx="4.5" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-  const call = attention
-    ? `<circle cx="74" cy="26" r="4" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-
-  return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/>${eyes}${mouth}${patch}${call}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
-}
-
-/**
- * Normalize a preferred color list into the four-color placeholder palette.
- *
- * @param colors - User or package-provided hex colors.
- * @returns Primary, secondary, outline, and highlight colors.
- */
-function normalizeColors(colors: string[]): string[] {
-  const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
-  const palette = validColors.length >= 2 ? validColors : ["#9bdbd4", "#4ecdc4"];
-  return [
-    palette[0] ?? "#9bdbd4",
-    palette[1] ?? "#4ecdc4",
-    "#243447",
-    palette[2] ?? "#fff4d6"
-  ];
-}
-
-/**
- * Encode SVG text for use in image URLs.
- *
- * @param svg - Raw SVG document string.
- * @returns Data URL suitable for img and CSS background usage.
- */
-function svgDataUrl(svg: string): string {
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  return builtInRoster.petIds.map((petId) => {
+    const asset = BUILT_IN_PACKAGE_ASSETS[petId as keyof typeof BUILT_IN_PACKAGE_ASSETS];
+    return {
+      petPackage: PetPackageSchema.parse(asset.manifest),
+      assetUrls: {
+        spritesheet: asset.spritesheet,
+        preview: asset.preview,
+        icon: asset.icon
+      },
+      issues: []
+    };
+  });
 }

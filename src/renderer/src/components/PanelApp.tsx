@@ -432,4 +432,3 @@ function statRows(stats: PetStats): Array<{ id: keyof PetStats; label: string; v
     { id: "weight", label: "Weight", value: Math.min(100, stats.weight) }
   ];
 }
-

@@ -5,12 +5,16 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
+import {
+  createQaRunId,
+  recordQaEvidence,
+  writeLatestRun
+} from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 const MODE = process.argv[2] ?? "pets";
-const BUILT_IN_PET_IDS = ["bao", "miso", "mochi", "peanut", "puddles"];
 
 function main() {
   if (MODE !== "pets" && MODE !== "items") {
@@ -31,11 +35,10 @@ function main() {
 }
 
 function createRun(scenario) {
-  const stamp = new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z");
-  const runId = `${stamp}-${scenario}`;
+  const runId = createQaRunId(scenario);
   const runDir = path.join(QA_RUNS_DIR, runId);
   fs.mkdirSync(runDir, { recursive: true });
-  fs.writeFileSync(path.join(QA_RUNS_DIR, "latest.txt"), runDir, "utf8");
+  writeLatestRun(QA_RUNS_DIR, runDir);
   return {
     scenario,
     runId,
@@ -56,7 +59,7 @@ function auditPets(run) {
     "npm.cmd",
     ["run", "validate:pets"]
   );
-  for (const petId of BUILT_IN_PET_IDS) {
+  for (const petId of loadBuiltInPetIds()) {
     checkFile(run, `resources/pets/${petId}/pet.json`, `${petId} manifest exists`);
     checkFile(run, `resources/pets/${petId}/spritesheet.png`, `${petId} spritesheet exists`);
     checkFile(run, `resources/pets/${petId}/preview.png`, `${petId} preview exists`);
@@ -65,6 +68,12 @@ function auditPets(run) {
   }
   checkFile(run, "docs/qa/v2-visual-acceptance.html", "V2 visual acceptance page exists");
   checkBuiltInPetTheme(run);
+}
+
+function loadBuiltInPetIds() {
+  const rosterPath = path.join(ROOT_DIR, "resources", "pets", "built-in-roster.json");
+  const roster = JSON.parse(fs.readFileSync(rosterPath, "utf8"));
+  return Array.isArray(roster.petIds) ? roster.petIds : [];
 }
 
 function auditItems(run) {
@@ -109,10 +118,7 @@ function checkJsonFile(run, relativePath, checkName) {
 
 function checkBuiltInPetTheme(run) {
   const petsRoot = path.join(ROOT_DIR, "resources", "pets");
-  const packageDirs = fs
-    .readdirSync(petsRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(petsRoot, entry.name));
+  const packageDirs = loadBuiltInPetIds().map((petId) => path.join(petsRoot, petId));
   const themeFailures = [];
   const paletteFailures = [];
 
@@ -211,6 +217,7 @@ function finishRun(run) {
   run.artifacts.push("summary.json", "report.md");
   fs.writeFileSync(path.join(run.runDir, "summary.json"), JSON.stringify(run, null, 2));
   fs.writeFileSync(path.join(run.runDir, "report.md"), renderReport(run), "utf8");
+  recordQaEvidence(QA_RUNS_DIR, run.scenario, run.runDir);
   console.log(
     JSON.stringify(
       {

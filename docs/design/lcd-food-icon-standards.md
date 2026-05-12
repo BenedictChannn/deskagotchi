@@ -105,4 +105,3 @@ next acceptable step is still lightweight:
 - Use generated or manually drawn bitmap cells as source assets.
 - Avoid individual large food files.
 - Preserve transparent cells and pixelated rendering.
-

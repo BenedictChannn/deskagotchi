@@ -199,8 +199,6 @@ export function createHatchPetPackage(options: HatchPackageOptions): PetPackage 
       hatchGrowthStage("teen", LifeStage.Teen, "Teen", stageThresholdHours[LifeStage.Teen]),
       hatchGrowthStage("adult", LifeStage.Adult, "Adult", stageThresholdHours[LifeStage.Adult])
     ],
-    preferredFoods: ["custom treat"],
-    dislikedFoods: ["burnt snack"],
     foodPreferences: {
       sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
       likedFoodIds: ["snack-apple-slice"],

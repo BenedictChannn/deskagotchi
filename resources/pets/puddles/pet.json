@@ -233,17 +233,6 @@
       ]
     }
   ],
-  "preferredFoods": [
-    "peas",
-    "corn kernels",
-    "leafy bundle",
-    "rice ball",
-    "melon slice"
-  ],
-  "dislikedFoods": [
-    "fish bite",
-    "candy"
-  ],
   "foodPreferences": {
     "sharedFoodIds": [
       "meal-rice-ball",

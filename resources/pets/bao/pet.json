@@ -233,16 +233,6 @@
       ]
     }
   ],
-  "preferredFoods": [
-    "steamed bun",
-    "rice ball",
-    "kibble bowl",
-    "chicken bite",
-    "apple slice"
-  ],
-  "dislikedFoods": [
-    "candy"
-  ],
   "foodPreferences": {
     "sharedFoodIds": [
       "meal-rice-ball",

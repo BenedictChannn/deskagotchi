@@ -128,8 +128,6 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         ]
       }
     ],
-    preferredFoods: ["fish biscuit", "warm rice"],
-    dislikedFoods: ["burnt toast"],
     foodPreferences: {
       sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
       likedFoodIds: ["meal-chicken-bite"],

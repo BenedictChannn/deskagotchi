@@ -6,6 +6,11 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
+import {
+  createQaRunId,
+  recordQaEvidence,
+  writeLatestRun
+} from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -20,16 +25,11 @@ const PACKAGED_RESOURCE_ROOT = path.join(
   "resources",
   "resources"
 );
-const REQUIRED_PETS = ["bao", "miso", "mochi", "peanut", "puddles"];
 const REQUIRED_PET_FILES = ["pet.json", "spritesheet.png", "preview.png", "icon.png"];
 
 class ReleaseRun {
   constructor() {
-    const stamp = new Date()
-      .toISOString()
-      .replaceAll(":", "-")
-      .replace(/\.\d{3}Z$/, "Z");
-    this.runId = `${stamp}-release`;
+    this.runId = createQaRunId("release");
     this.runDir = path.join(QA_ROOT, this.runId);
     this.report = {
       scenario: "release",
@@ -43,7 +43,7 @@ class ReleaseRun {
 
   setup() {
     fs.mkdirSync(this.runDir, { recursive: true });
-    fs.writeFileSync(path.join(QA_ROOT, "latest.txt"), this.runDir, "utf8");
+    writeLatestRun(QA_ROOT, this.runDir);
   }
 
   pass(name, details = {}) {
@@ -81,7 +81,8 @@ class ReleaseRun {
       renderReport(this.report),
       "utf8"
     );
-    fs.writeFileSync(path.join(QA_ROOT, "latest.txt"), this.runDir, "utf8");
+    writeLatestRun(QA_ROOT, this.runDir);
+    recordQaEvidence(QA_ROOT, this.report.scenario, this.runDir);
     console.log(`Release QA report: ${path.join(this.runDir, "report.md")}`);
   }
 }
@@ -149,7 +150,7 @@ function assertPackagedResources(run) {
     path.join(PACKAGED_RESOURCE_ROOT, "items", "lcd-core", "items.png")
   );
 
-  for (const petId of REQUIRED_PETS) {
+  for (const petId of loadBuiltInPetIds()) {
     const petDir = path.join(PACKAGED_RESOURCE_ROOT, "pets", petId);
     const sourcePetDir = path.join(SOURCE_RESOURCE_ROOT, "pets", petId);
     assertDirectory(run, `packaged pet ${petId} directory exists`, petDir);
@@ -175,6 +176,12 @@ function assertPackagedResources(run) {
   } else {
     run.pass("packaged app excludes docs QA artifacts");
   }
+}
+
+function loadBuiltInPetIds() {
+  const rosterPath = path.join(SOURCE_RESOURCE_ROOT, "pets", "built-in-roster.json");
+  const roster = JSON.parse(fs.readFileSync(rosterPath, "utf8"));
+  return Array.isArray(roster.petIds) ? roster.petIds : [];
 }
 
 function runPackagedLaunchSmoke(run) {
@@ -295,18 +302,24 @@ function runInstallerSmoke(run) {
 }
 
 function runDesktopScenarioSmoke(run, executablePath, scenario) {
-  const startedAtMs = Date.now();
+  const childRunId = createQaRunId(`release-${scenario}`);
+  const childRunDir = path.join(QA_ROOT, childRunId);
+  const childProfileDir = path.join(childRunDir, "profile");
   const child = spawnSync(process.execPath, ["scripts/qa/desktop-qa.mjs", scenario], {
     cwd: ROOT_DIR,
     stdio: "inherit",
     env: {
       ...process.env,
       DESKAGOTCHI_QA_EXECUTABLE_PATH: executablePath,
+      DESKAGOTCHI_QA_RUN_ID: childRunId,
+      DESKAGOTCHI_QA_RUN_DIR: childRunDir,
+      DESKAGOTCHI_QA_USER_DATA_DIR: childProfileDir,
       DESKAGOTCHI_QA_SKIP_BUILD: "1"
     }
   });
-  const latestRunDir = readLatestScenarioRunDir(scenario, startedAtMs);
-  const reportPath = latestRunDir === null ? null : path.join(latestRunDir, "report.md");
+  const reportPath = fs.existsSync(path.join(childRunDir, "report.md"))
+    ? path.join(childRunDir, "report.md")
+    : null;
   const relativeReport =
     reportPath === null ? "not recorded" : path.relative(ROOT_DIR, reportPath);
   if (reportPath !== null) {
@@ -314,7 +327,7 @@ function runDesktopScenarioSmoke(run, executablePath, scenario) {
   }
 
   const startupInvariantsPath =
-    latestRunDir === null ? null : path.join(latestRunDir, "startup-invariants.json");
+    reportPath === null ? null : path.join(childRunDir, "startup-invariants.json");
   const metadata =
     scenario === "launch" && startupInvariantsPath !== null
       ? readJson(startupInvariantsPath) ?? {}
@@ -328,25 +341,6 @@ function runDesktopScenarioSmoke(run, executablePath, scenario) {
     relativeReport,
     metadata
   };
-}
-
-function readLatestScenarioRunDir(scenario, startedAtMs) {
-  const latestPath = path.join(QA_ROOT, "latest.txt");
-  if (!fs.existsSync(latestPath)) {
-    return null;
-  }
-  const latestRunDir = fs.readFileSync(latestPath, "utf8").trim();
-  if (latestRunDir.endsWith(`-${scenario}`) && fs.existsSync(latestRunDir)) {
-    return latestRunDir;
-  }
-
-  const latestMatchingRun = fs
-    .readdirSync(QA_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.endsWith(`-${scenario}`))
-    .map((entry) => path.join(QA_ROOT, entry.name))
-    .filter((runDir) => fs.statSync(runDir).mtimeMs >= startedAtMs - 2_000)
-    .sort((left, right) => right.localeCompare(left))[0];
-  return latestMatchingRun ?? null;
 }
 
 function assertFile(run, name, filePath, minBytes) {

@@ -233,16 +233,6 @@
       ]
     }
   ],
-  "preferredFoods": [
-    "fish bite",
-    "milk",
-    "chicken bite",
-    "warm rice",
-    "steamed bun"
-  ],
-  "dislikedFoods": [
-    "leafy bundle"
-  ],
   "foodPreferences": {
     "sharedFoodIds": [
       "meal-rice-ball",

@@ -16,16 +16,14 @@ function main() {
 }
 
 function loadBuiltInPets() {
-  return fs
-    .readdirSync(PETS_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const packageDir = path.join(PETS_ROOT, entry.name);
+  return loadBuiltInPetIds()
+    .map((petId) => {
+      const packageDir = path.join(PETS_ROOT, petId);
       const manifest = JSON.parse(
         fs.readFileSync(path.join(packageDir, "pet.json"), "utf8")
       );
       return {
-        id: entry.name,
+        id: petId,
         manifest
       };
     })
@@ -33,8 +31,15 @@ function loadBuiltInPets() {
     .sort((left, right) => left.manifest.name.localeCompare(right.manifest.name));
 }
 
+function loadBuiltInPetIds() {
+  const roster = JSON.parse(
+    fs.readFileSync(path.join(PETS_ROOT, "built-in-roster.json"), "utf8")
+  );
+  return Array.isArray(roster.petIds) ? roster.petIds : [];
+}
+
 function renderPage(pets, itemManifest) {
-  const petCards = pets.map(renderPetCard).join("\n");
+  const petCards = pets.map((pet) => renderPetCard(pet, itemManifest)).join("\n");
   const mealCount = itemManifest.items.filter((item) => item.category === "meal").length;
   const snackCount = itemManifest.items.filter((item) => item.category === "snack").length;
   const toyCount = itemManifest.items.filter((item) => item.category === "toy").length;
@@ -307,13 +312,16 @@ function renderPage(pets, itemManifest) {
 `;
 }
 
-function renderPetCard({ id, manifest }) {
+function renderPetCard({ id, manifest }, itemManifest) {
   const animationIds = manifest.animations.map((animation) => animation.id).join(", ");
-  const preferredFoods = manifest.preferredFoods.join(", ");
-  const speciesFoods = [
-    ...(manifest.foodPreferences?.speciesMealIds ?? []),
-    ...(manifest.foodPreferences?.speciesSnackIds ?? [])
-  ].join(", ");
+  const itemLabelsById = new Map(
+    itemManifest.items.map((item) => [item.id, item.label])
+  );
+  const foodLabels = {
+    shared: labelFoodIds(manifest.foodPreferences.sharedFoodIds, itemLabelsById),
+    liked: labelFoodIds(manifest.foodPreferences.likedFoodIds, itemLabelsById),
+    favorite: labelFoodIds(manifest.foodPreferences.favoriteFoodIds, itemLabelsById)
+  };
 
   return `<article class="pet-card">
             <div class="pet-header">
@@ -328,12 +336,19 @@ function renderPetCard({ id, manifest }) {
             </div>
             <img class="contact" src="./${id}-contact-sheet.png" alt="${manifest.name} animation contact sheet" />
             <div class="pet-notes">
-              <div><strong>Preferred foods</strong><br />${preferredFoods}</div>
-              <div><strong>Species food ids</strong><br />${speciesFoods}</div>
+              <div><strong>Shared foods</strong><br />${foodLabels.shared}</div>
+              <div><strong>Liked foods</strong><br />${foodLabels.liked}</div>
+              <div><strong>Top foods</strong><br />${foodLabels.favorite}</div>
               <div><strong>Animations</strong><br />${animationIds}</div>
               <div><strong>Palette</strong><br />${manifest.colorPalette.join(", ")}</div>
             </div>
           </article>`;
+}
+
+function labelFoodIds(foodIds, itemLabelsById) {
+  return foodIds
+    .map((foodId) => itemLabelsById.get(foodId) ?? foodId)
+    .join(", ");
 }
 
 main();

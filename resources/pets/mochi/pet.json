@@ -233,16 +233,6 @@
       ]
     }
   ],
-  "preferredFoods": [
-    "banana",
-    "mango cube",
-    "melon slice",
-    "rice ball",
-    "steamed bun"
-  ],
-  "dislikedFoods": [
-    "fish bite"
-  ],
   "foodPreferences": {
     "sharedFoodIds": [
       "meal-rice-ball",

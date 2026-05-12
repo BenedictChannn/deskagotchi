@@ -5,6 +5,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { launchQaBrowser } from "./browser-smoke-utils.mjs";
 import { readQaSourceState } from "./qa-git.mjs";
+import {
+  createQaRunId,
+  recordQaEvidence,
+  writeLatestRun
+} from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -18,13 +23,14 @@ const SCREENSHOT_PATH = path.join(
   "qa",
   "v2-visual-acceptance-screenshot.png"
 );
-const RUN_ID = `${new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z")}-visual-page`;
+const RUN_ID = createQaRunId("visual-page");
 const RUN_DIR = path.join(QA_RUNS_DIR, RUN_ID);
 const UPDATE_SCREENSHOT = process.argv.includes("--update-screenshot");
 const EXPECTED_ANIMATION_COUNT = 11;
 
 async function main() {
   fs.mkdirSync(RUN_DIR, { recursive: true });
+  writeLatestRun(QA_RUNS_DIR, RUN_DIR);
   const startedAt = new Date().toISOString();
   const checks = [];
   const artifacts = [];
@@ -64,14 +70,12 @@ async function main() {
 }
 
 function loadBuiltInPets() {
-  return fs
-    .readdirSync(PETS_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const manifestPath = path.join(PETS_ROOT, entry.name, "pet.json");
+  return loadBuiltInPetIds()
+    .map((petId) => {
+      const manifestPath = path.join(PETS_ROOT, petId, "pet.json");
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
       return {
-        id: entry.name,
+        id: petId,
         name: manifest.name,
         source: manifest.source,
         animationCount: manifest.animations.length
@@ -79,6 +83,12 @@ function loadBuiltInPets() {
     })
     .filter((pet) => pet.source === "built-in")
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function loadBuiltInPetIds() {
+  const rosterPath = path.join(PETS_ROOT, "built-in-roster.json");
+  const roster = JSON.parse(fs.readFileSync(rosterPath, "utf8"));
+  return Array.isArray(roster.petIds) ? roster.petIds : [];
 }
 
 async function smokeVisualAcceptancePage(page, checks, artifacts, pets) {
@@ -253,6 +263,7 @@ function writeRunArtifacts({ startedAt, checks, artifacts }) {
   const reportPath = path.join(RUN_DIR, "report.md");
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   fs.writeFileSync(reportPath, renderReport(summary));
+  recordQaEvidence(QA_RUNS_DIR, summary.scenario, RUN_DIR);
 }
 
 function renderReport(summary) {

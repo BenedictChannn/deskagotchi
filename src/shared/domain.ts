@@ -11,6 +11,9 @@ export const CURRENT_PET_PACKAGE_SCHEMA_VERSION = 1;
 /** Current persisted pet instance state schema version accepted by the app. */
 export const CURRENT_PET_STATE_SCHEMA_VERSION = 1;
 
+/** Current top-level save-file schema version accepted by the app. */
+export const CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION = 1;
+
 /** Current simulation tuning schema version used by default configuration. */
 export const CURRENT_SIMULATION_CONFIG_VERSION = 1;
 
@@ -192,8 +195,6 @@ export const PetPackageSchema = z.object({
   }),
   animations: z.array(AnimationManifestEntrySchema).min(1),
   growthStages: z.array(GrowthStageManifestSchema).min(1),
-  preferredFoods: z.array(z.string().min(1).max(40)).default([]),
-  dislikedFoods: z.array(z.string().min(1).max(40)).default([]),
   foodPreferences: FoodPreferencesSchema.default({
     sharedFoodIds: [],
     likedFoodIds: [],
@@ -299,7 +300,7 @@ export type PetInstanceState = z.infer<typeof PetInstanceStateSchema>;
 
 /** Validates the top-level Deskagotchi save file shared across app processes. */
 export const DeskagotchiSaveSchema = z.object({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION),
   activeInstanceId: z.string().min(3).max(100),
   instances: z.array(PetInstanceStateSchema),
   settings: z.object({
