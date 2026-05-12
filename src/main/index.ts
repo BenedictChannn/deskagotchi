@@ -122,13 +122,14 @@ let simulationTimer: NodeJS.Timeout | undefined;
 let playModePreviousBounds: Rectangle | undefined;
 let uiModePreviousBounds: Rectangle | undefined;
 let suppressPetWindowBoundsPersistence = false;
+let petWindowBoundsSuppressionSequence = 0;
 let petWindowStartupMetadata: Record<string, unknown> = {};
 
 if (!app.requestSingleInstanceLock()) {
   app.exit(0);
 } else {
   app.on("second-instance", () => {
-    resetPetWindow();
+    void resetPetWindow();
     showPetWindow();
   });
 
@@ -336,6 +337,11 @@ function createPetWindow(): void {
           petWindow?.hide();
         }
       });
+      petWindow.on("closed", () => {
+        petWindow = undefined;
+        uiModePreviousBounds = undefined;
+        playModePreviousBounds = undefined;
+      });
       petWindow.on("moved", () => void persistPetWindowBounds());
       petWindow.on("resize", () => void persistPetWindowBounds());
       petWindow.webContents.on("did-finish-load", () => {
@@ -503,8 +509,7 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle(IpcChannel.ResetPetWindow, async (event) => {
     validateIpcSender(event);
-    resetPetWindow();
-    await persistPetWindowBounds();
+    await resetPetWindow();
   });
   ipcMain.handle(IpcChannel.MovePetWindow, (event, delta: unknown) => {
     validateIpcSender(event);
@@ -514,7 +519,7 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle(IpcChannel.FinishPetWindowDrag, async (event) => {
     validateIpcSender(event);
-    await persistPetWindowBounds();
+    await persistPetWindowBounds({ force: true });
   });
   ipcMain.handle(IpcChannel.SetPetWindowUiMode, (event, mode: unknown) => {
     validateIpcSender(event);
@@ -637,7 +642,7 @@ function rebuildTray(): void {
   const menu = Menu.buildFromTemplate([
     { label: "Show pet", click: () => showPetWindow() },
     { label: "Hide pet", click: () => petWindow?.hide() },
-    { label: "Reset pet position", click: () => resetPetWindow() },
+    { label: "Reset pet position", click: () => void resetPetWindow() },
     { type: "separator" },
     {
       label: "Feed meal",
@@ -744,7 +749,7 @@ function showPetWindow(): void {
 /**
  * Return the pet overlay to the default visible location and size.
  */
-function resetPetWindow(): void {
+async function resetPetWindow(): Promise<void> {
   const { x, y } = defaultPetWindowBounds();
   const previousBounds = petWindow?.getBounds();
   playModePreviousBounds = undefined;
@@ -766,6 +771,7 @@ function resetPetWindow(): void {
   });
   petWindow?.show();
   petWindow?.moveTop();
+  await persistPetWindowBounds({ force: true });
 }
 
 /**
@@ -838,10 +844,20 @@ function movePetWindow(delta: WindowDragDeltaInput): void {
 
   const bounds = petWindow.getBounds();
   const nextBounds = ensureVisibleBounds({
-      ...bounds,
-      x: bounds.x + Math.round(delta.deltaX),
-      y: bounds.y + Math.round(delta.deltaY)
-    }, delta.pointer);
+    ...bounds,
+    x: bounds.x + Math.round(delta.deltaX),
+    y: bounds.y + Math.round(delta.deltaY)
+  }, delta.pointer);
+  if (uiModePreviousBounds !== undefined) {
+    uiModePreviousBounds = ensureVisibleBounds(
+      {
+        ...uiModePreviousBounds,
+        x: uiModePreviousBounds.x + Math.round(delta.deltaX),
+        y: uiModePreviousBounds.y + Math.round(delta.deltaY)
+      },
+      delta.pointer
+    );
+  }
   petWindow.setBounds(nextBounds);
   recordQaEvent({
     event: "window:setBounds",
@@ -941,7 +957,7 @@ async function persistPetWindowBounds(options: { force?: boolean } = {}): Promis
   ) {
     return;
   }
-  const bounds = petWindow.getBounds();
+  const bounds = uiModePreviousBounds ?? petWindow.getBounds();
   await runtime.updatePetWindowBounds(bounds);
   recordQaEvent({
     event: "window:persistBounds",
@@ -960,10 +976,13 @@ async function persistPetWindowBounds(options: { force?: boolean } = {}): Promis
  * @param bounds - Electron bounds to apply to the live overlay.
  */
 function setPetWindowBoundsWithoutPersistence(bounds: Rectangle): void {
+  const suppressionSequence = ++petWindowBoundsSuppressionSequence;
   suppressPetWindowBoundsPersistence = true;
   petWindow?.setBounds(bounds);
   setTimeout(() => {
-    suppressPetWindowBoundsPersistence = false;
+    if (petWindowBoundsSuppressionSequence === suppressionSequence) {
+      suppressPetWindowBoundsPersistence = false;
+    }
   }, 250);
 }
 
@@ -1019,17 +1038,35 @@ function startSimulationTimer(): void {
  * Progress the simulation and notify renderers that a fresh snapshot is available.
  */
 async function tickSimulation(): Promise<void> {
+  if (isQuitting) {
+    return;
+  }
   await runtime.progressAndGetSnapshot();
+  if (isQuitting) {
+    return;
+  }
   runtime.maybeNotifyAttention();
   broadcastSnapshotUpdated();
 }
 
 function broadcastSnapshotUpdated(): void {
-  petWindow?.webContents.send(IpcChannel.SnapshotUpdated);
-  panelWindow?.webContents.send(IpcChannel.SnapshotUpdated);
+  sendSnapshotUpdated(petWindow);
+  sendSnapshotUpdated(panelWindow);
+}
+
+function sendSnapshotUpdated(window: BrowserWindow | undefined): void {
+  if (
+    window === undefined ||
+    window.isDestroyed() ||
+    window.webContents.isDestroyed()
+  ) {
+    return;
+  }
+  window.webContents.send(IpcChannel.SnapshotUpdated);
 }
 
 app.on("will-quit", () => {
+  isQuitting = true;
   recordQaEvent({
     event: "app:quitForTest",
     payload: {

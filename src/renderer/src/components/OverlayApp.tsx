@@ -212,12 +212,6 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       suppressNextClick.current = true;
       suppressClicksUntil.current =
         window.performance.now() + DRAG_CLICK_SUPPRESSION_MS;
-      setMenuOpen(false);
-      setHealthOpen(false);
-      setFeedOpen(false);
-      setPlayOpen(false);
-      setPlayActive(false);
-      setCareFlow(null);
     }
     void window.deskagotchi.movePetWindow(windowDeltaX, windowDeltaY, {
       x: event.screenX,
@@ -249,6 +243,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       suppressNextClick.current = true;
       suppressClicksUntil.current =
         window.performance.now() + DRAG_CLICK_SUPPRESSION_MS;
+      setMenuOpen(false);
+      setHealthOpen(false);
+      setFeedOpen(false);
+      setPlayOpen(false);
+      setPlayActive(false);
+      setCareFlow(null);
     }
     dragState.current = undefined;
     void window.deskagotchi.finishPetWindowDrag();
