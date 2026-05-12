@@ -6,6 +6,7 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
+  CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   type PetPackage
@@ -79,7 +80,7 @@ export function createDefaultSave(
   const instance = createInitialPetState(firstPackage, firstPackage.name, now);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION,
     activeInstanceId: instance.instanceId,
     instances: [instance],
     settings: {
@@ -189,17 +190,66 @@ export async function writeJsonAtomic(
  * @returns Parsed save, or undefined when missing, unreadable, or invalid.
  */
 async function readSaveFile(filePath: string): Promise<DeskagotchiSave | undefined> {
+  let raw: string | undefined;
   try {
-    const raw = await readFile(filePath, "utf8");
+    raw = await readFile(filePath, "utf8");
     const parsedJson = JSON.parse(raw) as unknown;
-    const parsedSave = DeskagotchiSaveSchema.safeParse(parsedJson);
-    return parsedSave.success ? parsedSave.data : undefined;
+    const migratedJson = migrateDeskagotchiSave(parsedJson);
+    const parsedSave = DeskagotchiSaveSchema.safeParse(migratedJson);
+    if (parsedSave.success) {
+      return parsedSave.data;
+    }
+    await preserveInvalidSave(filePath, raw, "schema");
+    return undefined;
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return undefined;
     }
+    if (raw !== undefined) {
+      await preserveInvalidSave(filePath, raw, "parse");
+    }
     return undefined;
   }
+}
+
+/**
+ * Migrate older save payloads into the current schema shape before validation.
+ *
+ * @param value - JSON payload read from disk.
+ * @returns Payload compatible with the current save schema when migration exists.
+ */
+export function migrateDeskagotchiSave(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  const candidate = value as { schemaVersion?: unknown };
+  const version = candidate.schemaVersion ?? CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION;
+  if (version === CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION) {
+    return {
+      ...candidate,
+      schemaVersion: CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION
+    };
+  }
+
+  return value;
+}
+
+async function preserveInvalidSave(
+  filePath: string,
+  raw: string,
+  reason: "parse" | "schema"
+): Promise<void> {
+  const directory = path.dirname(filePath);
+  const timestamp = new Date()
+    .toISOString()
+    .replaceAll(":", "-")
+    .replace(".", "-");
+  const preservedPath = path.join(
+    directory,
+    `${path.basename(filePath)}.${timestamp}.${reason}.invalid`
+  );
+  await writeFile(preservedPath, raw, "utf8");
 }
 
 /**
