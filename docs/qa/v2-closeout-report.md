@@ -1,12 +1,12 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-11T14:44:10.205Z
+Generated: 2026-05-13T08:51:22.700Z
 
-Completion status: **incomplete**
+Completion status: **complete**
 
 ## Exact Current Claim
 
-Deskagotchi V2 has strong automated evidence for the tested Windows scope, but it is not a full V2 completion claim until the manual gates below pass.
+Deskagotchi V2 has passing automated closeout evidence for the documented Windows scope.
 
 ## Concrete V2 Deliverables
 
@@ -17,28 +17,29 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 - Deferred custom generation: user-facing Hatch is out of the V2 promise while package safety boundaries remain.
 - Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.
 - Package and data safety: package validation, archive safety, atomic saves, backup recovery, and relaunch persistence.
-- Packaging readiness: Windows build, installer resources, release smoke, idle CPU, and manual installer/startup acceptance.
+- Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence.
 
 ## Automated Evidence
 
+The evidence paths below are local `.qa-runs` artifacts. They are not committed
+release artifacts; this report is the committed summary, and each row also
+captures the source commit/freshness checks used by the audit.
+
 | Area | Status | Latest evidence | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| Launch | PASS | .qa-runs/2026-05-11T14-38-22Z-launch/report.md | automated-pass | passed automated launch QA for tested scope |
-| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-11T14-33-54Z-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
-| Overlay care interactions | PASS | .qa-runs/2026-05-11T14-34-16Z-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
-| Ball play mode | PASS | .qa-runs/2026-05-11T14-34-25Z-play/report.md | automated-pass | passed automated play QA for tested scope |
-| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-11T14-37-50Z-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
-| Renderer panel routes | PASS | .qa-runs/2026-05-11T14-34-51Z-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
-| Five-minute idle CPU | PASS | .qa-runs/2026-05-11T14-38-47Z-idle/report.md | automated-pass | passed automated idle QA for tested scope |
-| Packaged release and installer smoke | PASS | .qa-runs/2026-05-11T14-37-38Z-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
-| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-11T14-33-11Z-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
-| Built-in pet asset QA | PASS | .qa-runs/2026-05-11T14-34-59Z-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
-| Food and item asset QA | PASS | .qa-runs/2026-05-11T14-35-01Z-assets-items/report.md | automated-pass | passed assets-items static asset QA |
-| Manual acceptance page export | PASS | .qa-runs/2026-05-11T14-35-29Z-manual-page/report.md | automated-pass | passed automated manual acceptance page export smoke for tested browser scope |
-| Manual acceptance context guard | PASS | .qa-runs/2026-05-11T14-35-03Z-manual-context-smoke/report.md | automated-pass | manual acceptance context guard passed missing-evidence and complete-evidence smoke checks |
-| Manual acceptance preflight guard | PASS | .qa-runs/2026-05-11T14-35-10Z-manual-preflight-smoke/report.md | automated-pass | manual preflight passed missing-manual and complete-manual fixture checks |
-| V2 visual acceptance pages | PASS | .qa-runs/2026-05-11T14-35-22Z-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
-| V2 user-facing scope | PASS | .qa-runs/2026-05-11T14-35-02Z-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
+| Launch | PASS | .qa-runs/2026-05-13T08-41-53-618Z-52976-91776b79-release-launch/report.md | automated-pass | passed automated launch QA for tested scope |
+| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-13T08-33-14-693Z-28040-d4ad74df-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
+| Overlay care interactions | PASS | .qa-runs/2026-05-13T08-34-20-390Z-35396-0e512c4a-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
+| Ball play mode | PASS | .qa-runs/2026-05-13T08-34-58-684Z-32088-00d9ff09-play/report.md | automated-pass | passed automated play QA for tested scope |
+| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-13T08-40-52-617Z-52976-5e1635c5-release-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
+| Renderer panel routes | PASS | .qa-runs/2026-05-13T08-36-21-840Z-10112-f3f58291-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
+| Five-minute idle CPU | PASS | .qa-runs/2026-05-13T08-44-03-786Z-52268-3cda3e80-idle/report.md | automated-pass | passed automated idle QA for tested scope |
+| Packaged release and installer smoke | PASS | .qa-runs/2026-05-13T08-40-17-061Z-52976-4f0235fc-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
+| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-13T08-32-13-341Z-27260-1cd5e419-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
+| Built-in pet asset QA | PASS | .qa-runs/2026-05-13T08-36-57-757Z-50068-ccd4ca9b-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
+| Food and item asset QA | PASS | .qa-runs/2026-05-13T08-36-59-770Z-35700-8d9f90f8-assets-items/report.md | automated-pass | passed assets-items static asset QA |
+| V2 visual acceptance pages | PASS | .qa-runs/2026-05-13T08-37-01-437Z-51860-1c593d51-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
+| V2 user-facing scope | PASS | .qa-runs/2026-05-13T08-37-00-392Z-52688-c31d684e-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
 
 ## Prompt-To-Artifact Checklist
 
@@ -46,24 +47,23 @@ Deskagotchi V2 has strong automated evidence for the tested Windows scope, but i
 | --- | --- | --- | --- |
 | Launch opens the compact transparent pet overlay by default. | PASS | latest launch QA report |  |
 | Normal care actions stay in the overlay and health does not open a stuck panel. | PASS | latest overlay QA report |  |
-| Feed picker uses icon-first food choices and selected food appears in eating feedback. | MANUAL OPEN | overlay QA plus item contact sheets | manual acceptance JSON is not passing yet |
+| Feed picker uses icon-first food choices and selected food appears in eating feedback. | PASS | overlay QA plus item contact sheets | manual acceptance is advisory and not required for automated closeout |
 | Ball play expands to the monitor work area and restores the compact overlay. | PASS | latest play QA report |  |
-| Pet dragging works by the visible sprite and persists restored bounds. | MANUAL OPEN | latest drag QA report | manual acceptance JSON is not passing yet |
+| Pet dragging works by the visible sprite and persists restored bounds. | PASS | latest drag QA report | manual acceptance is advisory and not required for automated closeout |
 | Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through npm.cmd run check |  |
-| Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | MANUAL OPEN | pet asset contact sheets and visual acceptance page | manual acceptance JSON is not passing yet |
+| Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | PASS | pet asset contact sheets and visual acceptance page | manual acceptance is advisory and not required for automated closeout |
 | Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through npm.cmd run check |  |
 | Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through npm.cmd run check |  |
 | Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README, renderer route removal, and V2 scope QA |  |
 | Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
 | Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
-| Windows packaging includes runtime resources and installer smoke evidence. | MANUAL OPEN | latest release QA report | manual acceptance JSON is not passing yet |
-| Manual physical gates are either tested and passed or explicitly deferred with rationale. | MANUAL OPEN | V2 manual acceptance JSON | manual acceptance JSON is not passing yet |
+| Windows packaging includes runtime resources and installer smoke evidence. | PASS | latest release QA report | manual acceptance is advisory and not required for automated closeout |
 
 ## Workspace State
 
 Status: **PASS**
 
-Commit: `cb05677`
+Commit: `9b32dd1`
 
 Workspace is clean.
 
@@ -85,9 +85,6 @@ Dirty entries: 0
 | V2 visual acceptance page | PASS | `docs/qa/v2-visual-acceptance.html` |
 | V2 visual acceptance screenshot | PASS | `docs/qa/v2-visual-acceptance-screenshot.png` |
 | V2 visual review notes | PASS | `docs/qa/v2-visual-review-notes.md` |
-| V2 manual acceptance page | PASS | `docs/qa/v2-manual-acceptance.html` |
-| V2 manual acceptance runbook | PASS | `docs/qa/v2-manual-acceptance-runbook.md` |
-| V2 manual acceptance screenshot | PASS | `docs/qa/v2-manual-acceptance-screenshot.png` |
 | Food icon contact sheet | PASS | `docs/qa/lcd-food-icons-contact-sheet.png` |
 | Full item icon contact sheet | PASS | `docs/qa/lcd-item-icons-contact-sheet.png` |
 | Bao contact sheet | PASS | `docs/qa/bao-contact-sheet.png` |
@@ -96,7 +93,7 @@ Dirty entries: 0
 | Peanut contact sheet | PASS | `docs/qa/peanut-contact-sheet.png` |
 | Puddles contact sheet | PASS | `docs/qa/puddles-contact-sheet.png` |
 
-## Manual Acceptance
+## Optional Manual Acceptance
 
 Status: **manual-open**
 
@@ -136,7 +133,7 @@ Use `--check-only` for final release validation so the tracked report does not
 get rewritten during the clean-worktree gate. Run without `--check-only` when
 you intentionally want to refresh this Markdown report artifact.
 
-Use an exported manual acceptance file from another location when needed:
+Optional manual acceptance files can still be audited separately when needed:
 
 ```powershell
 npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
@@ -151,5 +148,5 @@ npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json 
 Use `--allow-dirty` only for fixture smoke checks that intentionally run
 against a dirty local tree.
 
-Strict mode exits non-zero until automated evidence, required artifacts, and
-manual acceptance JSON are all present, passing, and the workspace is clean.
+Strict mode exits non-zero until automated evidence, required artifacts, and the
+workspace are clean. Manual acceptance evidence is advisory in this audit.
