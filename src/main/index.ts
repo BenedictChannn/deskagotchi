@@ -39,6 +39,7 @@ import {
 } from "@shared/ipc";
 import { ItemCatalogEntrySchema } from "@shared/itemIcons";
 
+import { runBackgroundTask } from "./backgroundTask";
 import { DeskagotchiRuntime } from "./runtime";
 import {
   ensureVisibleBounds as ensureVisibleWindowBounds,
@@ -153,8 +154,8 @@ if (!app.requestSingleInstanceLock()) {
       createPetWindow();
       createTray();
       startSimulationTimer();
-      powerMonitor.on("resume", () => void tickSimulation());
-      powerMonitor.on("unlock-screen", () => void tickSimulation());
+      powerMonitor.on("resume", () => runSimulationTick("system resume"));
+      powerMonitor.on("unlock-screen", () => runSimulationTick("screen unlock"));
       writeQaMetadata();
     })
     .catch((error: unknown) => {
@@ -1031,7 +1032,11 @@ function ensureVisibleBounds(
 }
 
 function startSimulationTimer(): void {
-  simulationTimer = setInterval(() => void tickSimulation(), 60_000);
+  simulationTimer = setInterval(() => runSimulationTick("timer"), 60_000);
+}
+
+function runSimulationTick(reason: string): void {
+  runBackgroundTask(`simulation tick (${reason})`, tickSimulation);
 }
 
 /**

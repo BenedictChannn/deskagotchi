@@ -7,6 +7,12 @@ describe("dev bridge gate", () => {
     ).toBe(true);
   });
 
+  it("allows bracketed IPv6 localhost browser previews", () => {
+    expect(
+      shouldInstallDevDeskagotchiApi("[::1]", false, "Mozilla/5.0 Chrome/126")
+    ).toBe(true);
+  });
+
   it("does not mask missing preload in Electron dev renderers", () => {
     expect(
       shouldInstallDevDeskagotchiApi(

@@ -1,6 +1,6 @@
 /** Browser-only development bridge gating helpers. */
 
-const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 
 /**
  * Decide whether to install the browser-only development bridge.
