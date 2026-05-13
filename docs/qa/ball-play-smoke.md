@@ -15,8 +15,8 @@ Use this checklist when validating the overlay Ball play MVP.
 
 ## Runtime Check
 
-1. Run `npm.cmd run check`.
-2. Start Electron with `npm.cmd run dev`.
+1. Run `corepack pnpm run check`.
+2. Start Electron with `corepack pnpm run dev`.
 3. Click the pet, choose Play, then choose Ball.
 4. Confirm the transparent overlay expands across the current monitor work area.
 5. Drag the ball toward the top or side of the monitor and release it.

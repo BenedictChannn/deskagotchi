@@ -38,9 +38,9 @@ Use this checklist when validating the `lcd-core` item icon set.
 
 ## Runtime Check
 
-1. Run `npm.cmd run generate:items`.
-2. Run `npm.cmd run check`.
-3. Start Electron with `npm.cmd run dev`.
+1. Run `corepack pnpm run generate:items`.
+2. Run `corepack pnpm run check`.
+3. Start Electron with `corepack pnpm run dev`.
 4. Open the pet overlay action menu.
 5. Confirm the care buttons show LCD-style icons from the atlas and still fit in
    the compact overlay.

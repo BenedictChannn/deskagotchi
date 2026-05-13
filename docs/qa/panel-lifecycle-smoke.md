@@ -2,7 +2,7 @@
 
 Use this checklist for GitHub issue [#10](https://github.com/BenedictChannn/deskagotchi/issues/10).
 
-- Start the app with `npm.cmd run dev`.
+- Start the app with `corepack pnpm run dev`.
 - Confirm the full panel does not auto-open.
 - Open a management panel from a tray action.
 - Switch between Status, Pets, and Settings.

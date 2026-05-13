@@ -80,26 +80,26 @@ panel shows the resolved path. The main files are:
 Install dependencies:
 
 ```powershell
-npm.cmd install
+corepack pnpm install
 ```
 
 Build the app bundle:
 
 ```powershell
-npm.cmd run build
+corepack pnpm run build
 ```
 
 Build the Windows installer on Windows:
 
 ```powershell
-npm.cmd run package:win
+corepack pnpm run package:win
 ```
 
 Build macOS DMG and zip artifacts on macOS:
 
 ```bash
-npm install
-npm run package:mac
+corepack pnpm install
+corepack pnpm run package:mac
 ```
 
 macOS builds should be created on macOS. Local V2 macOS builds are unsigned

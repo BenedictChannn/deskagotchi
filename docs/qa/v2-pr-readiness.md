@@ -31,8 +31,8 @@ desktop recovery behavior, and packaged desktop distribution.
 
 | Platform | Command | Expected artifact |
 | --- | --- | --- |
-| Windows | `npm.cmd run package:win` | `release/Deskagotchi Setup <version>.exe` |
-| macOS | `npm run package:mac` on macOS | DMG and zip artifacts for x64 and arm64 |
+| Windows | `corepack pnpm run package:win` | `release/Deskagotchi Setup <version>.exe` |
+| macOS | `corepack pnpm run package:mac` on macOS | DMG and zip artifacts for x64 and arm64 |
 
 Attach the Windows installer and both macOS architecture builds to the release
 when they have passed platform smoke testing. Keep release notes explicit about
@@ -44,15 +44,15 @@ runs and publishes them to a GitHub Release when a `v*` tag is pushed.
 ## Validation Before PR
 
 ```powershell
-npm.cmd run generate:icon
-npm.cmd run check
-npm.cmd run qa
-$env:DESKAGOTCHI_IDLE_SECONDS='300'; npm.cmd run qa:desktop:idle
-npm.cmd run qa:release
-npm.cmd run qa:v2:closeout
+corepack pnpm run generate:icon
+corepack pnpm run check
+corepack pnpm run qa
+$env:DESKAGOTCHI_IDLE_SECONDS='300'; corepack pnpm run qa:desktop:idle
+corepack pnpm run qa:release
+corepack pnpm run qa:v2:closeout
 ```
 
-Run `npm run package:mac` and a manual macOS launch smoke on macOS before
+Run `corepack pnpm run package:mac` and a manual macOS launch smoke on macOS before
 publishing macOS downloads. The current automated desktop QA evidence is
 Windows-based.
 
@@ -66,11 +66,11 @@ Windows-based.
 - document desktop app download, install, usage, troubleshooting, and release artifact flow
 
 ## Validation
-- npm.cmd run check
-- npm.cmd run qa
-- DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
-- npm.cmd run qa:release
-- npm.cmd run qa:v2:closeout
+- corepack pnpm run check
+- corepack pnpm run qa
+- DESKAGOTCHI_IDLE_SECONDS=300 corepack pnpm run qa:desktop:idle
+- corepack pnpm run qa:release
+- corepack pnpm run qa:v2:closeout
 
 ## Release Notes
 - Windows installer: attach `Deskagotchi Setup <version>.exe`

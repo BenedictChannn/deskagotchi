@@ -10,7 +10,7 @@ Use this checklist for GitHub issue [#2](https://github.com/BenedictChannn/deska
 
 ## Manual Smoke
 
-- Start the app with `npm.cmd run dev`.
+- Start the app with `corepack pnpm run dev`.
 - Confirm only the pet overlay opens by default.
 - Click the pet and confirm the care menu contains only `Meal`, `Play`, `Clean`, `Sleep`, and `Health`.
 - Click `Health` and confirm a compact in-overlay status card appears.

@@ -15,7 +15,7 @@ packaging.
 Regenerate the platform icon files after changing `build/icon-source.png`:
 
 ```powershell
-npm.cmd run generate:icon
+corepack pnpm run generate:icon
 ```
 
 The generator uses Python and Pillow to resize the source PNG and write ICO and
