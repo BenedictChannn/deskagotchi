@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi V2 Visual Acceptance</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f7f8e7;
+        --lcd: #dceca8;
+        --ink: #123716;
+        --mid: #668649;
+        --line: rgba(18, 55, 22, 0.3);
+        --white: #fffef2;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      }
+
+      main {
+        width: min(1280px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 44px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 18px;
+      }
+
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 24px; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 14px; }
+
+      a {
+        color: var(--ink);
+        text-decoration-thickness: 2px;
+      }
+
+      .summary {
+        max-width: 760px;
+        margin-top: 8px;
+        color: rgba(18, 55, 22, 0.76);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .stamp {
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 8px 10px;
+        font-size: 12px;
+        text-align: right;
+      }
+
+      .section {
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 2px solid var(--line);
+      }
+
+      .acceptance-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .check {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 8px;
+        border: 2px solid var(--line);
+        background: var(--white);
+        padding: 10px;
+        min-height: 58px;
+      }
+
+      .check input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--ink);
+      }
+
+      .check span {
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .pet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 14px;
+      }
+
+      .pet-card,
+      .food-review {
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 12px;
+      }
+
+      .pet-header {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .preview {
+        width: 72px;
+        height: 72px;
+        image-rendering: pixelated;
+        border: 2px solid var(--line);
+        background: var(--paper);
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--mid);
+        background: var(--white);
+        padding: 3px 6px;
+        font-size: 11px;
+      }
+
+      .contact {
+        display: block;
+        width: 100%;
+        max-height: 520px;
+        object-fit: contain;
+        margin-top: 12px;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        image-rendering: pixelated;
+      }
+
+      .pet-notes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .food-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 14px;
+      }
+
+      .food-review img {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        margin-top: 10px;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        image-rendering: pixelated;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+        font-size: 12px;
+      }
+
+      @media (max-width: 900px) {
+        header,
+        .acceptance-grid,
+        .pet-grid,
+        .food-grid,
+        .pet-notes {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp { text-align: left; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Deskagotchi V2 Visual Acceptance</h1>
+          <p class="summary">
+            Use this page for the final manual review of built-in pets, animation
+            consistency, and LCD food/icon recognizability. The checkboxes are
+            intentionally local review aids; record final acceptance in the V2 audit.
+          </p>
+        </div>
+        <div class="stamp">
+          5 pets<br />
+          11 meals / 7 snacks / 4 toys
+        </div>
+      </header>
+
+      <section class="section">
+        <h2>Manual Acceptance Criteria</h2>
+        <div class="acceptance-grid">
+          <label class="check"><input type="checkbox" /><span>Every pet reads as its intended animal at overlay size.</span></label>
+          <label class="check"><input type="checkbox" /><span>Animation rows have visible expression or motion changes.</span></label>
+          <label class="check"><input type="checkbox" /><span>Frame size and anchor shifts are not distracting.</span></label>
+          <label class="check"><input type="checkbox" /><span>Food icons are roughly identifiable without labels.</span></label>
+          <label class="check"><input type="checkbox" /><span>Eating cues match the selected item well enough to notice.</span></label>
+          <label class="check"><input type="checkbox" /><span>Overall LCD style is cohesive across pets and food.</span></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Pet Review</h2>
+        <div class="links">
+          <a href="./pet-animation-gallery.html">Animated pet gallery</a>
+          <a href="./v2-completion-audit.md">V2 completion audit</a>
+        </div>
+        <div class="pet-grid">
+          <article class="pet-card">
+            <div class="pet-header">
+              <img class="preview" src="../../resources/pets/bao/preview.png" alt="Bao preview" />
+              <div>
+                <h3>Bao</h3>
+                <div class="chips">
+                  <span class="chip">Shih tzu desk companion</span>
+                  <span class="chip">Sweet, calm, snack-curious, and quick to ask for attention.</span>
+                </div>
+              </div>
+            </div>
+            <img class="contact" src="./bao-contact-sheet.png" alt="Bao animation contact sheet" />
+            <div class="pet-notes">
+              <div><strong>Preferred foods</strong><br />steamed bun, rice ball, kibble bowl, chicken bite, apple slice</div>
+              <div><strong>Species food ids</strong><br /></div>
+              <div><strong>Animations</strong><br />idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, attention</div>
+              <div><strong>Palette</strong><br />#f7f8e7, #dceca8, #7d9d58, #123716</div>
+            </div>
+          </article>
+<article class="pet-card">
+            <div class="pet-header">
+              <img class="preview" src="../../resources/pets/miso/preview.png" alt="Miso preview" />
+              <div>
+                <h3>Miso</h3>
+                <div class="chips">
+                  <span class="chip">Cat-like desk companion</span>
+                  <span class="chip">Curious, cozy, alert, and fond of tiny desk rituals.</span>
+                </div>
+              </div>
+            </div>
+            <img class="contact" src="./miso-contact-sheet.png" alt="Miso animation contact sheet" />
+            <div class="pet-notes">
+              <div><strong>Preferred foods</strong><br />fish bite, milk, chicken bite, warm rice, steamed bun</div>
+              <div><strong>Species food ids</strong><br /></div>
+              <div><strong>Animations</strong><br />idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, attention</div>
+              <div><strong>Palette</strong><br />#f7f8e7, #dceca8, #7d9d58, #123716</div>
+            </div>
+          </article>
+<article class="pet-card">
+            <div class="pet-header">
+              <img class="preview" src="../../resources/pets/mochi/preview.png" alt="Mochi preview" />
+              <div>
+                <h3>Mochi</h3>
+                <div class="chips">
+                  <span class="chip">Monkey-like desk companion</span>
+                  <span class="chip">Playful, curious, energetic, and quick to call for attention.</span>
+                </div>
+              </div>
+            </div>
+            <img class="contact" src="./mochi-contact-sheet.png" alt="Mochi animation contact sheet" />
+            <div class="pet-notes">
+              <div><strong>Preferred foods</strong><br />banana, mango cube, melon slice, rice ball, steamed bun</div>
+              <div><strong>Species food ids</strong><br /></div>
+              <div><strong>Animations</strong><br />idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, attention</div>
+              <div><strong>Palette</strong><br />#f7f8e7, #dceca8, #7d9d58, #123716</div>
+            </div>
+          </article>
+<article class="pet-card">
+            <div class="pet-header">
+              <img class="preview" src="../../resources/pets/peanut/preview.png" alt="Peanut preview" />
+              <div>
+                <h3>Peanut</h3>
+                <div class="chips">
+                  <span class="chip">Elephant-like desk companion</span>
+                  <span class="chip">Gentle, playful, patient, and fond of tiny snack rituals.</span>
+                </div>
+              </div>
+            </div>
+            <img class="contact" src="./peanut-contact-sheet.png" alt="Peanut animation contact sheet" />
+            <div class="pet-notes">
+              <div><strong>Preferred foods</strong><br />leafy bundle, sugarcane, banana, melon slice, rice ball</div>
+              <div><strong>Species food ids</strong><br /></div>
+              <div><strong>Animations</strong><br />idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, attention</div>
+              <div><strong>Palette</strong><br />#f7f8e7, #dceca8, #7d9d58, #123716</div>
+            </div>
+          </article>
+<article class="pet-card">
+            <div class="pet-header">
+              <img class="preview" src="../../resources/pets/puddles/preview.png" alt="Puddles preview" />
+              <div>
+                <h3>Puddles</h3>
+                <div class="chips">
+                  <span class="chip">Duck desk companion</span>
+                  <span class="chip">Cheerful, waddly, tidy, and very serious about snack time.</span>
+                </div>
+              </div>
+            </div>
+            <img class="contact" src="./puddles-contact-sheet.png" alt="Puddles animation contact sheet" />
+            <div class="pet-notes">
+              <div><strong>Preferred foods</strong><br />peas, corn kernels, leafy bundle, rice ball, melon slice</div>
+              <div><strong>Species food ids</strong><br /></div>
+              <div><strong>Animations</strong><br />idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, attention</div>
+              <div><strong>Palette</strong><br />#f7f8e7, #dceca8, #7d9d58, #123716</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Food And Item Review</h2>
+        <div class="food-grid">
+          <article class="food-review">
+            <h3>Food icons only</h3>
+            <p class="summary">Focused sheet for meal and snack recognizability.</p>
+            <img src="./lcd-food-icons-contact-sheet.png" alt="LCD food icon contact sheet" />
+          </article>
+          <article class="food-review">
+            <h3>Full item atlas</h3>
+            <p class="summary">Full care item set, including food, play, medicine, sleep, and settings icons.</p>
+            <img src="./lcd-item-icons-contact-sheet.png" alt="LCD item icon contact sheet" />
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -2,33 +2,27 @@
  * Runtime service for main-process state, package, and simulation operations.
  */
 import { randomUUID } from "node:crypto";
-import { mkdir, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import AdmZip from "adm-zip";
 import { app, dialog, Notification } from "electron";
 
 import {
-  AnimationId,
-  type CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
-  LifeStage,
-  PackageValidationStatus,
   type PetInstanceState,
   type PetPackage,
-  PetSource,
-  PlayStyle,
-  type ValidationIssue,
-  ValidationSeverity
+  PetSource
 } from "@shared/domain";
 import {
+  type CareActionRequest,
   type DeskagotchiSnapshot,
-  type HatchDraftInput,
-  type HatchDraftResult,
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
+import { resolveCareItem } from "@shared/careItems";
+import { ItemIconManifestSchema, type ItemIconManifest } from "@shared/itemIcons";
 import { hasBlockingIssues } from "@shared/packageValidation";
 import {
   applyCareAction,
@@ -47,15 +41,11 @@ import {
   createStoragePaths,
   type StoragePaths,
   loadOrCreateSave,
-  writeDeskagotchiSave,
-  writeJsonAtomic
+  writeDeskagotchiSave
 } from "./storage";
 
-const IMAGEGEN_PLACEHOLDER_NOTE =
-  "This local draft is ready for replacement by the approved imagegen pipeline.";
 const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
 const MAX_IMPORTED_PACKAGE_ENTRIES = 128;
-const MAX_HATCH_DESCRIPTION_LENGTH = 200;
 
 /**
  * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
@@ -65,9 +55,13 @@ const MAX_HATCH_DESCRIPTION_LENGTH = 200;
  */
 export class DeskagotchiRuntime {
   private readonly resourcePetsDir: string;
+  private readonly resourceItemsDir: string;
   private readonly storagePaths: StoragePaths;
   private loadedPackages: LoadedPetPackage[] = [];
+  private itemManifest: ItemIconManifest | undefined;
   private save: DeskagotchiSave | undefined;
+  private persistQueue: Promise<void> = Promise.resolve();
+  private importInFlight: Promise<DeskagotchiSnapshot> | undefined;
   private lastNotificationAt = 0;
 
   /**
@@ -78,6 +72,7 @@ export class DeskagotchiRuntime {
    */
   constructor(resourceRoot: string, userDataDir: string) {
     this.resourcePetsDir = path.join(resourceRoot, "pets");
+    this.resourceItemsDir = path.join(resourceRoot, "items");
     this.storagePaths = createStoragePaths(userDataDir);
   }
 
@@ -88,6 +83,7 @@ export class DeskagotchiRuntime {
    * @throws Error when no valid pet package is available.
    */
   async initialize(now = new Date()): Promise<void> {
+    await this.loadItemManifest();
     await this.reloadPackages();
     this.save = await loadOrCreateSave(
       this.storagePaths,
@@ -107,40 +103,39 @@ export class DeskagotchiRuntime {
   }
 
   /**
-   * Resolve the root directory for a loaded package.
-   *
-   * @param packageId - Pet package identifier.
-   * @returns Absolute package root, or undefined when the package is not loaded.
-   */
-  getPackageRoot(packageId: string): string | undefined {
-    return this.loadedPackages.find(
-      (loadedPackage) => loadedPackage.petPackage.packageId === packageId
-    )?.packageRoot;
-  }
-
-  /**
    * Resolve a package asset path after verifying the package is loaded.
    *
    * @param packageId - Pet package identifier.
    * @param relativeAssetPath - Asset path declared by the package manifest.
    * @returns Absolute file path to the asset.
-   * @throws Error when the package is unknown or the asset escapes its package root.
+   * @throws Error when the package is unknown, undeclared, or escapes its package root.
    */
   resolveAsset(packageId: string, relativeAssetPath: string): string {
-    const packageRoot = this.getPackageRoot(packageId);
-    if (packageRoot === undefined) {
-      throw new Error(`Unknown pet package '${packageId}'.`);
+    const loadedPackage = this.getPetPackage(packageId);
+    if (!isDeclaredPackageAsset(loadedPackage.petPackage, relativeAssetPath)) {
+      throw new Error(
+        `Asset path is not declared by package '${packageId}': ${relativeAssetPath}`
+      );
     }
-    return resolvePackageAssetPath(packageRoot, relativeAssetPath);
+    return resolvePackageAssetPath(loadedPackage.packageRoot, relativeAssetPath);
   }
 
   /**
-   * Progress the active pet and return a renderer-ready snapshot.
+   * Return a renderer-ready snapshot without mutating simulation state.
+   *
+   * @returns Current save, active pet state, loaded packages, and app metadata.
+   */
+  async getSnapshot(): Promise<DeskagotchiSnapshot> {
+    return this.createSnapshot();
+  }
+
+  /**
+   * Progress the active pet, persist changes, and return a renderer-ready snapshot.
    *
    * @param now - Clock value used for simulation progress.
    * @returns Current save, active pet state, loaded packages, and app metadata.
    */
-  async getSnapshot(now = new Date()): Promise<DeskagotchiSnapshot> {
+  async progressAndGetSnapshot(now = new Date()): Promise<DeskagotchiSnapshot> {
     await this.progressActivePet(now);
     return this.createSnapshot();
   }
@@ -148,20 +143,22 @@ export class DeskagotchiRuntime {
   /**
    * Apply a care action to the active pet and persist the result.
    *
-   * @param actionType - Care action requested by the user.
+   * @param request - Care action requested by the user.
    * @param now - Clock value used by simulation and action effects.
    * @returns Updated renderer snapshot.
    */
   async performAction(
-    actionType: CareActionType,
+    request: CareActionRequest,
     now = new Date()
   ): Promise<DeskagotchiSnapshot> {
     const save = this.requireSave();
     const activeState = this.getActiveState(save);
     const activePackage = this.getPetPackage(activeState.packageId);
+    const item = resolveCareItem(request, this.requireItemManifest());
     const actionResult = applyCareAction(activeState, activePackage.petPackage, {
-      type: actionType,
-      now
+      type: request.type,
+      now,
+      item
     });
     this.replaceInstance(actionResult.state);
     await this.persistSave();
@@ -282,70 +279,6 @@ export class DeskagotchiRuntime {
   }
 
   /**
-   * Create and install a local placeholder pet package from hatch input.
-   *
-   * @param input - User-provided hatch prompt details and preferred colors.
-   * @returns Installation result and package validation issues.
-   */
-  async hatchCreateDraft(input: HatchDraftInput): Promise<HatchDraftResult> {
-    const safetyIssues = validateHatchInput(input);
-    if (hasBlockingIssues(safetyIssues)) {
-      return {
-        packageId: "",
-        installed: false,
-        issues: safetyIssues
-      };
-    }
-
-    const packageId = slugify(`${input.name}-${randomUUID().slice(0, 8)}`);
-    const packageRoot = path.join(this.storagePaths.customPetsDir, packageId);
-    let loadedIssues: ValidationIssue[];
-    try {
-      await mkdir(packageRoot, { recursive: true });
-      const colorPalette = normalizePalette(input.preferredColors);
-      const petPackage = createHatchPackage(input, packageId, colorPalette);
-      await writeJsonAtomic(path.join(packageRoot, "pet.json"), petPackage);
-      await writeFile(
-        path.join(packageRoot, "spritesheet.svg"),
-        createHatchSpriteSheet(input, colorPalette),
-        "utf8"
-      );
-      await writeFile(
-        path.join(packageRoot, "preview.svg"),
-        createHatchPreview(input, colorPalette, 192),
-        "utf8"
-      );
-      await writeFile(
-        path.join(packageRoot, "icon.svg"),
-        createHatchPreview(input, colorPalette, 96),
-        "utf8"
-      );
-
-      const loadedPackage = await loadPetPackage(packageRoot, PetSource.Custom);
-      loadedIssues = loadedPackage.issues;
-      if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
-        await rm(packageRoot, { recursive: true, force: true });
-        return {
-          packageId,
-          installed: false,
-          issues: loadedPackage.issues
-        };
-      }
-    } catch (error) {
-      await rm(packageRoot, { recursive: true, force: true });
-      throw error;
-    }
-
-    await this.reloadPackages();
-    await this.switchPet(packageId);
-    return {
-      packageId,
-      installed: true,
-      issues: loadedIssues
-    };
-  }
-
-  /**
    * Export an installed custom pet package to a shareable archive.
    *
    * @param packageId - Custom package identifier to export.
@@ -377,6 +310,18 @@ export class DeskagotchiRuntime {
    * @throws Error when the selected archive violates package safety rules.
    */
   async importPet(): Promise<DeskagotchiSnapshot> {
+    if (this.importInFlight !== undefined) {
+      throw new Error("A pet import is already in progress.");
+    }
+    this.importInFlight = this.runImportPet();
+    try {
+      return await this.importInFlight;
+    } finally {
+      this.importInFlight = undefined;
+    }
+  }
+
+  private async runImportPet(): Promise<DeskagotchiSnapshot> {
     const selection = await dialog.showOpenDialog({
       title: "Import Deskagotchi Pet Pack",
       properties: ["openFile"],
@@ -459,6 +404,11 @@ export class DeskagotchiRuntime {
       if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
         throw new Error("Imported pet pack failed validation.");
       }
+      if (this.hasLoadedPackageId(loadedPackage.petPackage.packageId)) {
+        throw new Error(
+          `Imported pet pack uses existing package id '${loadedPackage.petPackage.packageId}'.`
+        );
+      }
     } catch (error) {
       await rm(destination, { recursive: true, force: true });
       throw error;
@@ -521,15 +471,42 @@ export class DeskagotchiRuntime {
 
   private toRuntimePackage(loadedPackage: LoadedPetPackage): RuntimePetPackage {
     const packageId = loadedPackage.petPackage.packageId;
+    const assetVersion =
+      loadedPackage.petPackage.assetHash ?? loadedPackage.petPackage.assetVersion;
     return {
       petPackage: loadedPackage.petPackage,
       assetUrls: {
-        spritesheet: createAssetUrl(packageId, loadedPackage.petPackage.assets.spritesheet),
-        preview: createAssetUrl(packageId, loadedPackage.petPackage.assets.preview),
-        icon: createAssetUrl(packageId, loadedPackage.petPackage.assets.icon)
+        spritesheet: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.spritesheet,
+          assetVersion
+        ),
+        preview: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.preview,
+          assetVersion
+        ),
+        icon: createAssetUrl(
+          packageId,
+          loadedPackage.petPackage.assets.icon,
+          assetVersion
+        )
       },
       issues: loadedPackage.issues
     };
+  }
+
+  private async loadItemManifest(): Promise<void> {
+    const itemManifestPath = path.join(this.resourceItemsDir, "lcd-core", "items.json");
+    const rawManifest = await readFile(itemManifestPath, "utf8");
+    this.itemManifest = ItemIconManifestSchema.parse(JSON.parse(rawManifest));
+  }
+
+  private requireItemManifest(): ItemIconManifest {
+    if (this.itemManifest === undefined) {
+      throw new Error("Item manifest has not been loaded.");
+    }
+    return this.itemManifest;
   }
 
   private getPetPackage(packageId: string): LoadedPetPackage {
@@ -540,6 +517,12 @@ export class DeskagotchiRuntime {
       throw new Error(`Unknown pet package '${packageId}'.`);
     }
     return petPackage;
+  }
+
+  private hasLoadedPackageId(packageId: string): boolean {
+    return this.loadedPackages.some(
+      (loadedPackage) => loadedPackage.petPackage.packageId === packageId
+    );
   }
 
   private getActiveState(save: DeskagotchiSave): PetInstanceState {
@@ -565,7 +548,11 @@ export class DeskagotchiRuntime {
   private async persistSave(): Promise<void> {
     const save = this.requireSave();
     const parsed = DeskagotchiSaveSchema.parse(save);
-    await writeDeskagotchiSave(this.storagePaths, parsed);
+    const writeOperation = this.persistQueue
+      .catch(() => undefined)
+      .then(() => writeDeskagotchiSave(this.storagePaths, parsed));
+    this.persistQueue = writeOperation.catch(() => undefined);
+    await writeOperation;
   }
 
   private requireSave(): DeskagotchiSave {
@@ -598,6 +585,35 @@ function createRuntimeSimulationConfig(save: DeskagotchiSave): typeof DEFAULT_SI
     },
     healthPenaltyPerHour: DEFAULT_SIMULATION_CONFIG.healthPenaltyPerHour * 0.5
   };
+}
+
+/**
+ * Check whether a requested protocol asset is one of the package's declared files.
+ *
+ * @param petPackage - Package manifest that owns the asset declarations.
+ * @param relativeAssetPath - Requested package-relative asset path.
+ * @returns True when the path matches spritesheet, preview, or icon.
+ */
+function isDeclaredPackageAsset(
+  petPackage: PetPackage,
+  relativeAssetPath: string
+): boolean {
+  const normalizedPath = normalizeManifestAssetPath(relativeAssetPath);
+  return [
+    petPackage.assets.spritesheet,
+    petPackage.assets.preview,
+    petPackage.assets.icon
+  ].some((assetPath) => normalizeManifestAssetPath(assetPath) === normalizedPath);
+}
+
+/**
+ * Normalize package asset paths to match manifest paths across OS separators.
+ *
+ * @param relativeAssetPath - Package-relative asset path.
+ * @returns Slash-delimited path for manifest comparisons.
+ */
+function normalizeManifestAssetPath(relativeAssetPath: string): string {
+  return relativeAssetPath.replaceAll("\\", "/");
 }
 
 /**
@@ -642,252 +658,23 @@ function parseClockMinutes(value: string): number {
  *
  * @param packageId - Pet package identifier.
  * @param relativeAssetPath - Slash-delimited asset path inside the package.
+ * @param assetVersion - Optional asset hash or version used for renderer cache busting.
  * @returns Encoded deskagotchi protocol URL.
  */
-export function createAssetUrl(packageId: string, relativeAssetPath: string): string {
-  return `deskagotchi://pet-asset/${encodeURIComponent(packageId)}/${relativeAssetPath
+export function createAssetUrl(
+  packageId: string,
+  relativeAssetPath: string,
+  assetVersion?: string
+): string {
+  const assetPath = `deskagotchi://pet-asset/${encodeURIComponent(packageId)}/${relativeAssetPath
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/")}`;
-}
-
-/**
- * Validate hatch prompt input before creating local package files.
- *
- * @param input - Hatch prompt details from the renderer.
- * @returns Package-style validation issues for blocked or invalid input.
- */
-function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const combinedText = `${input.name} ${input.description} ${input.species} ${input.personality} ${input.accessory ?? ""} ${input.theme ?? ""}`.toLowerCase();
-  const blockedTerms = [
-    "tamagotchi",
-    "bandai",
-    "codex",
-    "pokemon",
-    "pikachu",
-    "disney",
-    "mario",
-    "sonic",
-    "hateful",
-    "sexual"
-  ];
-
-  for (const blockedTerm of blockedTerms) {
-    if (combinedText.includes(blockedTerm)) {
-      issues.push({
-        severity: ValidationSeverity.Error,
-        code: "hatch_prompt_blocked_term",
-        message: `Hatch prompts cannot request protected, unsafe, or confusingly similar content: '${blockedTerm}'.`
-      });
-    }
+  if (assetVersion === undefined) {
+    return assetPath;
   }
 
-  if (input.name.trim().length < 1 || input.name.trim().length > 40) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_name_invalid",
-      message: "Pet name must be between 1 and 40 characters."
-    });
-  }
-
-  if (
-    input.description.trim().length < 1 ||
-    input.description.trim().length > MAX_HATCH_DESCRIPTION_LENGTH
-  ) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_description_invalid",
-      message: `Pet description must be between 1 and ${MAX_HATCH_DESCRIPTION_LENGTH} characters.`
-    });
-  }
-
-  if (input.species.trim().length < 1 || input.species.trim().length > 80) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_species_invalid",
-      message: "Pet species must be between 1 and 80 characters."
-    });
-  }
-
-  if (
-    input.personality.trim().length < 1 ||
-    input.personality.trim().length > 120
-  ) {
-    issues.push({
-      severity: ValidationSeverity.Error,
-      code: "hatch_personality_invalid",
-      message: "Pet personality must be between 1 and 120 characters."
-    });
-  }
-
-  return issues;
-}
-
-/**
- * Build the placeholder pet manifest used before generated art is approved.
- *
- * @param input - Hatch prompt details from the renderer.
- * @param packageId - Generated package identifier.
- * @param colorPalette - Normalized package color palette.
- * @returns Pet package manifest for the local draft.
- */
-function createHatchPackage(
-  input: HatchDraftInput,
-  packageId: string,
-  colorPalette: string[]
-): PetPackage {
-  return {
-    schemaVersion: 1,
-    packageId,
-    packageVersion: "0.1.0",
-    minAppVersion: "0.1.0",
-    name: input.name.trim(),
-    description: `${input.description.trim()} ${IMAGEGEN_PLACEHOLDER_NOTE}`.trim(),
-    source: PetSource.Custom,
-    species: input.species.trim(),
-    personality: input.personality.trim(),
-    createdAt: new Date().toISOString(),
-    assetVersion: "0.1.0",
-    assets: {
-      spritesheet: "spritesheet.svg",
-      preview: "preview.svg",
-      icon: "icon.svg"
-    },
-    animations: [
-      animation(AnimationId.Idle, 0, 6),
-      animation(AnimationId.Happy, 1, 8),
-      animation(AnimationId.Sleeping, 2, 2),
-      animation(AnimationId.Sick, 3, 4)
-    ],
-    growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", 0),
-      growthStage("baby", LifeStage.Baby, "Baby", 2),
-      growthStage("child", LifeStage.Child, "Child", 8),
-      growthStage("teen", LifeStage.Teen, "Teen", 30),
-      growthStage("adult", LifeStage.Adult, "Adult", 72)
-    ],
-    preferredFoods: ["custom treat"],
-    dislikedFoods: ["burnt snack"],
-    favoritePlayStyle: PlayStyle.Calm,
-    careModifiers: {
-      hungerDecayMultiplier: 1,
-      happinessDecayMultiplier: 1,
-      energyDecayMultiplier: 1,
-      cleanlinessDecayMultiplier: 1,
-      affectionGainMultiplier: 1
-    },
-    colorPalette,
-    author: "Local user",
-    license: "Local custom Deskagotchi pet",
-    capabilities: ["hatch-mvp", "placeholder-art"],
-    validationStatus: PackageValidationStatus.Passed,
-    assetHash: `${packageId}-local-placeholder`,
-    generation: {
-      mode: "local-placeholder",
-      prompt: JSON.stringify(input),
-      referenceImageStored: false
-    }
-  };
-}
-
-function animation(id: AnimationId, row: number, fps: number): PetPackage["animations"][number] {
-  return {
-    id,
-    row,
-    frames: 4,
-    frameWidth: 96,
-    frameHeight: 96,
-    fps,
-    loop: true,
-    ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
-  };
-}
-
-function growthStage(
-  id: string,
-  lifeStage: LifeStage,
-  label: string,
-  minAgeHours: number
-): PetPackage["growthStages"][number] {
-  return {
-    id,
-    stage: lifeStage,
-    label,
-    minAgeHours,
-    careScoreMin: 0,
-    careScoreMax: 100,
-    animationSet: [
-      AnimationId.Idle,
-      AnimationId.Happy,
-      AnimationId.Sleeping,
-      AnimationId.Sick
-    ]
-  };
-}
-
-/**
- * Render a deterministic SVG spritesheet for a local hatch draft.
- *
- * @param input - Hatch prompt details from the renderer.
- * @param palette - Normalized color palette.
- * @returns Complete SVG document for the placeholder spritesheet.
- */
-function createHatchSpriteSheet(input: HatchDraftInput, palette: string[]): string {
-  const rows = [AnimationId.Idle, AnimationId.Happy, AnimationId.Sleeping, AnimationId.Sick];
-  const frames = rows.flatMap((animationId, rowIndex) =>
-    [0, 1, 2, 3].map(
-      (frame) =>
-        `<g transform="translate(${frame * 96} ${rowIndex * 96})">${hatchPetMarkup(input, palette, animationId, frame)}</g>`
-    )
-  );
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="384" viewBox="0 0 384 384">${frames.join("")}</svg>\n`;
-}
-
-function createHatchPreview(
-  input: HatchDraftInput,
-  palette: string[],
-  size: number
-): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 96 96">${hatchPetMarkup(input, palette, AnimationId.Happy, 1)}</svg>\n`;
-}
-
-function hatchPetMarkup(
-  input: HatchDraftInput,
-  palette: string[],
-  animationId: AnimationId,
-  frame: number
-): string {
-  const [primary, secondary, outline, highlight] = palette;
-  const bob = Math.sin(frame * Math.PI * 0.5) * 2;
-  const sleepy = animationId === AnimationId.Sleeping;
-  const sick = animationId === AnimationId.Sick;
-  const happy = animationId === AnimationId.Happy;
-  const accessory = input.accessory
-    ? `<path d="M64 25 L77 15 L73 31 Z" fill="${highlight}" stroke="${outline}" stroke-width="3"/>`
-    : "";
-  const eyes = sleepy
-    ? `<path d="M33 43 Q39 39 45 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/><path d="M53 43 Q59 39 65 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<circle cx="39" cy="43" r="3.4" fill="${outline}"/><circle cx="59" cy="43" r="3.4" fill="${outline}"/>`;
-  const mouth = happy
-    ? `<path d="M39 58 Q49 67 59 58" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<path d="M43 60 Q49 57 55 60" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`;
-  const patch = sick
-    ? `<rect x="31" y="25" width="36" height="9" rx="4.5" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-
-  return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/><circle cx="49" cy="50" r="31" fill="none" stroke="${outline}" stroke-width="1.5" opacity="0.15"/>${eyes}${mouth}${accessory}${patch}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
-}
-
-function normalizePalette(colors: string[]): string[] {
-  const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
-  const palette = validColors.length >= 2 ? validColors : ["#9bdbd4", "#4ecdc4"];
-  return [
-    palette[0] ?? "#9bdbd4",
-    palette[1] ?? "#4ecdc4",
-    "#243447",
-    palette[2] ?? "#fff4d6"
-  ];
+  return `${assetPath}?v=${encodeURIComponent(assetVersion)}`;
 }
 
 function slugify(value: string): string {

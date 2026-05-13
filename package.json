@@ -9,8 +9,35 @@
   "scripts": {
     "dev": "electron-vite dev",
     "generate:icon": "node scripts/generate-app-icon.mjs",
-    "generate:pets": "node scripts/generate-placeholder-pets.mjs",
+    "generate:items": "node scripts/generate-lcd-item-icons.mjs",
+    "generate:visual-qa": "node scripts/qa/generate-v2-visual-acceptance.mjs",
     "validate:pets": "vitest run src/main/packageRegistry.test.ts",
+    "qa:desktop:launch": "node scripts/qa/desktop-qa.mjs launch",
+    "qa:desktop:drag": "node scripts/qa/desktop-qa.mjs drag",
+    "qa:desktop:drag:os": "node scripts/qa/desktop-qa.mjs drag --os-only",
+    "qa:desktop:overlay": "node scripts/qa/desktop-qa.mjs overlay",
+    "qa:desktop:play": "node scripts/qa/desktop-qa.mjs play",
+    "qa:desktop:lifecycle": "node scripts/qa/desktop-qa.mjs lifecycle",
+    "qa:desktop:idle": "node scripts/qa/desktop-qa.mjs idle",
+    "qa:renderer": "node scripts/qa/desktop-qa.mjs renderer",
+    "qa:check": "node scripts/qa/check-qa.mjs",
+    "qa:assets:pets": "node scripts/qa/assets-qa.mjs pets",
+    "qa:assets:items": "node scripts/qa/assets-qa.mjs items",
+    "qa:release": "npm run package:win && node scripts/qa/release-qa.mjs",
+    "qa:v2:audit": "node scripts/qa/v2-closeout-audit.mjs",
+    "qa:v2:audit:smoke": "node scripts/qa/v2-closeout-audit-smoke.mjs",
+    "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
+    "qa:v2:manual-context": "node scripts/qa/v2-manual-context.mjs",
+    "qa:v2:manual-context:smoke": "node scripts/qa/v2-manual-context-smoke.mjs",
+    "qa:v2:manual-open": "node scripts/qa/v2-manual-context.mjs --open",
+    "qa:v2:manual-page": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs",
+    "qa:v2:manual-page:update": "node scripts/qa/v2-manual-acceptance-page-smoke.mjs --update-screenshot",
+    "qa:v2:manual-preflight": "node scripts/qa/v2-manual-preflight.mjs",
+    "qa:v2:manual-preflight:smoke": "node scripts/qa/v2-manual-preflight-smoke.mjs",
+    "qa:v2:scope": "node scripts/qa/v2-scope-qa.mjs",
+    "qa:v2:visual-page": "node scripts/qa/v2-visual-page-smoke.mjs",
+    "qa:v2:visual-page:update": "node scripts/qa/v2-visual-page-smoke.mjs --update-screenshot",
+    "qa": "node scripts/qa/run-all.mjs",
     "lint": "eslint . --max-warnings=0",
     "build": "npm run typecheck && electron-vite build",
     "typecheck": "tsc --noEmit",
@@ -18,12 +45,12 @@
     "check": "npm run lint && npm run typecheck && npm run test",
     "precommit": "npm run lint && npm run typecheck",
     "prepare": "husky",
-    "package:win": "npm run build && electron-builder --win nsis --x64"
+    "package:win": "npm run build && electron-builder --win nsis --x64",
+    "package:mac": "npm run build && electron-builder --mac dmg zip --x64 --arm64"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
     "lucide-react": "^0.468.0",
-    "pixi.js": "^8.6.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^3.24.1"
@@ -44,6 +71,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
+    "playwright": "^1.59.1",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^7.3.2",
@@ -69,6 +97,15 @@
       "icon": "build/icon.ico",
       "target": [
         "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.lifestyle",
+      "identity": null,
+      "target": [
+        "dmg",
+        "zip"
       ]
     },
     "nsis": {

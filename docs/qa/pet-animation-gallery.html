@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi Pet Animation Gallery</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23dceca8'/%3E%3Crect x='3' y='4' width='10' height='8' fill='%23123716'/%3E%3Crect x='5' y='6' width='2' height='2' fill='%23f7f8e7'/%3E%3Crect x='9' y='6' width='2' height='2' fill='%23f7f8e7'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f7f8e7;
+        --lcd: #dceca8;
+        --mid: #7d9d58;
+        --ink: #123716;
+        --line: rgba(18, 55, 22, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      main {
+        width: min(1480px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 40px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 2px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+        letter-spacing: 0;
+      }
+
+      .summary {
+        max-width: 720px;
+        margin-top: 8px;
+        color: rgba(18, 55, 22, 0.76);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .toolbar button {
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        color: var(--ink);
+        padding: 8px 10px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .toolbar button:focus-visible {
+        outline: 3px solid var(--mid);
+        outline-offset: 2px;
+      }
+
+      .pet-list {
+        display: grid;
+        gap: 22px;
+        margin-top: 22px;
+      }
+
+      .pet-card {
+        border: 2px solid var(--line);
+        background: rgba(220, 236, 168, 0.42);
+        padding: 16px;
+      }
+
+      .pet-card__header {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+
+      .preview {
+        width: 88px;
+        height: 88px;
+        image-rendering: pixelated;
+        object-fit: contain;
+        background:
+          linear-gradient(45deg, rgba(18, 55, 22, 0.08) 25%, transparent 25%),
+          linear-gradient(-45deg, rgba(18, 55, 22, 0.08) 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, rgba(18, 55, 22, 0.08) 75%),
+          linear-gradient(-45deg, transparent 75%, rgba(18, 55, 22, 0.08) 75%);
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0;
+        background-size: 16px 16px;
+        border: 2px solid var(--line);
+      }
+
+      .pet-card h2 {
+        font-size: 20px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        padding: 4px 7px;
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      .animation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+        gap: 10px;
+      }
+
+      .animation-cell {
+        min-width: 0;
+        border: 1px solid var(--line);
+        background: var(--lcd);
+        padding: 8px;
+      }
+
+      .sprite-stage {
+        display: grid;
+        place-items: center;
+        min-height: 106px;
+        border: 1px solid rgba(18, 55, 22, 0.16);
+        background: rgba(247, 248, 231, 0.38);
+      }
+
+      .sprite {
+        width: var(--frame-width);
+        height: var(--frame-height);
+        background-repeat: no-repeat;
+        background-size: var(--sheet-width) auto;
+        background-position: 0 var(--row-offset);
+        image-rendering: pixelated;
+        animation: play-sprite var(--duration) steps(var(--frames)) infinite;
+      }
+
+      .paused .sprite {
+        animation-play-state: paused;
+      }
+
+      @keyframes play-sprite {
+        from {
+          background-position: 0 var(--row-offset);
+        }
+
+        to {
+          background-position: var(--end-offset) var(--row-offset);
+        }
+      }
+
+      .animation-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+
+      .animation-label span:last-child {
+        color: rgba(18, 55, 22, 0.64);
+        white-space: nowrap;
+      }
+
+      @media (max-width: 720px) {
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        main {
+          width: min(100vw - 18px, 1480px);
+          padding-top: 14px;
+        }
+
+        .animation-grid {
+          grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Deskagotchi Pet Animation Gallery</h1>
+          <p class="summary">
+            Current built-in roster preview. Each cell uses the actual committed
+            spritesheet row from the pet package.
+          </p>
+        </div>
+        <div class="toolbar">
+          <button type="button" data-action="pause">Pause</button>
+          <button type="button" data-action="play">Play</button>
+        </div>
+      </header>
+
+      <section class="pet-list" id="pet-list" aria-label="Pet animations"></section>
+    </main>
+
+    <script>
+      const pets = [
+        {
+          id: "bao",
+          name: "Bao",
+          species: "Shih tzu",
+          personality: "Sweet, calm, snack-curious",
+          favoriteFoods: "Kibble Bowl, Chicken Bite"
+        },
+        {
+          id: "miso",
+          name: "Miso",
+          species: "Cat",
+          personality: "Curious, cozy, alert",
+          favoriteFoods: "Fish Bite, Milk"
+        },
+        {
+          id: "mochi",
+          name: "Mochi",
+          species: "Monkey",
+          personality: "Playful, curious, energetic",
+          favoriteFoods: "Banana, Mango Cube"
+        },
+        {
+          id: "peanut",
+          name: "Peanut",
+          species: "Elephant",
+          personality: "Gentle, playful, patient",
+          favoriteFoods: "Leafy Bundle, Sugarcane"
+        },
+        {
+          id: "puddles",
+          name: "Puddles",
+          species: "Duck",
+          personality: "Cheerful, waddly, tidy",
+          favoriteFoods: "Peas, Corn Kernels"
+        }
+      ];
+
+      const animations = [
+        { id: "idle", row: 0, frames: 6, fps: 5 },
+        { id: "happy", row: 1, frames: 6, fps: 7 },
+        { id: "sad", row: 2, frames: 6, fps: 4 },
+        { id: "hungry", row: 3, frames: 6, fps: 5 },
+        { id: "eating", row: 4, frames: 6, fps: 6 },
+        { id: "playing", row: 5, frames: 6, fps: 7 },
+        { id: "sleeping", row: 6, frames: 6, fps: 2 },
+        { id: "sick", row: 7, frames: 6, fps: 5 },
+        { id: "cleaning", row: 8, frames: 6, fps: 6 },
+        { id: "walking", row: 9, frames: 6, fps: 8 },
+        { id: "attention", row: 10, frames: 6, fps: 6 }
+      ];
+
+      const frameWidth = 96;
+      const frameHeight = 96;
+      const maxFrames = 6;
+      const petList = document.querySelector("#pet-list");
+
+      for (const pet of pets) {
+        const card = document.createElement("article");
+        card.className = "pet-card";
+
+        const header = document.createElement("div");
+        header.className = "pet-card__header";
+
+        const preview = document.createElement("img");
+        preview.className = "preview";
+        preview.src = `../../resources/pets/${pet.id}/preview.png`;
+        preview.alt = `${pet.name} preview`;
+
+        const copy = document.createElement("div");
+        copy.innerHTML = `
+          <h2>${pet.name}</h2>
+          <div class="meta">
+            <span class="chip">${pet.species}</span>
+            <span class="chip">${pet.personality}</span>
+            <span class="chip">${pet.favoriteFoods}</span>
+          </div>
+        `;
+
+        header.append(preview, copy);
+        card.append(header);
+
+        const grid = document.createElement("div");
+        grid.className = "animation-grid";
+
+        for (const animation of animations) {
+          const cell = document.createElement("section");
+          cell.className = "animation-cell";
+
+          const stage = document.createElement("div");
+          stage.className = "sprite-stage";
+
+          const sprite = document.createElement("div");
+          sprite.className = "sprite";
+          sprite.setAttribute("role", "img");
+          sprite.setAttribute("aria-label", `${pet.name} ${animation.id} animation`);
+          sprite.style.backgroundImage = `url("../../resources/pets/${pet.id}/spritesheet.png")`;
+          sprite.style.setProperty("--frame-width", `${frameWidth}px`);
+          sprite.style.setProperty("--frame-height", `${frameHeight}px`);
+          sprite.style.setProperty("--sheet-width", `${frameWidth * maxFrames}px`);
+          sprite.style.setProperty("--row-offset", `${-animation.row * frameHeight}px`);
+          sprite.style.setProperty("--end-offset", `${-animation.frames * frameWidth}px`);
+          sprite.style.setProperty("--frames", animation.frames);
+          sprite.style.setProperty("--duration", `${animation.frames / animation.fps}s`);
+
+          const label = document.createElement("div");
+          label.className = "animation-label";
+          label.innerHTML = `<strong>${animation.id}</strong><span>${animation.fps} fps</span>`;
+
+          stage.append(sprite);
+          cell.append(stage, label);
+          grid.append(cell);
+        }
+
+        card.append(grid);
+        petList.append(card);
+      }
+
+      document.querySelector("[data-action='pause']").addEventListener("click", () => {
+        document.body.classList.add("paused");
+      });
+
+      document.querySelector("[data-action='play']").addEventListener("click", () => {
+        document.body.classList.remove("paused");
+      });
+    </script>
+  </body>
+</html>

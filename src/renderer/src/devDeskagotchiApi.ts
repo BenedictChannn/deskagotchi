@@ -1,37 +1,94 @@
 import {
-  AnimationId,
-  type CareActionType,
-  LifeStage,
-  PackageValidationStatus,
-  PetSource,
   DeskagotchiSaveSchema,
-  PlayStyle,
   PetPackageSchema,
-  ValidationSeverity,
   type DeskagotchiSave,
   type PetInstanceState,
-  type PetPackage,
-  type ValidationIssue
 } from "@shared/domain";
 import {
+  type CareActionRequest,
   type DeskagotchiApi,
   type DeskagotchiSnapshot,
-  type HatchDraftInput,
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
-import { applyCareAction, createInitialPetState } from "@shared/simulation";
+import { resolveCareItem } from "@shared/careItems";
+import {
+  applyCareAction,
+  createInitialPetState
+} from "@shared/simulation";
+import { ItemIconManifestSchema } from "@shared/itemIcons";
 
-const STORAGE_KEY = "deskagotchi.dev.save.v1";
-const CUSTOM_PACKAGES_STORAGE_KEY = "deskagotchi.dev.customPackages.v1";
+import baoIconUrl from "../../../resources/pets/bao/icon.png?url";
+import baoManifest from "../../../resources/pets/bao/pet.json";
+import baoPreviewUrl from "../../../resources/pets/bao/preview.png?url";
+import baoSpritesheetUrl from "../../../resources/pets/bao/spritesheet.png?url";
+import builtInRoster from "../../../resources/pets/built-in-roster.json";
+import itemManifestData from "../../../resources/items/lcd-core/items.json";
+import misoIconUrl from "../../../resources/pets/miso/icon.png?url";
+import misoManifest from "../../../resources/pets/miso/pet.json";
+import misoPreviewUrl from "../../../resources/pets/miso/preview.png?url";
+import misoSpritesheetUrl from "../../../resources/pets/miso/spritesheet.png?url";
+import mochiIconUrl from "../../../resources/pets/mochi/icon.png?url";
+import mochiManifest from "../../../resources/pets/mochi/pet.json";
+import mochiPreviewUrl from "../../../resources/pets/mochi/preview.png?url";
+import mochiSpritesheetUrl from "../../../resources/pets/mochi/spritesheet.png?url";
+import peanutIconUrl from "../../../resources/pets/peanut/icon.png?url";
+import peanutManifest from "../../../resources/pets/peanut/pet.json";
+import peanutPreviewUrl from "../../../resources/pets/peanut/preview.png?url";
+import peanutSpritesheetUrl from "../../../resources/pets/peanut/spritesheet.png?url";
+import puddlesIconUrl from "../../../resources/pets/puddles/icon.png?url";
+import puddlesManifest from "../../../resources/pets/puddles/pet.json";
+import puddlesPreviewUrl from "../../../resources/pets/puddles/preview.png?url";
+import puddlesSpritesheetUrl from "../../../resources/pets/puddles/spritesheet.png?url";
+import { shouldInstallDevDeskagotchiApi } from "./devBridgeGate";
+
+const STORAGE_KEY = "deskagotchi.dev.save.v2";
 const SNAPSHOT_EVENT = "deskagotchi-dev-snapshot";
-const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const ITEM_MANIFEST = ItemIconManifestSchema.parse(itemManifestData);
+const BUILT_IN_PACKAGE_ASSETS = {
+  bao: {
+    manifest: baoManifest,
+    spritesheet: baoSpritesheetUrl,
+    preview: baoPreviewUrl,
+    icon: baoIconUrl
+  },
+  miso: {
+    manifest: misoManifest,
+    spritesheet: misoSpritesheetUrl,
+    preview: misoPreviewUrl,
+    icon: misoIconUrl
+  },
+  mochi: {
+    manifest: mochiManifest,
+    spritesheet: mochiSpritesheetUrl,
+    preview: mochiPreviewUrl,
+    icon: mochiIconUrl
+  },
+  peanut: {
+    manifest: peanutManifest,
+    spritesheet: peanutSpritesheetUrl,
+    preview: peanutPreviewUrl,
+    icon: peanutIconUrl
+  },
+  puddles: {
+    manifest: puddlesManifest,
+    spritesheet: puddlesSpritesheetUrl,
+    preview: puddlesPreviewUrl,
+    icon: puddlesIconUrl
+  }
+} as const;
 
 /**
  * Install a browser-only Deskagotchi bridge for Vite development.
  */
 export function installDevDeskagotchiApi(): void {
-  if (window.deskagotchi !== undefined || !DEV_HOSTS.has(window.location.hostname)) {
+  if (
+    !shouldInstallDevDeskagotchiApi(
+      window.location.hostname,
+      window.deskagotchi !== undefined,
+      window.navigator.userAgent
+    )
+  ) {
     return;
   }
 
@@ -57,7 +114,7 @@ class DevDeskagotchiApi {
   toBridgeApi(): DeskagotchiApi {
     return {
       getSnapshot: async () => this.createSnapshot(),
-      performAction: async (actionType) => this.performAction(actionType),
+      performAction: async (request) => this.performAction(request),
       switchPet: async (packageId) => this.switchPet(packageId),
       updateSettings: async (settings) => this.updateSettings(settings),
       openPanel: async (view) => {
@@ -65,8 +122,13 @@ class DevDeskagotchiApi {
       },
       hidePanel: async () => undefined,
       resetPetWindow: async () => undefined,
+      movePetWindow: async () => undefined,
+      finishPetWindowDrag: async () => undefined,
+      setPetWindowUiMode: async () => undefined,
+      enterPetWindowPlayMode: async () => undefined,
+      exitPetWindowPlayMode: async () => undefined,
       setClickThrough: async () => undefined,
-      hatchCreateDraft: async (input) => this.hatchCreateDraft(input),
+      recordQaEvent: async () => undefined,
       exportPet: async () => undefined,
       importPet: async () => this.createSnapshot(),
       onSnapshotUpdated: (callback) => {
@@ -80,18 +142,20 @@ class DevDeskagotchiApi {
   /**
    * Apply a care action to the active pet and broadcast the resulting snapshot.
    *
-   * @param actionType - Care action selected by the renderer.
+   * @param request - Care action selected by the renderer.
    * @returns The updated snapshot after simulation and persistence.
    * @throws Error when the active pet state or package cannot be found.
    */
   private async performAction(
-    actionType: CareActionType
+    request: CareActionRequest
   ): Promise<DeskagotchiSnapshot> {
     const activeState = this.getActiveState();
     const activePackage = this.getRuntimePackage(activeState.packageId);
+    const item = resolveCareItem(request, ITEM_MANIFEST);
     const next = applyCareAction(activeState, activePackage.petPackage, {
-      type: actionType,
-      now: new Date()
+      type: request.type,
+      now: new Date(),
+      item
     });
     this.replaceInstance(next.state);
     return this.persistAndSnapshot();
@@ -139,45 +203,6 @@ class DevDeskagotchiApi {
       }
     };
     return this.persistAndSnapshot();
-  }
-
-  /**
-   * Create and install a local custom pet draft for browser testing.
-   *
-   * @param input - Hatch form values from the panel.
-   * @returns Installation result and validation issues for the draft.
-   */
-  private async hatchCreateDraft(
-    input: HatchDraftInput
-  ): Promise<{ packageId: string; installed: boolean; issues: ValidationIssue[] }> {
-    const issues = validateHatchInput(input);
-    if (issues.length > 0) {
-      return {
-        packageId: "",
-        installed: false,
-        issues
-      };
-    }
-
-    const packageId = slugify(`${input.name}-${Date.now().toString(36)}`);
-    const petPackage = createDevPetPackage({
-      packageId,
-      name: input.name.trim(),
-      description: input.description.trim() || "A locally hatched browser-test pet.",
-      source: PetSource.Custom,
-      species: input.species.trim() || "Custom companion",
-      personality: input.personality.trim() || "Curious and steady.",
-      colorPalette: normalizeColors(input.preferredColors)
-    });
-    this.packages = [...this.packages, toRuntimePackage(petPackage)];
-    this.persistCustomPackages();
-    await this.switchPet(packageId);
-
-    return {
-      packageId,
-      installed: true,
-      issues: []
-    };
   }
 
   /**
@@ -257,12 +282,6 @@ class DevDeskagotchiApi {
     };
   }
 
-  /**
-   * Persist generated custom packages so browser reloads can resolve active saves.
-   */
-  private persistCustomPackages(): void {
-    persistCustomDevPackages(this.packages);
-  }
 }
 
 /**
@@ -314,7 +333,7 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
  * Remove save instances that reference unavailable packages and repair active selection.
  *
  * @param save - Parsed browser development save.
- * @param packages - Runtime packages available after loading persisted custom manifests.
+ * @param packages - Built-in runtime packages available in the browser adapter.
  * @returns A repaired save, or undefined when no saved instance can be resolved.
  */
 function repairDevSave(
@@ -343,401 +362,51 @@ function repairDevSave(
 }
 
 /**
- * Create the built-in placeholder packages used by the browser adapter.
+ * Create the built-in packages used by the browser adapter.
  *
- * @returns Runtime packages with generated SVG assets.
+ * @returns Runtime packages backed by the same committed PNG assets as Electron.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  const builtInPackages = [
-    createDevPetPackage({
-      packageId: "deskcat",
-      name: "Deskcat",
-      description: "A tiny original cat-like desk companion.",
-      species: "Cat-like desk companion",
-      personality: "Curious, alert, and fond of small desk rituals.",
-      colorPalette: ["#f7b267", "#f79d65", "#2f243a", "#fefae0"]
-    }),
-    createDevPetPackage({
-      packageId: "deskduck",
-      name: "Deskduck",
-      description: "A compact duck-like companion with a bright little waddle.",
-      species: "Duck-like desk companion",
-      personality: "Cheerful, snack-motivated, and quick to call for attention.",
-      colorPalette: ["#ffd166", "#f4a261", "#243447", "#fff4d6"]
-    }),
-    createDevPetPackage({
-      packageId: "deskblob",
-      name: "Deskblob",
-      description: "A soft abstract companion built for calm desktop company.",
-      species: "Abstract blob companion",
-      personality: "Gentle, low-maintenance, and expressive.",
-      colorPalette: ["#9bdbd4", "#4ecdc4", "#243447", "#fff4d6"]
-    })
-  ].map(toRuntimePackage);
-
-  return [...builtInPackages, ...loadCustomDevPackages().map(toRuntimePackage)];
+  return builtInDevPetIds().map((petId) => {
+    const asset = BUILT_IN_PACKAGE_ASSETS[petId];
+    return {
+      petPackage: PetPackageSchema.parse(asset.manifest),
+      assetUrls: {
+        spritesheet: asset.spritesheet,
+        preview: asset.preview,
+        icon: asset.icon
+      },
+      issues: []
+    };
+  });
 }
 
-/**
- * Load generated custom package manifests from browser storage.
- *
- * @returns Schema-valid custom pet packages created by the development hatch flow.
- */
-function loadCustomDevPackages(): PetPackage[] {
-  const stored = window.localStorage.getItem(CUSTOM_PACKAGES_STORAGE_KEY);
-  if (stored === null) {
-    return [];
+function builtInDevPetIds(): Array<keyof typeof BUILT_IN_PACKAGE_ASSETS> {
+  const rosterIds = new Set(builtInRoster.petIds);
+  const assetIds = new Set(Object.keys(BUILT_IN_PACKAGE_ASSETS));
+  const missingAssets = builtInRoster.petIds.filter((petId) => !assetIds.has(petId));
+  const staleAssets = [...assetIds].filter((petId) => !rosterIds.has(petId));
+  if (missingAssets.length > 0 || staleAssets.length > 0) {
+    throw new Error(
+      [
+        "Built-in pet roster and browser dev assets are out of sync.",
+        missingAssets.length > 0 ? `Missing assets: ${missingAssets.join(", ")}` : "",
+        staleAssets.length > 0 ? `Stale assets: ${staleAssets.join(", ")}` : ""
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
   }
-
-  try {
-    const parsed: unknown = JSON.parse(stored);
-    if (!Array.isArray(parsed)) {
-      window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-      return [];
+  return builtInRoster.petIds.map((petId) => {
+    if (!isBuiltInAssetId(petId)) {
+      throw new Error(`Built-in pet '${petId}' does not have browser dev assets.`);
     }
-
-    return parsed.flatMap((candidate) => {
-      const parsedPackage = PetPackageSchema.safeParse(candidate);
-      if (!parsedPackage.success || parsedPackage.data.source !== PetSource.Custom) {
-        return [];
-      }
-      return [parsedPackage.data];
-    });
-  } catch {
-    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-    return [];
-  }
+    return petId;
+  });
 }
 
-/**
- * Persist generated custom package manifests for browser development reloads.
- *
- * @param packages - Current runtime package registry.
- */
-function persistCustomDevPackages(packages: RuntimePetPackage[]): void {
-  const customPackages = packages
-    .map((runtimePackage) => runtimePackage.petPackage)
-    .filter((petPackage) => petPackage.source === PetSource.Custom);
-
-  if (customPackages.length === 0) {
-    window.localStorage.removeItem(CUSTOM_PACKAGES_STORAGE_KEY);
-    return;
-  }
-
-  window.localStorage.setItem(
-    CUSTOM_PACKAGES_STORAGE_KEY,
-    JSON.stringify(customPackages)
-  );
-}
-
-/**
- * Create a package manifest for a generated development pet.
- *
- * @param overrides - Package identity, copy, palette, and optional source override.
- * @returns A package manifest compatible with runtime validation expectations.
- */
-function createDevPetPackage(overrides: {
-  packageId: string;
-  name: string;
-  description: string;
-  species: string;
-  personality: string;
-  colorPalette: string[];
-  source?: PetSource;
-}): PetPackage {
-  return {
-    schemaVersion: 1,
-    packageId: overrides.packageId,
-    packageVersion: "0.1.0",
-    minAppVersion: "0.1.0",
-    name: overrides.name,
-    description: overrides.description,
-    source: overrides.source ?? PetSource.BuiltIn,
-    species: overrides.species,
-    personality: overrides.personality,
-    createdAt: new Date().toISOString(),
-    assetVersion: "0.1.0",
-    assets: {
-      spritesheet: "spritesheet.svg",
-      preview: "preview.svg",
-      icon: "icon.svg"
-    },
-    animations: [
-      animation(AnimationId.Idle, 0, 6),
-      animation(AnimationId.Happy, 1, 8),
-      animation(AnimationId.Sad, 2, 6),
-      animation(AnimationId.Hungry, 3, 6),
-      animation(AnimationId.Eating, 4, 6),
-      animation(AnimationId.Playing, 5, 8),
-      animation(AnimationId.Sleeping, 6, 2),
-      animation(AnimationId.Sick, 7, 4),
-      animation(AnimationId.Cleaning, 8, 6),
-      animation(AnimationId.Walking, 9, 8),
-      animation(AnimationId.Attention, 10, 6)
-    ],
-    growthStages: [
-      growthStage("egg", LifeStage.Egg, "Egg", 0, 0, 100),
-      growthStage("baby", LifeStage.Baby, `Baby ${overrides.name}`, 2, 0, 100),
-      growthStage("child-calm", LifeStage.Child, "Calm Child", 8, 0, 59),
-      growthStage("child-bright", LifeStage.Child, "Bright Child", 8, 60, 100),
-      growthStage("teen-shy", LifeStage.Teen, "Shy Teen", 30, 0, 49),
-      growthStage("teen-spry", LifeStage.Teen, "Spry Teen", 30, 50, 100),
-      growthStage("adult-cozy", LifeStage.Adult, "Cozy Adult", 72, 0, 39),
-      growthStage("adult-pal", LifeStage.Adult, "Desk Pal", 72, 40, 74),
-      growthStage("adult-star", LifeStage.Adult, `Star ${overrides.name}`, 72, 75, 100)
-    ],
-    preferredFoods: ["warm rice", "fruit bite"],
-    dislikedFoods: ["burnt toast"],
-    favoritePlayStyle: PlayStyle.Rhythm,
-    careModifiers: {
-      hungerDecayMultiplier: 1,
-      happinessDecayMultiplier: 1,
-      energyDecayMultiplier: 1,
-      cleanlinessDecayMultiplier: 1,
-      affectionGainMultiplier: 1
-    },
-    colorPalette: overrides.colorPalette,
-    author: "Deskagotchi",
-    license: "Original Deskagotchi browser test asset",
-    capabilities: ["browser-feedback", "placeholder-art"],
-    validationStatus: PackageValidationStatus.Passed,
-    assetHash: `${overrides.packageId}-browser-dev`,
-    generation: {
-      mode: "local-placeholder"
-    }
-  };
-}
-
-/**
- * Attach generated browser asset URLs to a pet package.
- *
- * @param petPackage - Package manifest to convert.
- * @returns Runtime package with spritesheet, preview, and icon data URLs.
- */
-function toRuntimePackage(petPackage: PetPackage): RuntimePetPackage {
-  const [primary, secondary, outline, highlight] = normalizeColors(petPackage.colorPalette);
-  const preview = createPetSvgDataUrl(primary, secondary, outline, highlight, AnimationId.Happy, 1);
-  return {
-    petPackage,
-    assetUrls: {
-      spritesheet: createSpritesheetDataUrl(petPackage.colorPalette),
-      preview,
-      icon: preview
-    },
-    issues: []
-  };
-}
-
-/**
- * Create an animation manifest row for the generated spritesheet.
- *
- * @param id - Animation identifier represented by the row.
- * @param row - Zero-based spritesheet row index.
- * @param fps - Playback rate for the animation.
- * @returns Package animation metadata for a four-frame row.
- */
-function animation(id: AnimationId, row: number, fps: number): PetPackage["animations"][number] {
-  return {
-    id,
-    row,
-    frames: 4,
-    frameWidth: 96,
-    frameHeight: 96,
-    fps,
-    loop: true,
-    ...(id === AnimationId.Idle ? {} : { fallback: AnimationId.Idle })
-  };
-}
-
-/**
- * Create a care-score growth stage definition.
- *
- * @param id - Stable growth-stage identifier.
- * @param lifeStage - Lifecycle bucket represented by the stage.
- * @param label - Display label for the stage.
- * @param minAgeHours - Minimum pet age required for the stage.
- * @param careScoreMin - Inclusive minimum care score for the stage.
- * @param careScoreMax - Inclusive maximum care score for the stage.
- * @returns Package growth-stage metadata.
- */
-function growthStage(
-  id: string,
-  lifeStage: LifeStage,
-  label: string,
-  minAgeHours: number,
-  careScoreMin: number,
-  careScoreMax: number
-): PetPackage["growthStages"][number] {
-  return {
-    id,
-    stage: lifeStage,
-    label,
-    minAgeHours,
-    careScoreMin,
-    careScoreMax,
-    animationSet: Object.values(AnimationId)
-  };
-}
-
-/**
- * Generate a data URL spritesheet for all supported animation rows.
- *
- * @param colors - Preferred package colors used to render the placeholder pet.
- * @returns Encoded SVG data URL for the development spritesheet.
- */
-function createSpritesheetDataUrl(colors: string[]): string {
-  const [primary, secondary, outline, highlight] = normalizeColors(colors);
-  const rows = Object.values(AnimationId).flatMap((animationId, rowIndex) =>
-    [0, 1, 2, 3].map(
-      (frame) =>
-        `<g transform="translate(${frame * 96} ${rowIndex * 96})">${createPetMarkup(
-          primary,
-          secondary,
-          outline,
-          highlight,
-          animationId,
-          frame
-        )}</g>`
-    )
-  );
-  return svgDataUrl(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="384" height="1056" viewBox="0 0 384 1056">${rows.join("")}</svg>`
-  );
-}
-
-/**
- * Generate a single-frame preview or icon data URL.
- *
- * @param primary - Primary body color.
- * @param secondary - Secondary accent color.
- * @param outline - Outline and facial feature color.
- * @param highlight - Highlight and accessory color.
- * @param animationId - Animation expression to render.
- * @param frame - Frame index used for simple motion offsets.
- * @returns Encoded SVG data URL for the preview frame.
- */
-function createPetSvgDataUrl(
-  primary: string,
-  secondary: string,
-  outline: string,
-  highlight: string,
-  animationId: AnimationId,
-  frame: number
-): string {
-  return svgDataUrl(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 96 96">${createPetMarkup(
-      primary,
-      secondary,
-      outline,
-      highlight,
-      animationId,
-      frame
-    )}</svg>`
-  );
-}
-
-/**
- * Generate reusable SVG markup for a placeholder pet frame.
- *
- * @param primary - Primary body color.
- * @param secondary - Secondary accent color.
- * @param outline - Outline and facial feature color.
- * @param highlight - Highlight and accessory color.
- * @param animationId - Animation expression to render.
- * @param frame - Frame index used for simple motion offsets.
- * @returns SVG fragment inserted into spritesheets and previews.
- */
-function createPetMarkup(
-  primary: string,
-  secondary: string,
-  outline: string,
-  highlight: string,
-  animationId: AnimationId,
-  frame: number
-): string {
-  const bob = Math.sin(frame * Math.PI * 0.5) * 2;
-  const sleeping = animationId === AnimationId.Sleeping;
-  const sick = animationId === AnimationId.Sick;
-  const happy =
-    animationId === AnimationId.Happy ||
-    animationId === AnimationId.Eating ||
-    animationId === AnimationId.Playing;
-  const hungry = animationId === AnimationId.Hungry;
-  const attention = animationId === AnimationId.Attention;
-  const eyes = sleeping
-    ? `<path d="M33 43 Q39 39 45 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/><path d="M53 43 Q59 39 65 43" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : `<circle cx="39" cy="43" r="3.4" fill="${outline}"/><circle cx="59" cy="43" r="3.4" fill="${outline}"/>`;
-  const mouth = happy
-    ? `<path d="M39 58 Q49 67 59 58" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`
-    : hungry
-      ? `<circle cx="49" cy="59" r="4" fill="none" stroke="${outline}" stroke-width="3"/>`
-      : `<path d="M43 61 Q49 57 55 61" fill="none" stroke="${outline}" stroke-width="3" stroke-linecap="round"/>`;
-  const patch = sick
-    ? `<rect x="31" y="25" width="36" height="9" rx="4.5" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-  const call = attention
-    ? `<circle cx="74" cy="26" r="4" fill="${highlight}" stroke="${outline}" stroke-width="2"/>`
-    : "";
-
-  return `<g transform="translate(0 ${bob})"><path d="M22 56 C21 35 36 24 50 30 C63 22 78 36 75 58 C72 78 58 81 49 75 C38 82 24 76 22 56 Z" fill="${primary}" stroke="${outline}" stroke-width="4" stroke-linejoin="round"/><ellipse cx="49" cy="57" rx="18" ry="12" fill="${secondary}" opacity="0.32"/>${eyes}${mouth}${patch}${call}<circle cx="29" cy="53" r="3" fill="${secondary}" opacity="0.55"/><circle cx="69" cy="53" r="3" fill="${secondary}" opacity="0.55"/></g>`;
-}
-
-/**
- * Validate browser hatch input before installing a generated package.
- *
- * @param input - Hatch form values from the panel.
- * @returns Validation issues blocking installation, or an empty array.
- */
-function validateHatchInput(input: HatchDraftInput): ValidationIssue[] {
-  if (input.name.trim().length > 0) {
-    return [];
-  }
-  return [
-    {
-      severity: ValidationSeverity.Error,
-      code: "hatch_name_invalid",
-      message: "Pet name is required."
-    }
-  ];
-}
-
-/**
- * Normalize a preferred color list into the four-color placeholder palette.
- *
- * @param colors - User or package-provided hex colors.
- * @returns Primary, secondary, outline, and highlight colors.
- */
-function normalizeColors(colors: string[]): string[] {
-  const validColors = colors.filter((color) => /^#[0-9a-fA-F]{6}$/.test(color));
-  const palette = validColors.length >= 2 ? validColors : ["#9bdbd4", "#4ecdc4"];
-  return [
-    palette[0] ?? "#9bdbd4",
-    palette[1] ?? "#4ecdc4",
-    "#243447",
-    palette[2] ?? "#fff4d6"
-  ];
-}
-
-/**
- * Convert free-form package names into compact package ids.
- *
- * @param value - Raw value to normalize.
- * @returns Lowercase slug capped to the package id length used by the adapter.
- */
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72);
-}
-
-/**
- * Encode SVG text for use in image URLs.
- *
- * @param svg - Raw SVG document string.
- * @returns Data URL suitable for img and CSS background usage.
- */
-function svgDataUrl(svg: string): string {
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+function isBuiltInAssetId(
+  petId: string
+): petId is keyof typeof BUILT_IN_PACKAGE_ASSETS {
+  return petId in BUILT_IN_PACKAGE_ASSETS;
 }

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { AnimationManifestEntry } from "@shared/domain";
-import { AnimationId } from "@shared/domain";
+import { AnimationId, Mood } from "@shared/domain";
 import type { DeskagotchiSnapshot } from "@shared/ipc";
+import type { ItemCatalogEntry } from "@shared/itemIcons";
 import { moodToAnimation } from "@shared/simulation";
+
+import { ItemIcon } from "./ItemIcon";
 
 /** Props for rendering a package spritesheet frame as a pet sprite. */
 interface PetSpriteProps {
@@ -13,8 +16,12 @@ interface PetSpriteProps {
   size: number;
   /** Whether the sprite should use interactive button styling. */
   interactive?: boolean;
+  /** Optional food item to show while the pet is in an eating mood. */
+  eatingItem?: ItemCatalogEntry;
   /** Optional click handler used by overlay and panel controls. */
   onClick?: () => void;
+  /** Optional pointer-down handler used by the desktop overlay drag controller. */
+  onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }
 
 /**
@@ -27,7 +34,9 @@ export function PetSprite({
   snapshot,
   size,
   interactive = false,
-  onClick
+  eatingItem,
+  onClick,
+  onPointerDown
 }: PetSpriteProps): React.JSX.Element {
   const animation = useMemo(
     () => selectAnimation(snapshot),
@@ -43,6 +52,9 @@ export function PetSprite({
     )
   );
   const backgroundWidth = animation.frameWidth * sheetColumns * scale;
+  const eatingAnchor = snapshot.activePackage.petPackage.foodPreferences.eatingAnchor;
+  const shouldShowFoodCue =
+    eatingItem !== undefined && snapshot.activeState.mood === Mood.Eating;
 
   useEffect(() => {
     if (reducedMotion || animation.frames <= 1) {
@@ -59,6 +71,8 @@ export function PetSprite({
       type="button"
       className={interactive ? "pet-sprite pet-sprite--button" : "pet-sprite"}
       onClick={onClick}
+      onPointerDown={onPointerDown}
+      data-testid={interactive ? "pet-sprite" : undefined}
       aria-label={`${snapshot.activeState.nickname} is ${snapshot.activeState.mood}`}
       style={{
         width: size,
@@ -67,7 +81,23 @@ export function PetSprite({
         backgroundSize: `${backgroundWidth}px auto`,
         backgroundPosition: `${-visibleFrame * animation.frameWidth * scale}px ${-animation.row * animation.frameHeight * scale}px`
       }}
-    />
+    >
+      {shouldShowFoodCue ? (
+        <span
+          className="pet-sprite__food-cue"
+          data-testid="pet-food-cue"
+          data-icon-id={eatingItem.iconId}
+          data-item-id={eatingItem.id}
+          aria-hidden="true"
+          style={{
+            "--food-cue-x": `${eatingAnchor.x * 100}%`,
+            "--food-cue-y": `${eatingAnchor.y * 100}%`
+          } as React.CSSProperties}
+        >
+          <ItemIcon iconId={eatingItem.iconId} size={eatingAnchor.size} />
+        </span>
+      ) : null}
+    </button>
   );
 }
 

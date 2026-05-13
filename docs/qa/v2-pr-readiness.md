@@ -1,0 +1,79 @@
+# V2 PR Readiness
+
+Use this as the PR prep checklist before opening or updating the V2 pull
+request.
+
+## PR Summary
+
+Deskagotchi V2 is a desktop companion release centered on the transparent pet
+overlay, built-in original pets, deterministic care simulation, package safety,
+desktop recovery behavior, and packaged desktop distribution.
+
+## User-Facing Scope
+
+- Compact transparent pet overlay with drag, tray/menu recovery, and in-overlay
+  care actions.
+- Built-in original pet roster: Bao, Miso, Mochi, Peanut, and Puddles.
+- Deterministic local care simulation with offline catch-up.
+- Custom pet import/export boundaries through `.deskagotchi-pet` packages.
+- Hatch/custom pet generation remains deferred from the user-facing V2 app.
+- Desktop app downloads should be published for Windows and macOS.
+
+## PR Links To Include
+
+- Desktop app instructions: `docs/desktop-app.md`
+- App icon source and regeneration notes: `docs/design/app-icon.md`
+- V2 closeout evidence: `docs/qa/v2-closeout-report.md`
+- Visual review notes: `docs/qa/v2-visual-review-notes.md`
+- Manual acceptance runbook: `docs/qa/v2-manual-acceptance-runbook.md`
+
+## Release Artifact Checklist
+
+| Platform | Command | Expected artifact |
+| --- | --- | --- |
+| Windows | `npm.cmd run package:win` | `release/Deskagotchi Setup <version>.exe` |
+| macOS | `npm run package:mac` on macOS | DMG and zip artifacts for x64 and arm64 |
+
+Attach the Windows installer and both macOS architecture builds to the release
+when they have passed platform smoke testing. Keep release notes explicit about
+unsigned or unnotarized builds.
+
+The `Desktop Release Artifacts` workflow uploads these artifacts for manual
+runs and publishes them to a GitHub Release when a `v*` tag is pushed.
+
+## Validation Before PR
+
+```powershell
+npm.cmd run generate:icon
+npm.cmd run check
+npm.cmd run qa
+$env:DESKAGOTCHI_IDLE_SECONDS='300'; npm.cmd run qa:desktop:idle
+npm.cmd run qa:release
+npm.cmd run qa:v2:closeout
+```
+
+Run `npm run package:mac` and a manual macOS launch smoke on macOS before
+publishing macOS downloads. The current automated desktop QA evidence is
+Windows-based.
+
+## Suggested PR Body
+
+```markdown
+## Summary
+- ship the Deskagotchi V2 desktop companion scope
+- add Windows and macOS packaging metadata and app icon assets
+- add a release workflow for Windows and macOS desktop downloads
+- document desktop app download, install, usage, troubleshooting, and release artifact flow
+
+## Validation
+- npm.cmd run check
+- npm.cmd run qa
+- DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
+- npm.cmd run qa:release
+- npm.cmd run qa:v2:closeout
+
+## Release Notes
+- Windows installer: attach `Deskagotchi Setup <version>.exe`
+- macOS: attach arm64 and x64 DMG or zip artifacts after macOS smoke testing
+- Unsigned builds may show SmartScreen or macOS first-launch warnings
+```

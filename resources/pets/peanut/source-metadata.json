@@ -1,0 +1,85 @@
+{
+  "petId": "peanut",
+  "assetHash": "26490cbf940eba044093287fe93b86183752e020aac455431a79108a16feca3c",
+  "chromaKey": "#FF00FF",
+  "palette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "frameSize": 96,
+  "baseSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0f44fefc4c3238290169fdc0b9a17081918f0697f7f97331d1.png",
+  "atlasSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0f44fefc4c3238290169fdc14536e48191aa6a7c8ac2e88cdc.png",
+  "rows": {
+    "idle": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Calm sitting blink and trunk wiggle frames."
+    },
+    "happy": {
+      "frames": 6,
+      "fps": 7,
+      "qaNote": "Cheerful bounce and trunk-lift frames."
+    },
+    "sad": {
+      "frames": 6,
+      "fps": 4,
+      "qaNote": "Droopy lowered-trunk sad frames."
+    },
+    "hungry": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Hungry belly-hold frames without separate food."
+    },
+    "eating": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Tiny nibble frames with trunk near mouth."
+    },
+    "playing": {
+      "frames": 6,
+      "fps": 7,
+      "qaNote": "Playful hop and trunk swing frames."
+    },
+    "sleeping": {
+      "frames": 6,
+      "fps": 2,
+      "qaNote": "Closed-eye curled sleeping frames."
+    },
+    "sick": {
+      "frames": 6,
+      "fps": 5,
+      "qaNote": "Droopy sick frames with small attached sweat marks."
+    },
+    "cleaning": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Clean recovered trunk-wipe frames."
+    },
+    "walking": {
+      "frames": 6,
+      "fps": 8,
+      "qaNote": "Side-facing right walk cycle frames."
+    },
+    "attention": {
+      "frames": 6,
+      "fps": 6,
+      "qaNote": "Alert call frames with ears perked and trunk lifted."
+    }
+  },
+  "repair": {
+    "kind": "trunk-identity-patch",
+    "sourceRows": [
+      "idle"
+    ],
+    "patchedRows": [
+      "happy",
+      "sad",
+      "playing",
+      "cleaning",
+      "attention"
+    ],
+    "note": "Central trunk patch was copied from good idle frames into expression rows whose generated frames read as monkey-like without a trunk."
+  }
+}

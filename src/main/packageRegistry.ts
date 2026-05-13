@@ -6,8 +6,8 @@ import path from "node:path";
 
 import {
   PetPackageSchema,
+  PetSource,
   type PetPackage,
-  type PetSource,
   type ValidationIssue,
   ValidationSeverity
 } from "@shared/domain";
@@ -65,7 +65,7 @@ export async function loadPetPackagesFromDirectory(
 ): Promise<RegistryLoadResult> {
   const packages: LoadedPetPackage[] = [];
   const issues: ValidationIssue[] = [];
-  const entries = await safeReadDirectory(directory);
+  const entries = await listPackageDirectories(directory, expectedSource);
 
   for (const entry of entries) {
     const packageRoot = path.join(directory, entry);
@@ -279,6 +279,29 @@ async function listPackageFiles(packageRoot: string): Promise<string[]> {
 
   await visit(packageRoot);
   return results;
+}
+
+async function listPackageDirectories(
+  directory: string,
+  expectedSource: PetSource
+): Promise<string[]> {
+  if (expectedSource !== PetSource.BuiltIn) {
+    return safeReadDirectory(directory);
+  }
+
+  const rosterPath = path.join(directory, "built-in-roster.json");
+  try {
+    const roster = JSON.parse(await readFile(rosterPath, "utf8")) as {
+      petIds?: unknown;
+    };
+    if (Array.isArray(roster.petIds)) {
+      return roster.petIds.filter((petId): petId is string => typeof petId === "string");
+    }
+  } catch {
+    return safeReadDirectory(directory);
+  }
+
+  return safeReadDirectory(directory);
 }
 
 async function safeReadDirectory(directory: string): Promise<string[]> {

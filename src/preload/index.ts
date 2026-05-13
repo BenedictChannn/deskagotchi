@@ -2,13 +2,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 import {
+  type CareActionRequest,
   type DeskagotchiApi,
-  type HatchDraftInput,
   IpcChannel,
   type PanelView,
+  type PetWindowUiMode,
+  type QaTelemetryInput,
   type UpdateSettingsInput
 } from "@shared/ipc";
-import type { CareActionType } from "@shared/domain";
 
 /**
  * Narrow IPC facade exposed to the renderer process.
@@ -17,8 +18,8 @@ import type { CareActionType } from "@shared/domain";
  */
 const api: DeskagotchiApi = {
   getSnapshot: () => ipcRenderer.invoke(IpcChannel.GetSnapshot),
-  performAction: (actionType: CareActionType) =>
-    ipcRenderer.invoke(IpcChannel.PerformAction, actionType),
+  performAction: (request: CareActionRequest) =>
+    ipcRenderer.invoke(IpcChannel.PerformAction, request),
   switchPet: (packageId: string) =>
     ipcRenderer.invoke(IpcChannel.SwitchPet, packageId),
   updateSettings: (settings: UpdateSettingsInput) =>
@@ -26,10 +27,19 @@ const api: DeskagotchiApi = {
   openPanel: (view: PanelView) => ipcRenderer.invoke(IpcChannel.OpenPanel, view),
   hidePanel: () => ipcRenderer.invoke(IpcChannel.HidePanel),
   resetPetWindow: () => ipcRenderer.invoke(IpcChannel.ResetPetWindow),
+  movePetWindow: (deltaX: number, deltaY: number, pointer) =>
+    ipcRenderer.invoke(IpcChannel.MovePetWindow, { deltaX, deltaY, pointer }),
+  finishPetWindowDrag: () => ipcRenderer.invoke(IpcChannel.FinishPetWindowDrag),
+  setPetWindowUiMode: (mode: PetWindowUiMode) =>
+    ipcRenderer.invoke(IpcChannel.SetPetWindowUiMode, mode),
+  enterPetWindowPlayMode: () =>
+    ipcRenderer.invoke(IpcChannel.EnterPetWindowPlayMode),
+  exitPetWindowPlayMode: () =>
+    ipcRenderer.invoke(IpcChannel.ExitPetWindowPlayMode),
   setClickThrough: (enabled: boolean) =>
     ipcRenderer.invoke(IpcChannel.SetClickThrough, enabled),
-  hatchCreateDraft: (input: HatchDraftInput) =>
-    ipcRenderer.invoke(IpcChannel.HatchCreateDraft, input),
+  recordQaEvent: (event: QaTelemetryInput) =>
+    ipcRenderer.invoke(IpcChannel.RecordQaEvent, event),
   exportPet: (packageId: string) => ipcRenderer.invoke(IpcChannel.ExportPet, packageId),
   importPet: () => ipcRenderer.invoke(IpcChannel.ImportPet),
   onSnapshotUpdated: (callback: () => void) => {

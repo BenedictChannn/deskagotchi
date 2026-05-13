@@ -21,14 +21,14 @@ import {
 export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPackage {
   return {
     schemaVersion: 1,
-    packageId: "deskcat",
+    packageId: "testpet",
     packageVersion: "0.1.0",
     minAppVersion: "0.1.0",
-    name: "Deskcat",
-    description: "A small original cat-like desk companion.",
+    name: "Test Pet",
+    description: "A small original test companion.",
     source: PetSource.BuiltIn,
-    species: "Cat-like desk companion",
-    personality: "Curious, alert, and fond of tiny keyboard patrols.",
+    species: "Test companion",
+    personality: "Curious, alert, and easy to validate.",
     createdAt: "2026-05-05T00:00:00.000Z",
     assetVersion: "0.1.0",
     assets: {
@@ -101,7 +101,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         id: "baby",
         stage: LifeStage.Baby,
         label: "Baby",
-        minAgeHours: 2,
+        minAgeHours: 24,
         careScoreMin: 0,
         careScoreMax: 100,
         animationSet: [
@@ -116,7 +116,7 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         id: "adult",
         stage: LifeStage.Adult,
         label: "Adult",
-        minAgeHours: 72,
+        minAgeHours: 504,
         careScoreMin: 0,
         careScoreMax: 100,
         animationSet: [
@@ -128,8 +128,13 @@ export function createTestPetPackage(overrides: Partial<PetPackage> = {}): PetPa
         ]
       }
     ],
-    preferredFoods: ["fish biscuit", "warm rice"],
-    dislikedFoods: ["burnt toast"],
+    foodPreferences: {
+      sharedFoodIds: ["meal-rice-ball", "meal-steamed-bun", "snack-biscuit"],
+      likedFoodIds: ["meal-chicken-bite"],
+      favoriteFoodIds: ["meal-fish-bite", "snack-milk"],
+      dislikedFoodIds: ["meal-leafy-bundle"],
+      eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+    },
     favoritePlayStyle: PlayStyle.Chase,
     careModifiers: {
       hungerDecayMultiplier: 1,

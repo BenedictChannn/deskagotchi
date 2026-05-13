@@ -1,15 +1,19 @@
 /**
  * Save-file and userData storage helpers for the Electron main process.
  */
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
+  CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   type PetPackage
 } from "@shared/domain";
 import { createInitialPetState } from "@shared/simulation";
+
+const ATOMIC_RENAME_RETRY_DELAYS_MS = [25, 50, 100, 200];
 
 /**
  * Absolute paths owned by the Electron userData storage area.
@@ -23,12 +27,8 @@ export interface StoragePaths {
   backupSaveFile: string;
   /** Directory containing installed custom pet packages. */
   customPetsDir: string;
-  /** Directory reserved for generated hatch drafts. */
-  hatchDraftsDir: string;
   /** Directory where exported pet archives are written. */
   exportsDir: string;
-  /** Directory for temporary files created by storage operations. */
-  tempDir: string;
 }
 
 /**
@@ -43,9 +43,7 @@ export function createStoragePaths(userDataDir: string): StoragePaths {
     saveFile: path.join(userDataDir, "deskagotchi-save.json"),
     backupSaveFile: path.join(userDataDir, "deskagotchi-save.backup.json"),
     customPetsDir: path.join(userDataDir, "custom-pets"),
-    hatchDraftsDir: path.join(userDataDir, "hatch-drafts"),
-    exportsDir: path.join(userDataDir, "exports"),
-    tempDir: path.join(userDataDir, "tmp")
+    exportsDir: path.join(userDataDir, "exports")
   };
 }
 
@@ -58,9 +56,7 @@ export async function ensureStorageDirectories(paths: StoragePaths): Promise<voi
   await Promise.all([
     mkdir(paths.userDataDir, { recursive: true }),
     mkdir(paths.customPetsDir, { recursive: true }),
-    mkdir(paths.hatchDraftsDir, { recursive: true }),
-    mkdir(paths.exportsDir, { recursive: true }),
-    mkdir(paths.tempDir, { recursive: true })
+    mkdir(paths.exportsDir, { recursive: true })
   ]);
 }
 
@@ -84,7 +80,7 @@ export function createDefaultSave(
   const instance = createInitialPetState(firstPackage, firstPackage.name, now);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION,
     activeInstanceId: instance.instanceId,
     instances: [instance],
     settings: {
@@ -175,11 +171,16 @@ export async function writeJsonAtomic(
   await mkdir(directory, { recursive: true });
   const tempFile = path.join(
     directory,
-    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.tmp`
+    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.${randomUUID()}.tmp`
   );
 
   await writeFile(tempFile, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  await rename(tempFile, filePath);
+  try {
+    await renameWithWindowsRetry(tempFile, filePath);
+  } catch (error) {
+    await rm(tempFile, { force: true });
+    throw error;
+  }
 }
 
 /**
@@ -189,17 +190,66 @@ export async function writeJsonAtomic(
  * @returns Parsed save, or undefined when missing, unreadable, or invalid.
  */
 async function readSaveFile(filePath: string): Promise<DeskagotchiSave | undefined> {
+  let raw: string | undefined;
   try {
-    const raw = await readFile(filePath, "utf8");
+    raw = await readFile(filePath, "utf8");
     const parsedJson = JSON.parse(raw) as unknown;
-    const parsedSave = DeskagotchiSaveSchema.safeParse(parsedJson);
-    return parsedSave.success ? parsedSave.data : undefined;
+    const migratedJson = migrateDeskagotchiSave(parsedJson);
+    const parsedSave = DeskagotchiSaveSchema.safeParse(migratedJson);
+    if (parsedSave.success) {
+      return parsedSave.data;
+    }
+    await preserveInvalidSave(filePath, raw, "schema");
+    return undefined;
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return undefined;
     }
+    if (raw !== undefined) {
+      await preserveInvalidSave(filePath, raw, "parse");
+    }
     return undefined;
   }
+}
+
+/**
+ * Migrate older save payloads into the current schema shape before validation.
+ *
+ * @param value - JSON payload read from disk.
+ * @returns Payload compatible with the current save schema when migration exists.
+ */
+export function migrateDeskagotchiSave(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  const candidate = value as { schemaVersion?: unknown };
+  const version = candidate.schemaVersion ?? CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION;
+  if (version === CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION) {
+    return {
+      ...candidate,
+      schemaVersion: CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION
+    };
+  }
+
+  return value;
+}
+
+async function preserveInvalidSave(
+  filePath: string,
+  raw: string,
+  reason: "parse" | "schema"
+): Promise<void> {
+  const directory = path.dirname(filePath);
+  const timestamp = new Date()
+    .toISOString()
+    .replaceAll(":", "-")
+    .replace(".", "-");
+  const preservedPath = path.join(
+    directory,
+    `${path.basename(filePath)}.${timestamp}.${reason}.invalid`
+  );
+  await writeFile(preservedPath, raw, "utf8");
 }
 
 /**
@@ -212,4 +262,40 @@ async function copyCurrentSaveToBackup(paths: StoragePaths): Promise<void> {
   if (currentSave !== undefined) {
     await writeJsonAtomic(paths.backupSaveFile, currentSave);
   }
+}
+
+async function renameWithWindowsRetry(
+  sourcePath: string,
+  destinationPath: string
+): Promise<void> {
+  let lastError: unknown;
+  for (const delayMs of [0, ...ATOMIC_RENAME_RETRY_DELAYS_MS]) {
+    if (delayMs > 0) {
+      await delay(delayMs);
+    }
+    try {
+      await rename(sourcePath, destinationPath);
+      return;
+    } catch (error) {
+      if (!isRetryableRenameError(error)) {
+        throw error;
+      }
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+function isRetryableRenameError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error.code === "EPERM" || error.code === "EACCES" || error.code === "EBUSY")
+  );
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }

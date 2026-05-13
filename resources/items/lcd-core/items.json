@@ -1,0 +1,745 @@
+{
+  "schemaVersion": 1,
+  "itemSetId": "lcd-core",
+  "name": "Deskagotchi LCD Core Items",
+  "description": "Original monochrome LCD item icons for MVP care interactions.",
+  "assetVersion": "0.3.1",
+  "atlas": "items.png",
+  "cellWidth": 48,
+  "cellHeight": 48,
+  "columns": 6,
+  "palette": [
+    "#dceca8",
+    "#7d9d58",
+    "#123716",
+    "#f7f8e7"
+  ],
+  "icons": [
+    {
+      "id": "bowl",
+      "label": "Bowl",
+      "category": "meal",
+      "row": 0,
+      "column": 0,
+      "alt": "Food bowl"
+    },
+    {
+      "id": "rice-ball",
+      "label": "Rice",
+      "category": "meal",
+      "row": 0,
+      "column": 1,
+      "alt": "Rice ball"
+    },
+    {
+      "id": "bread-plate",
+      "label": "Bread",
+      "category": "meal",
+      "row": 0,
+      "column": 2,
+      "alt": "Bread on a plate"
+    },
+    {
+      "id": "dumpling",
+      "label": "Dumpling",
+      "category": "meal",
+      "row": 0,
+      "column": 3,
+      "alt": "Dumpling"
+    },
+    {
+      "id": "biscuit",
+      "label": "Biscuit",
+      "category": "snack",
+      "row": 0,
+      "column": 4,
+      "alt": "Square biscuit"
+    },
+    {
+      "id": "candy",
+      "label": "Candy",
+      "category": "snack",
+      "row": 0,
+      "column": 5,
+      "alt": "Wrapped candy"
+    },
+    {
+      "id": "cake",
+      "label": "Cake",
+      "category": "snack",
+      "row": 1,
+      "column": 0,
+      "alt": "Small cake slice"
+    },
+    {
+      "id": "ball",
+      "label": "Ball",
+      "category": "toy",
+      "row": 1,
+      "column": 1,
+      "alt": "Ball toy"
+    },
+    {
+      "id": "rope",
+      "label": "Rope",
+      "category": "toy",
+      "row": 1,
+      "column": 2,
+      "alt": "Rope toy"
+    },
+    {
+      "id": "card",
+      "label": "Card",
+      "category": "toy",
+      "row": 1,
+      "column": 3,
+      "alt": "Game card"
+    },
+    {
+      "id": "chase-spark",
+      "label": "Chase",
+      "category": "toy",
+      "row": 1,
+      "column": 4,
+      "alt": "Chase sparkle"
+    },
+    {
+      "id": "capsule",
+      "label": "Capsule",
+      "category": "medicine",
+      "row": 1,
+      "column": 5,
+      "alt": "Medicine capsule"
+    },
+    {
+      "id": "bottle",
+      "label": "Bottle",
+      "category": "medicine",
+      "row": 2,
+      "column": 0,
+      "alt": "Medicine bottle"
+    },
+    {
+      "id": "bandage",
+      "label": "Bandage",
+      "category": "medicine",
+      "row": 2,
+      "column": 1,
+      "alt": "Bandage"
+    },
+    {
+      "id": "thermometer",
+      "label": "Thermo",
+      "category": "medicine",
+      "row": 2,
+      "column": 2,
+      "alt": "Thermometer"
+    },
+    {
+      "id": "sponge",
+      "label": "Sponge",
+      "category": "clean",
+      "row": 2,
+      "column": 3,
+      "alt": "Cleaning sponge"
+    },
+    {
+      "id": "broom",
+      "label": "Broom",
+      "category": "clean",
+      "row": 2,
+      "column": 4,
+      "alt": "Broom"
+    },
+    {
+      "id": "sparkle",
+      "label": "Sparkle",
+      "category": "clean",
+      "row": 2,
+      "column": 5,
+      "alt": "Clean sparkle"
+    },
+    {
+      "id": "mess",
+      "label": "Mess",
+      "category": "clean",
+      "row": 3,
+      "column": 0,
+      "alt": "Mess marker"
+    },
+    {
+      "id": "crescent",
+      "label": "Moon",
+      "category": "sleep",
+      "row": 3,
+      "column": 1,
+      "alt": "Crescent moon"
+    },
+    {
+      "id": "lamp",
+      "label": "Lamp",
+      "category": "sleep",
+      "row": 3,
+      "column": 2,
+      "alt": "Bedside lamp"
+    },
+    {
+      "id": "zzz",
+      "label": "Sleep",
+      "category": "sleep",
+      "row": 3,
+      "column": 3,
+      "alt": "Sleep mark"
+    },
+    {
+      "id": "heart",
+      "label": "Heart",
+      "category": "status",
+      "row": 3,
+      "column": 4,
+      "alt": "Heart"
+    },
+    {
+      "id": "meter",
+      "label": "Meter",
+      "category": "status",
+      "row": 3,
+      "column": 5,
+      "alt": "Status meter"
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "category": "status",
+      "row": 4,
+      "column": 0,
+      "alt": "Weight scale"
+    },
+    {
+      "id": "face",
+      "label": "Face",
+      "category": "status",
+      "row": 4,
+      "column": 1,
+      "alt": "Pet face"
+    },
+    {
+      "id": "apple-slice",
+      "label": "Apple",
+      "category": "snack",
+      "row": 4,
+      "column": 2,
+      "alt": "Apple slice"
+    },
+    {
+      "id": "fish-bite",
+      "label": "Fish",
+      "category": "meal",
+      "row": 4,
+      "column": 3,
+      "alt": "Fish bite"
+    },
+    {
+      "id": "milk",
+      "label": "Milk",
+      "category": "snack",
+      "row": 4,
+      "column": 4,
+      "alt": "Small milk bottle"
+    },
+    {
+      "id": "banana",
+      "label": "Banana",
+      "category": "meal",
+      "row": 4,
+      "column": 5,
+      "alt": "Banana"
+    },
+    {
+      "id": "leafy-bundle",
+      "label": "Leaves",
+      "category": "meal",
+      "row": 5,
+      "column": 0,
+      "alt": "Leafy bundle"
+    },
+    {
+      "id": "sugarcane",
+      "label": "Cane",
+      "category": "meal",
+      "row": 5,
+      "column": 1,
+      "alt": "Sugarcane stick"
+    },
+    {
+      "id": "melon-slice",
+      "label": "Melon",
+      "category": "snack",
+      "row": 5,
+      "column": 2,
+      "alt": "Melon slice"
+    },
+    {
+      "id": "chicken-bite",
+      "label": "Chicken",
+      "category": "meal",
+      "row": 5,
+      "column": 3,
+      "alt": "Chicken bite"
+    },
+    {
+      "id": "steamed-bun",
+      "label": "Bun",
+      "category": "meal",
+      "row": 5,
+      "column": 4,
+      "alt": "Steamed bun"
+    },
+    {
+      "id": "mango-cube",
+      "label": "Mango",
+      "category": "snack",
+      "row": 5,
+      "column": 5,
+      "alt": "Mango cube"
+    },
+    {
+      "id": "peas",
+      "label": "Peas",
+      "category": "meal",
+      "row": 6,
+      "column": 0,
+      "alt": "Small peas"
+    },
+    {
+      "id": "corn-kernels",
+      "label": "Corn",
+      "category": "meal",
+      "row": 6,
+      "column": 1,
+      "alt": "Corn kernels"
+    }
+  ],
+  "items": [
+    {
+      "id": "meal-kibble-bowl",
+      "label": "Kibble Bowl",
+      "category": "meal",
+      "iconId": "bowl",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "dog",
+        "meat"
+      ],
+      "effects": {
+        "hunger": 22,
+        "weight": 1
+      }
+    },
+    {
+      "id": "meal-rice-ball",
+      "label": "Rice Ball",
+      "category": "meal",
+      "iconId": "rice-ball",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "shared",
+        "grain"
+      ],
+      "effects": {
+        "hunger": 18,
+        "happiness": 2
+      }
+    },
+    {
+      "id": "meal-steamed-bun",
+      "label": "Steamed Bun",
+      "category": "meal",
+      "iconId": "steamed-bun",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "shared",
+        "bakery"
+      ],
+      "effects": {
+        "hunger": 19,
+        "happiness": 1
+      }
+    },
+    {
+      "id": "meal-dumpling",
+      "label": "Dumpling",
+      "category": "meal",
+      "iconId": "dumpling",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "shared",
+        "grain"
+      ],
+      "effects": {
+        "hunger": 20,
+        "happiness": 1
+      }
+    },
+    {
+      "id": "meal-chicken-bite",
+      "label": "Chicken Bite",
+      "category": "meal",
+      "iconId": "chicken-bite",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "dog",
+        "cat",
+        "meat"
+      ],
+      "effects": {
+        "hunger": 20,
+        "happiness": 2
+      }
+    },
+    {
+      "id": "meal-fish-bite",
+      "label": "Fish Bite",
+      "category": "meal",
+      "iconId": "fish-bite",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "cat",
+        "fish"
+      ],
+      "effects": {
+        "hunger": 19,
+        "happiness": 3
+      }
+    },
+    {
+      "id": "meal-banana",
+      "label": "Banana",
+      "category": "meal",
+      "iconId": "banana",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "primate",
+        "herbivore",
+        "fruit"
+      ],
+      "effects": {
+        "hunger": 17,
+        "happiness": 3
+      }
+    },
+    {
+      "id": "meal-leafy-bundle",
+      "label": "Leafy Bundle",
+      "category": "meal",
+      "iconId": "leafy-bundle",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "herbivore",
+        "leafy"
+      ],
+      "effects": {
+        "hunger": 21,
+        "health": 2
+      }
+    },
+    {
+      "id": "meal-sugarcane",
+      "label": "Sugarcane",
+      "category": "meal",
+      "iconId": "sugarcane",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "herbivore",
+        "plant"
+      ],
+      "effects": {
+        "hunger": 18,
+        "happiness": 2,
+        "energy": 2
+      }
+    },
+    {
+      "id": "meal-peas",
+      "label": "Peas",
+      "category": "meal",
+      "iconId": "peas",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "duck",
+        "herbivore",
+        "plant"
+      ],
+      "effects": {
+        "hunger": 18,
+        "happiness": 4,
+        "health": 2
+      }
+    },
+    {
+      "id": "meal-corn-kernels",
+      "label": "Corn Kernels",
+      "category": "meal",
+      "iconId": "corn-kernels",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "duck",
+        "grain",
+        "plant"
+      ],
+      "effects": {
+        "hunger": 17,
+        "happiness": 4,
+        "energy": 1
+      }
+    },
+    {
+      "id": "snack-biscuit",
+      "label": "Biscuit",
+      "category": "snack",
+      "iconId": "biscuit",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "shared",
+        "bakery",
+        "treat"
+      ],
+      "effects": {
+        "happiness": 10,
+        "hunger": 4,
+        "weight": 1
+      }
+    },
+    {
+      "id": "snack-apple-slice",
+      "label": "Apple Slice",
+      "category": "snack",
+      "iconId": "apple-slice",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "shared",
+        "fruit"
+      ],
+      "effects": {
+        "happiness": 7,
+        "hunger": 5,
+        "health": 1
+      }
+    },
+    {
+      "id": "snack-milk",
+      "label": "Milk",
+      "category": "snack",
+      "iconId": "milk",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "cat",
+        "dairy"
+      ],
+      "effects": {
+        "happiness": 8,
+        "hunger": 4,
+        "health": 1
+      }
+    },
+    {
+      "id": "snack-mango-cube",
+      "label": "Mango Cube",
+      "category": "snack",
+      "iconId": "mango-cube",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "primate",
+        "fruit"
+      ],
+      "effects": {
+        "happiness": 9,
+        "hunger": 4
+      }
+    },
+    {
+      "id": "snack-melon-slice",
+      "label": "Melon Slice",
+      "category": "snack",
+      "iconId": "melon-slice",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "herbivore",
+        "primate",
+        "fruit"
+      ],
+      "effects": {
+        "happiness": 8,
+        "hunger": 5,
+        "health": 1
+      }
+    },
+    {
+      "id": "snack-candy",
+      "label": "Candy",
+      "category": "snack",
+      "iconId": "candy",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "treat"
+      ],
+      "effects": {
+        "happiness": 13,
+        "health": -2,
+        "weight": 1
+      }
+    },
+    {
+      "id": "snack-cake",
+      "label": "Cake",
+      "category": "snack",
+      "iconId": "cake",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [
+        "bakery",
+        "treat"
+      ],
+      "effects": {
+        "happiness": 12,
+        "hunger": 6,
+        "health": -1,
+        "weight": 2
+      }
+    },
+    {
+      "id": "toy-ball",
+      "label": "Ball",
+      "category": "toy",
+      "iconId": "ball",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "happiness": 8,
+        "affection": 4,
+        "energy": -5
+      }
+    },
+    {
+      "id": "toy-rope",
+      "label": "Rope",
+      "category": "toy",
+      "iconId": "rope",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "happiness": 7,
+        "affection": 4,
+        "energy": -4
+      }
+    },
+    {
+      "id": "toy-card",
+      "label": "Cards",
+      "category": "toy",
+      "iconId": "card",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "happiness": 5,
+        "affection": 3
+      }
+    },
+    {
+      "id": "toy-chase",
+      "label": "Chase",
+      "category": "toy",
+      "iconId": "chase-spark",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "happiness": 9,
+        "affection": 5,
+        "energy": -6
+      }
+    },
+    {
+      "id": "medicine-capsule",
+      "label": "Capsule",
+      "category": "medicine",
+      "iconId": "capsule",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "health": 25
+      }
+    },
+    {
+      "id": "medicine-bottle",
+      "label": "Tonic",
+      "category": "medicine",
+      "iconId": "bottle",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "health": 18,
+        "energy": 5
+      }
+    },
+    {
+      "id": "clean-sponge",
+      "label": "Sponge",
+      "category": "clean",
+      "iconId": "sponge",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "cleanliness": 28,
+        "health": 3
+      }
+    },
+    {
+      "id": "clean-broom",
+      "label": "Broom",
+      "category": "clean",
+      "iconId": "broom",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "cleanliness": 22
+      }
+    },
+    {
+      "id": "sleep-moon",
+      "label": "Lights",
+      "category": "sleep",
+      "iconId": "crescent",
+      "quantity": "unlimited",
+      "availability": "always",
+      "tags": [],
+      "effects": {
+        "energy": 10
+      }
+    }
+  ]
+}

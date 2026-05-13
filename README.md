@@ -2,28 +2,47 @@
 
 Deskagotchi is a Windows-first desktop virtual pet companion built with Electron, React, TypeScript, Vite, and a manifest-driven pet package system.
 
-The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, built-in original pets, and a Hatch MVP for local custom pets.
+The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, built-in original pets, and local custom pet import/export boundaries.
 
 ## Current Capabilities
 
 - Transparent frameless pet overlay window.
-- Tray menu with show, hide, reset position, feed, play, clean, sleep, health, pet selector, Hatch, settings, and quit.
+- Tray menu with show, hide, reset position, feed, play, clean, sleep, health, pet selector, settings, and quit.
 - Single-instance app behavior.
 - Multi-monitor-safe position recovery.
 - Crash-safe local save file with backup recovery.
 - Deterministic simulation with offline progression caps.
 - Stats for hunger, happiness, energy, cleanliness, health, affection, discipline, age, weight, mood, care history, illness, and messes.
-- Built-in original placeholder roster:
-  - Deskcat
-  - Deskdog
-  - Deskduck
-  - Deskblob
-- Deskcat includes multiple care-based growth variants.
+- Built-in original pet roster:
+  - Bao, a shih tzu companion
+  - Miso, a cat companion
+  - Mochi, a monkey companion
+  - Peanut, an elephant companion
+  - Puddles, a duck companion with peas and corn as favorite foods
+- Built-in pets ship with the full MVP animation row set and pet-specific food preferences.
 - Shared package schema for built-in and custom pets.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
-- Local Hatch draft creator with prompt/IP guardrails.
+- Hatch/custom pet generation is deferred for V2 while the package validation and import/export boundary stays in place.
 - Custom pet import/export as `.deskagotchi-pet`.
 - Settings for always-on-top, startup, sound, reduced motion, low maintenance, and notifications.
+
+## Desktop App Downloads
+
+V2 release downloads should include Windows and macOS desktop builds:
+
+- Windows installer: `Deskagotchi Setup <version>.exe`
+- macOS Apple silicon: arm64 DMG or zip artifact
+- macOS Intel: x64 DMG or zip artifact
+
+See `docs/desktop-app.md` for download, install, first-run, usage,
+troubleshooting, and release-publisher instructions.
+
+Use `docs/qa/v2-pr-readiness.md` as the V2 pull request and release artifact
+checklist.
+
+The `Desktop Release Artifacts` GitHub Actions workflow builds Windows and
+macOS artifacts on manual runs and publishes them to GitHub Releases for `v*`
+tags.
 
 ## Install
 
@@ -46,7 +65,6 @@ During dev, the renderer is pinned to `http://localhost:5187` so browser-based c
 ```text
 http://localhost:5187/#/panel/status
 http://localhost:5187/#/panel/pet-selector
-http://localhost:5187/#/panel/hatch
 http://localhost:5187/#/panel/settings
 http://localhost:5187/#/
 ```
@@ -73,17 +91,158 @@ Validate committed pet packages:
 npm.cmd run validate:pets
 ```
 
-Regenerate placeholder built-in pet assets:
+Run the full local QA gate:
 
 ```powershell
-npm.cmd run generate:pets
+npm.cmd run qa
 ```
 
-Regenerate the Windows app icon:
+The QA gate launches Deskagotchi with an isolated profile, exercises desktop
+and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
+`docs/qa/using-qa.md` for when to run each targeted QA command and how to
+interpret the reports.
+
+Verify that deferred Hatch/custom generation has not returned to the
+user-facing V2 surface:
+
+```powershell
+npm.cmd run qa:v2:scope
+```
+
+Smoke-test the visual acceptance and pet animation gallery pages:
+
+```powershell
+npm.cmd run qa:v2:visual-page
+```
+
+Current pet and food visual review notes live in:
+
+```text
+docs/qa/v2-visual-review-notes.md
+```
+
+Run the idle CPU observation separately because it intentionally waits:
+
+```powershell
+npm.cmd run qa:desktop:idle
+```
+
+Set `DESKAGOTCHI_IDLE_SECONDS=300` for the V2 five-minute idle observation.
+
+Run release QA after packaging changes:
+
+```powershell
+npm.cmd run qa:release
+```
+
+This rebuilds the Windows installer, checks that packaged resources include the
+runtime pet and item assets, launches `release/win-unpacked/Deskagotchi.exe`,
+silently installs into `.qa-runs/`, launches the installed executable, and runs
+the generated uninstaller.
+
+Generate the V2 closeout report from the latest QA evidence:
+
+```powershell
+npm.cmd run qa:v2:audit
+```
+
+This writes `docs/qa/v2-closeout-report.md`. Use strict check-only mode on a
+release branch so final validation does not rewrite the tracked report while it
+checks the clean worktree gate:
+
+```powershell
+npm.cmd run qa:v2:closeout
+```
+
+Strict mode exits non-zero until automated evidence, required artifacts, and the
+workspace are clean. Manual acceptance evidence is advisory for the current V2
+audit and can still be supplied with `--manual`.
+
+If the manual checklist JSON is downloaded outside the repo, pass it directly:
+
+```powershell
+npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
+```
+
+Smoke-test the audit's strict-mode behavior without changing the real closeout
+report:
+
+```powershell
+npm.cmd run qa:v2:audit:smoke
+```
+
+Smoke-test the manual acceptance page export logic and refresh its screenshot:
+
+```powershell
+npm.cmd run qa:v2:manual-page:update
+```
+
+Routine `npm.cmd run qa:v2:manual-page` runs without changing tracked
+screenshots and writes `.qa-runs/<run-id>-manual-page/` evidence for the V2
+closeout audit.
+
+Manual checklist checkboxes mean the gate was tested and passed. If a gate is
+accepted as out of scope for V2, mark its deferral in the checklist and fill in
+the approver plus rationale. The manual page and closeout audit both require
+the run context fields before `manualPass` can be true. Strict V2 closeout also
+requires a clean Git worktree so QA evidence is not claimed against uncommitted
+local changes. Use `--check-only` for the final release gate; run without it
+only when intentionally refreshing the Markdown closeout report.
+
+Generate a helper report before filling the manual V2 checklist:
+
+```powershell
+npm.cmd run qa:v2:manual-context
+```
+
+This writes `.qa-runs/<run-id>-manual-context/report.md` with the current build,
+installer candidate, latest QA run IDs, monitor topology, and starter evidence
+notes. Paste the generated `manual-context.json` into the manual checklist's
+context import box to prefill fields. It is manual-prep only and does not mark
+any manual gate as passed. Do not hand-edit the generated build or installer
+path fields in the manual export; strict closeout verifies that the build
+contains the current `package.json` version, a real Git commit from this
+repository, and the same build plus installer path embedded in the manual
+context signature. Once that build is tested, keep post-test commits to
+documentation/evidence files; app, package, source, or asset changes require
+regenerating the context and retesting the affected gates.
+
+Regenerate LCD item icons:
+
+```powershell
+npm.cmd run generate:items
+```
+
+Regenerate the V2 visual acceptance page:
+
+```powershell
+npm.cmd run generate:visual-qa
+```
+
+Use the manual V2 checklist for physical acceptance work:
+
+```text
+docs/qa/v2-manual-acceptance.html
+```
+
+Use the manual V2 runbook while executing the checklist:
+
+```text
+docs/qa/v2-manual-acceptance-runbook.md
+```
+
+The checklist can download `v2-manual-acceptance-export.json`. Keep that JSON
+with the release evidence or pass it to the V2 audit with `--manual`.
+
+Regenerate the desktop app icons:
 
 ```powershell
 npm.cmd run generate:icon
 ```
+
+The canonical icon source is `build/icon-source.png`; generated packaging
+outputs are `build/icon.png`, `build/icon.ico`, and `build/icon.icns`. See
+`docs/design/app-icon.md` for the imagegen prompt and icon acceptance notes.
 
 ## Build
 
@@ -97,7 +256,14 @@ Build a Windows installer:
 npm.cmd run package:win
 ```
 
+Build macOS DMG and zip artifacts on macOS:
+
+```bash
+npm run package:mac
+```
+
 Unsigned Windows builds may trigger SmartScreen warnings until the binary has signing and reputation.
+Unsigned or unnotarized macOS builds may require Finder's Open flow on first launch.
 
 ## Local Data
 
@@ -108,9 +274,7 @@ The app stores:
 - `deskagotchi-save.json`
 - `deskagotchi-save.backup.json`
 - `custom-pets/`
-- `hatch-drafts/`
 - `exports/`
-- `tmp/`
 
 The settings panel displays the resolved local data path.
 
@@ -120,12 +284,18 @@ Each pet package is a directory containing:
 
 ```text
 pet.json
-spritesheet.svg
-preview.svg
-icon.svg
+spritesheet.png
+preview.png
+icon.png
 ```
 
-The MVP runtime accepts `.svg`, `.png`, and `.webp` assets. Final imagegen assets should use transparent `.png` or `.webp` spritesheets.
+The MVP runtime accepts `.svg`, `.png`, and `.webp` assets. The monochrome LCD
+production path should use lightweight transparent `.png` atlases; legacy SVGs
+are still accepted for placeholder pets.
+
+Built-in imagegen-derived pets may also include `source-metadata.json`. Keep
+large source concepts and contact sheets under `docs/qa/` so the packaged app
+does not carry unnecessary generation artifacts.
 
 Important `pet.json` fields:
 
@@ -138,34 +308,32 @@ Important `pet.json` fields:
 - `source`
 - `species`
 - `personality`
+- `createdAt`
+- `assetVersion`
 - `assets`
 - `animations`
 - `growthStages`
 - `preferredFoods`
 - `dislikedFoods`
+- `foodPreferences`
 - `favoritePlayStyle`
 - `careModifiers`
 - `colorPalette`
+- `author`
+- `license`
 - `capabilities`
 - `validationStatus`
 - `assetHash`
 - `generation`
 
-Imported packages are treated as untrusted. Archives are rejected if they contain unsafe paths, oversized entries, executable/script files, invalid manifests, missing assets, or wrong package source metadata.
+Imported packages are treated as untrusted. Archives are rejected if they contain unsafe paths, oversized entries, executable/script files, invalid manifests, missing assets, duplicate package ids, or wrong package source metadata.
 
-## Hatch MVP
+## Deferred Hatch Research
 
-Open Hatch from the tray or Pets panel. The current Hatch flow accepts:
-
-- Name
-- Description
-- Species/concept
-- Personality
-- Preferred colors
-- Optional accessory
-- Optional theme
-
-The MVP creates a local placeholder pet package and installs it after validation. It blocks obvious protected/IP-confusing or unsafe terms before creating the package.
+User-facing Hatch/custom pet generation is archived for the V2 release path.
+The earlier prototype proved local package installation mechanics, but a real
+custom pet flow still needs a full generation, approval, QA, packaging,
+moderation, and failure-recovery design before it should be exposed in the app.
 
 The image generation replacement path should use the `$imagegen` skill:
 
@@ -182,16 +350,17 @@ Do not copy Bandai, Tamagotchi, Codex pet characters, names, logos, shell design
 
 Preferred flow:
 
-1. Add or update pet definitions in `scripts/generate-placeholder-pets.mjs`.
-2. Run `npm.cmd run generate:pets`.
-3. Run `npm.cmd run validate:pets`.
-4. Replace placeholder assets with validated imagegen assets when ready.
-5. Keep `pet.json` schema-compatible with `src/shared/domain.ts`.
+1. Generate or select an approved base concept with `$imagegen`.
+2. Build the animation rows from that approved concept, keeping a flat chroma-key background until cleanup.
+3. Copy the final `spritesheet.png`, `preview.png`, `icon.png`, and source metadata into `resources/pets/<package-id>/`.
+4. Add any pet-specific foods to `scripts/generate-lcd-item-icons.mjs`, then run `npm.cmd run generate:items`.
+5. Run `npm.cmd run validate:pets`, `npm.cmd run qa:assets:pets`, and `npm.cmd run qa:assets:items`.
+6. Keep `pet.json` schema-compatible with `src/shared/domain.ts`.
 
 For a fully featured built-in pet, include:
 
 - Egg, baby, child, teen, and adult growth stages.
-- At least idle, happy, sleeping, and sick animations.
+- At least idle, happy, walking, sleeping, and sick animations.
 - Prefer the full animation set:
   - idle
   - happy
@@ -207,11 +376,12 @@ For a fully featured built-in pet, include:
 
 ## Architecture
 
-- `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, Hatch draft creation.
+- `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, and archived Hatch draft research code.
 - `src/preload/`: Typed IPC bridge.
 - `src/renderer/`: Overlay and panel React UI.
-- `src/shared/`: Domain schemas, package validation, IPC types, deterministic simulation.
+- `src/shared/`: Domain schemas, archived Hatch validation, package validation, IPC types, deterministic simulation.
 - `resources/pets/`: Built-in pet packages.
-- `scripts/`: Reproducible placeholder asset generation.
+- `resources/items/`: Built-in item icon atlases and care item manifests.
+- `scripts/`: App icon, item atlas, and QA utility scripts.
 
 The simulation engine is framework-agnostic and uses injected time so offline progression and evolution can be tested deterministically.

@@ -97,8 +97,6 @@ function parsePanelView(value: string | undefined): PanelView {
   switch (value) {
     case PanelView.Settings:
       return PanelView.Settings;
-    case PanelView.Hatch:
-      return PanelView.Hatch;
     case PanelView.PetSelector:
       return PanelView.PetSelector;
     case PanelView.Status:

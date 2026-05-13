@@ -6,6 +6,7 @@
 import {
   AnimationId,
   CareActionType,
+  type CareDeadlines,
   type CareHistory,
   CURRENT_SIMULATION_CONFIG_VERSION,
   LifeStage,
@@ -15,12 +16,15 @@ import {
   type PetStats,
   PetLifecycleStatus
 } from "./domain";
+import { applyFoodPreferenceModifiers } from "./food";
+import { ItemCategory, type ItemCatalogEntry } from "./itemIcons";
 
 /** Tunable constants that control offline catch-up, decay, and growth timing. */
 export interface SimulationConfig {
   version: typeof CURRENT_SIMULATION_CONFIG_VERSION;
   tickMinutes: number;
   maxOfflineCatchupHours: number;
+  actionFeedbackDurationSeconds: number;
   maxMessCount: number;
   decayPerHour: {
     hunger: number;
@@ -31,8 +35,43 @@ export interface SimulationConfig {
   sleepRecoveryPerHour: number;
   healthPenaltyPerHour: number;
   careHistoryWindowHours: number;
+  careDeadlineHours: {
+    hunger: number;
+    happiness: number;
+    mess: number;
+    sickness: number;
+    sleep: number;
+  };
   stageThresholdHours: Record<LifeStage, number>;
 }
+
+const HOURS_PER_DAY = 24;
+
+/** Default long-term companion growth thresholds, stored as simulation hours. */
+export const DEFAULT_STAGE_THRESHOLD_HOURS: Record<LifeStage, number> = {
+  [LifeStage.Egg]: 0,
+  [LifeStage.Baby]: HOURS_PER_DAY,
+  [LifeStage.Child]: 3 * HOURS_PER_DAY,
+  [LifeStage.Teen]: 10 * HOURS_PER_DAY,
+  [LifeStage.Adult]: 21 * HOURS_PER_DAY
+};
+
+/** Default deadlines before an unresolved urgent need becomes a care mistake. */
+export const DEFAULT_CARE_DEADLINE_HOURS: SimulationConfig["careDeadlineHours"] = {
+  hunger: 4,
+  happiness: 8,
+  mess: 6,
+  sickness: 18,
+  sleep: 2
+};
+
+const EMPTY_CARE_DEADLINES: CareDeadlines = {
+  hunger: null,
+  happiness: null,
+  mess: null,
+  sickness: null,
+  sleep: null
+};
 
 /** Domain event emitted when simulation detects a notable state transition. */
 export interface SimulationEvent {
@@ -45,6 +84,7 @@ export interface SimulationEvent {
 export interface CareAction {
   type: CareActionType;
   now: Date;
+  item?: ItemCatalogEntry;
 }
 
 /** Default simulation balance used by the desktop runtime and tests. */
@@ -52,6 +92,7 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   version: CURRENT_SIMULATION_CONFIG_VERSION,
   tickMinutes: 15,
   maxOfflineCatchupHours: 36,
+  actionFeedbackDurationSeconds: 4,
   maxMessCount: 5,
   decayPerHour: {
     hunger: 2.6,
@@ -62,13 +103,8 @@ export const DEFAULT_SIMULATION_CONFIG: SimulationConfig = {
   sleepRecoveryPerHour: 8,
   healthPenaltyPerHour: 3.2,
   careHistoryWindowHours: 72,
-  stageThresholdHours: {
-    [LifeStage.Egg]: 0,
-    [LifeStage.Baby]: 2,
-    [LifeStage.Child]: 8,
-    [LifeStage.Teen]: 30,
-    [LifeStage.Adult]: 72
-  }
+  careDeadlineHours: DEFAULT_CARE_DEADLINE_HOURS,
+  stageThresholdHours: DEFAULT_STAGE_THRESHOLD_HOURS
 };
 
 /**
@@ -107,6 +143,7 @@ export function createInitialPetState(
     messCount: 0,
     clockRollbackCount: 0,
     offlineDebtHours: 0,
+    careDeadlines: { ...EMPTY_CARE_DEADLINES },
     stats: {
       hunger: 82,
       happiness: 78,
@@ -184,27 +221,31 @@ export function progressPetState(
     ...state,
     stats: { ...state.stats },
     careHistory: { ...state.careHistory },
+    careDeadlines: normalizeCareDeadlines(state.careDeadlines),
     offlineDebtHours: state.offlineDebtHours + offlineDebtHours
   };
+  const lastSimulatedAtMs = lastSimulatedAt.getTime();
 
   for (let tick = 0; tick < fullTicks; tick += 1) {
+    const tickNow = new Date(lastSimulatedAtMs + (tick + 1) * tickHours * 3_600_000);
     progressedState = applySimulationTick(
       progressedState,
       petPackage,
       tickHours,
       config,
-      now,
+      tickNow,
       events
     );
   }
 
   if (remainderHours > 0) {
+    const tickNow = new Date(lastSimulatedAtMs + effectiveHours * 3_600_000);
     progressedState = applySimulationTick(
       progressedState,
       petPackage,
       remainderHours,
       config,
-      now,
+      tickNow,
       events
     );
   }
@@ -217,7 +258,12 @@ export function progressPetState(
   }
 
   const growthState = applyGrowth(progressedState, petPackage, config);
-  const mood = deriveMood(growthState);
+  const mood = deriveProgressedMood(
+    state,
+    growthState,
+    elapsedMs,
+    config.actionFeedbackDurationSeconds
+  );
 
   return {
     state: {
@@ -246,7 +292,12 @@ export function applyCareAction(
   config = DEFAULT_SIMULATION_CONFIG
 ): { state: PetInstanceState; events: SimulationEvent[] } {
   const progressed = progressPetState(state, petPackage, action.now, config);
-  const nextState = applyActionEffects(progressed.state, action.type, petPackage);
+  const nextState = applyActionEffects(
+    progressed.state,
+    action.type,
+    petPackage,
+    action.item
+  );
 
   return {
     state: {
@@ -348,6 +399,32 @@ function shouldUseAmbientWalkingMood(state: PetInstanceState): boolean {
   return Math.floor(state.ageHours * 4) % 4 === 1;
 }
 
+function deriveProgressedMood(
+  previousState: PetInstanceState,
+  progressedState: PetInstanceState,
+  elapsedMs: number,
+  actionFeedbackDurationSeconds: number
+): Mood {
+  const actionFeedbackDurationMs = actionFeedbackDurationSeconds * 1000;
+  if (
+    elapsedMs <= actionFeedbackDurationMs &&
+    isTransientActionMood(previousState.mood)
+  ) {
+    return previousState.mood;
+  }
+
+  return deriveMood(progressedState);
+}
+
+function isTransientActionMood(mood: Mood): boolean {
+  return (
+    mood === Mood.Eating ||
+    mood === Mood.Playing ||
+    mood === Mood.Cleaning ||
+    mood === Mood.Happy
+  );
+}
+
 function deriveActionMood(
   state: PetInstanceState,
   actionType: CareActionType
@@ -417,7 +494,7 @@ function applySimulationTick(
 
   const messCount = nextMessCount(state.messCount, stats.cleanliness, config);
   const isSick = state.isSick || stats.health < 22;
-  const careHistory = nextCareHistory(
+  const baseCareHistory = nextCareHistory(
     state.careHistory,
     tickHours,
     stats,
@@ -426,6 +503,20 @@ function applySimulationTick(
     lowCare,
     config
   );
+  const deadlineResult = nextCareDeadlines(
+    normalizeCareDeadlines(state.careDeadlines),
+    stats,
+    isSick,
+    messCount,
+    sleeping,
+    now,
+    config,
+    events
+  );
+  const careHistory = {
+    ...baseCareHistory,
+    careMistakes: baseCareHistory.careMistakes + deadlineResult.missedCareCount
+  };
 
   if (!state.isSick && isSick) {
     events.push({
@@ -441,20 +532,26 @@ function applySimulationTick(
     stats,
     messCount,
     isSick,
-    careHistory
+    careHistory,
+    careDeadlines: deadlineResult.deadlines
   };
 }
 
 function applyActionEffects(
   state: PetInstanceState,
   actionType: CareActionType,
-  petPackage: PetPackage
+  petPackage: PetPackage,
+  item?: ItemCatalogEntry
 ): PetInstanceState {
   switch (actionType) {
     case CareActionType.FeedMeal:
+      if (item !== undefined) {
+        return applyFoodItem(state, petPackage, item, false);
+      }
       return {
         ...state,
         mood: Mood.Eating,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "hunger"),
         stats: {
           ...state.stats,
           hunger: clampStat(state.stats.hunger + 30),
@@ -464,9 +561,13 @@ function applyActionEffects(
         }
       };
     case CareActionType.FeedSnack:
+      if (item !== undefined) {
+        return applyFoodItem(state, petPackage, item, true);
+      }
       return {
         ...state,
         mood: Mood.Eating,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "hunger"),
         stats: {
           ...state.stats,
           hunger: clampStat(state.stats.hunger + 10),
@@ -483,6 +584,7 @@ function applyActionEffects(
       return {
         ...state,
         mood: Mood.Playing,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "happiness"),
         stats: {
           ...state.stats,
           happiness: clampStat(state.stats.happiness + 18),
@@ -501,6 +603,7 @@ function applyActionEffects(
       return {
         ...state,
         messCount: 0,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "mess"),
         stats: {
           ...state.stats,
           cleanliness: 100,
@@ -512,6 +615,7 @@ function applyActionEffects(
       return {
         ...state,
         isSick: false,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "sickness"),
         stats: {
           ...state.stats,
           health: clampStat(Math.max(55, state.stats.health + 24)),
@@ -522,17 +626,24 @@ function applyActionEffects(
           medicineDelayHours: 0
         }
       };
-    case CareActionType.ToggleSleep:
+    case CareActionType.ToggleSleep: {
+      const nextLifecycleStatus =
+        state.lifecycleStatus === PetLifecycleStatus.Sleeping
+          ? PetLifecycleStatus.Active
+          : PetLifecycleStatus.Sleeping;
       return {
         ...state,
-        lifecycleStatus:
-          state.lifecycleStatus === PetLifecycleStatus.Sleeping
-            ? PetLifecycleStatus.Active
-            : PetLifecycleStatus.Sleeping
+        lifecycleStatus: nextLifecycleStatus,
+        careDeadlines:
+          nextLifecycleStatus === PetLifecycleStatus.Sleeping
+            ? clearCareDeadline(state.careDeadlines, "sleep")
+            : normalizeCareDeadlines(state.careDeadlines)
       };
+    }
     case CareActionType.Pet:
       return {
         ...state,
+        careDeadlines: clearCareDeadline(state.careDeadlines, "happiness"),
         stats: {
           ...state.stats,
           happiness: clampStat(state.stats.happiness + 5),
@@ -542,6 +653,59 @@ function applyActionEffects(
         }
       };
   }
+}
+
+function applyFoodItem(
+  state: PetInstanceState,
+  petPackage: PetPackage,
+  item: ItemCatalogEntry,
+  isSnack: boolean
+): PetInstanceState {
+  const itemCategoryMatches =
+    (isSnack && item.category === ItemCategory.Snack) ||
+    (!isSnack && item.category === ItemCategory.Meal);
+  if (!itemCategoryMatches) {
+    return state;
+  }
+
+  const stats = applyFoodPreferenceModifiers(
+    applyItemEffects(state.stats, item),
+    petPackage,
+    item.id
+  );
+  const careDeadlines = normalizeCareDeadlines(state.careDeadlines);
+
+  return {
+    ...state,
+    mood: Mood.Eating,
+    stats,
+    careDeadlines: {
+      ...careDeadlines,
+      hunger: stats.hunger >= 20 ? null : careDeadlines.hunger,
+      happiness: stats.happiness >= 20 ? null : careDeadlines.happiness
+    },
+    careHistory: {
+      ...state.careHistory,
+      snackCount: state.careHistory.snackCount + (isSnack ? 1 : 0)
+    }
+  };
+}
+
+function applyItemEffects(
+  stats: PetStats,
+  item: ItemCatalogEntry
+): PetStats {
+  return {
+    ...stats,
+    hunger: clampStat(stats.hunger + (item.effects.hunger ?? 0)),
+    happiness: clampStat(stats.happiness + (item.effects.happiness ?? 0)),
+    energy: clampStat(stats.energy + (item.effects.energy ?? 0)),
+    cleanliness: clampStat(stats.cleanliness + (item.effects.cleanliness ?? 0)),
+    health: clampStat(stats.health + (item.effects.health ?? 0)),
+    affection: clampStat(stats.affection + (item.effects.affection ?? 0)),
+    discipline: clampStat(stats.discipline + (item.effects.discipline ?? 0)),
+    weight: clampWeight(stats.weight + (item.effects.weight ?? 0))
+  };
 }
 
 function applyGrowth(
@@ -601,6 +765,82 @@ function nextMessCount(
   return Math.min(config.maxMessCount, currentMessCount + 1);
 }
 
+function nextCareDeadlines(
+  currentDeadlines: CareDeadlines,
+  stats: PetStats,
+  isSick: boolean,
+  messCount: number,
+  sleeping: boolean,
+  now: Date,
+  config: SimulationConfig,
+  events: SimulationEvent[]
+): { deadlines: CareDeadlines; missedCareCount: number } {
+  let missedCareCount = 0;
+  const nextDeadlines: CareDeadlines = { ...currentDeadlines };
+  const rules: Array<{
+    key: keyof CareDeadlines;
+    active: boolean;
+    durationHours: number;
+    label: string;
+  }> = [
+    {
+      key: "hunger",
+      active: stats.hunger < 20,
+      durationHours: config.careDeadlineHours.hunger,
+      label: "low hunger"
+    },
+    {
+      key: "happiness",
+      active: stats.happiness < 20,
+      durationHours: config.careDeadlineHours.happiness,
+      label: "low happiness"
+    },
+    {
+      key: "mess",
+      active: messCount >= 3,
+      durationHours: config.careDeadlineHours.mess,
+      label: "mess cleanup"
+    },
+    {
+      key: "sickness",
+      active: isSick,
+      durationHours: config.careDeadlineHours.sickness,
+      label: "medicine"
+    },
+    {
+      key: "sleep",
+      active: !sleeping && stats.energy < 15,
+      durationHours: config.careDeadlineHours.sleep,
+      label: "sleep"
+    }
+  ];
+
+  for (const rule of rules) {
+    const existingDeadline = currentDeadlines[rule.key];
+    if (!rule.active) {
+      nextDeadlines[rule.key] = null;
+      continue;
+    }
+
+    if (existingDeadline === null) {
+      nextDeadlines[rule.key] = addHours(now, rule.durationHours).toISOString();
+      continue;
+    }
+
+    if (now.getTime() >= new Date(existingDeadline).getTime()) {
+      missedCareCount += 1;
+      nextDeadlines[rule.key] = addHours(now, rule.durationHours).toISOString();
+      events.push({
+        code: "care_deadline_missed",
+        message: `Missed ${rule.label} care deadline.`,
+        occurredAt: now.toISOString()
+      });
+    }
+  }
+
+  return { deadlines: nextDeadlines, missedCareCount };
+}
+
 function nextCareHistory(
   history: CareHistory,
   tickHours: number,
@@ -618,7 +858,6 @@ function nextCareHistory(
   const sleepDebtHours =
     history.sleepDebtHours * historyDecay + (stats.energy < 20 ? tickHours : 0);
   const missedCareTicks = history.missedCareTicks + (lowCare ? 1 : 0);
-  const careMistakes = history.careMistakes + (lowCare ? 1 : 0);
   const medicineDelayHours =
     history.medicineDelayHours * historyDecay + (isSick ? tickHours : 0);
   const qualityScore = clampStat(
@@ -638,9 +877,30 @@ function nextCareHistory(
     lowHungerHours,
     sleepDebtHours,
     medicineDelayHours,
-    careMistakes,
+    careMistakes: history.careMistakes,
     qualityScore
   };
+}
+
+function normalizeCareDeadlines(deadlines: CareDeadlines | undefined): CareDeadlines {
+  return {
+    ...EMPTY_CARE_DEADLINES,
+    ...deadlines
+  };
+}
+
+function clearCareDeadline(
+  deadlines: CareDeadlines | undefined,
+  key: keyof CareDeadlines
+): CareDeadlines {
+  return {
+    ...normalizeCareDeadlines(deadlines),
+    [key]: null
+  };
+}
+
+function addHours(date: Date, hours: number): Date {
+  return new Date(date.getTime() + hours * 3_600_000);
 }
 
 function clampStat(value: number): number {

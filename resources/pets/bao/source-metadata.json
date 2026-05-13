@@ -1,0 +1,81 @@
+{
+  "petId": "bao",
+  "assetHash": "d4e255fdf050a8fe1fb78d989cf140fd4aa7d6489d6ea71ff8e246b5118025e9",
+  "chromaKey": "#FF00FF",
+  "palette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "frameSize": 96,
+  "baseSource": "019df8eb-9215-7d32-86bb-cf51f6433c34/ig_0900c20165027e930169fda3d46e4081919905bed46bebee13.png",
+  "rows": {
+    "idle": {
+      "frames": 6,
+      "fps": 5,
+      "generatedImage": "019e06dc-965e-7442-b728-783a0f8bb7dd/ig_03153819e840523c0169fda9a95a248191bf635dec3725f984.png",
+      "qaNote": "Six complete separated Bao idle poses with consistent shih tzu identity."
+    },
+    "happy": {
+      "frames": 6,
+      "fps": 7,
+      "generatedImage": "019e06ec-2097-7153-864f-eaf45e458996/ig_03c6b1d9aec388970169fdad7fff388191904f84d5f02477dd.png",
+      "qaNote": "Six happy bounce, paw, and tail movement frames."
+    },
+    "sad": {
+      "frames": 6,
+      "fps": 4,
+      "generatedImage": "019e06ec-20cd-7401-9b05-fbc8b2ba1044/ig_056959fd035db3960169fdad2825a88191b90c03b581005a7e.png",
+      "qaNote": "Six sad frames with drooping ears, lowered head, and slumped poses."
+    },
+    "hungry": {
+      "frames": 6,
+      "fps": 5,
+      "generatedImage": "019e06ec-20fe-7a32-bb30-7321c654df8b/ig_03670a1b1e0451e50169fdad27f37c81918e1a04be21a17c31.png",
+      "qaNote": "Six hungry frames with an in-slot bowl and no loose effects."
+    },
+    "eating": {
+      "frames": 6,
+      "fps": 6,
+      "generatedImage": "019e06ec-213c-7161-a61e-6238da7b4089/ig_0ed861979dd83bc80169fdad2806ac8191b1da143419b4b87c.png",
+      "qaNote": "Six eating frames with Bao nibbling from an in-slot bowl."
+    },
+    "playing": {
+      "frames": 6,
+      "fps": 7,
+      "generatedImage": "019e06ef-e787-7b11-a8d5-dc1b0bba2757/ig_01adcca9d723f3820169fdae3882348191b08fd320eab3da1d_solid-ff00ff.png",
+      "qaNote": "Six playful pounce, paw, and wiggle frames with no detached toy."
+    },
+    "sleeping": {
+      "frames": 6,
+      "fps": 2,
+      "generatedImage": "019e06ef-e7e1-74d3-ba2e-7a6ea3b0190a/ig_0c72e9ef434ca5dc0169fdaec3ce208191ac78e944c8e32d37_flat_bg.png",
+      "qaNote": "Six closed-eye sleeping frames with no floating sleep marks."
+    },
+    "sick": {
+      "frames": 6,
+      "fps": 5,
+      "generatedImage": "019e06ef-e842-7001-b869-b9139091db67/ig_0c85d952ef4e03400169fdae6e57988191b340c5b2def52cf6_flat_lcd.png",
+      "qaNote": "Six sick frames with droopy shiver poses and attached sweat marks."
+    },
+    "cleaning": {
+      "frames": 6,
+      "fps": 6,
+      "generatedImage": "019e06ef-e92f-7bd2-8061-6ce5e0967c34/ig_011f4471fcd3007a0169fdae39d8488191addc4f778f3c6925_flat_bg.png",
+      "qaNote": "Six recovered paw and bob poses with no detached cleaning effects."
+    },
+    "walking": {
+      "frames": 6,
+      "fps": 8,
+      "generatedImage": "019e06dc-96c6-7a90-a6f4-32ccdaa3185d/ig_0dbe4bf8f69779050169fdabdab3788191b4cd01aa0e524555.png",
+      "qaNote": "Clean first six frames from an eight-frame running-right gait reused as Bao's walking animation."
+    },
+    "attention": {
+      "frames": 6,
+      "fps": 6,
+      "generatedImage": "019e06ef-e92f-7bd2-8061-6ce5e0967c34/ig_011f4471fcd3007a0169fdae39d8488191addc4f778f3c6925_flat_ff00ff.png",
+      "qaNote": "Six attention frames with raised paw and small open mouth."
+    }
+  }
+}

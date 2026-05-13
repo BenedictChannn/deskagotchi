@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi V2 Manual Acceptance</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f7f8e7;
+        --lcd: #dceca8;
+        --ink: #123716;
+        --mid: #668649;
+        --line: rgba(18, 55, 22, 0.32);
+        --white: #fffef2;
+        --warn: #7d4d00;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 44px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 18px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      h2 {
+        font-size: 18px;
+      }
+
+      h3 {
+        font-size: 14px;
+      }
+
+      a {
+        color: var(--ink);
+        text-decoration-thickness: 2px;
+      }
+
+      .summary {
+        max-width: 760px;
+        margin-top: 8px;
+        color: rgba(18, 55, 22, 0.76);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .stamp,
+      button {
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        color: var(--ink);
+        padding: 8px 10px;
+        font: inherit;
+      }
+
+      .stamp {
+        font-size: 12px;
+        text-align: right;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .section {
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 2px solid var(--line);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .card {
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 12px;
+      }
+
+      .card[data-critical="true"] {
+        box-shadow: inset 0 0 0 3px rgba(125, 77, 0, 0.22);
+      }
+
+      .context-import {
+        margin-top: 14px;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--mid);
+        background: var(--white);
+        padding: 3px 6px;
+        font-size: 11px;
+      }
+
+      .steps {
+        margin: 10px 0 0;
+        padding-left: 22px;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .checks {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .deferral-grid {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .batch-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .batch-card {
+        display: grid;
+        gap: 8px;
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 10px;
+      }
+
+      .batch-card[data-status="complete"] {
+        background: var(--white);
+      }
+
+      .batch-card header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: start;
+        border: 0;
+        padding: 0;
+      }
+
+      .batch-card h3 {
+        font-size: 13px;
+      }
+
+      .batch-count {
+        border: 1px solid var(--mid);
+        background: var(--white);
+        padding: 2px 5px;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .batch-list {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      label.check {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 8px;
+        align-items: start;
+        background: var(--white);
+        border: 1px solid var(--line);
+        padding: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .deferral {
+        display: grid;
+        gap: 8px;
+        border: 1px solid var(--line);
+        background: var(--white);
+        padding: 8px;
+      }
+
+      .deferral label {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 8px;
+        align-items: start;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .deferral textarea {
+        min-height: 52px;
+      }
+
+      input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--ink);
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        border: 2px solid var(--line);
+        background: var(--white);
+        color: var(--ink);
+        padding: 8px;
+        font: inherit;
+        font-size: 12px;
+      }
+
+      textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 5px;
+        font-size: 12px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .warning {
+        margin-top: 10px;
+        color: var(--warn);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .status-line {
+        margin-top: 10px;
+        color: rgba(18, 55, 22, 0.76);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      #export-output {
+        min-height: 220px;
+      }
+
+      @media (max-width: 880px) {
+        header,
+        .grid,
+        .field-grid,
+        .batch-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Deskagotchi V2 Manual Acceptance</h1>
+          <p class="summary">
+            Use this checklist for the remaining V2 acceptance work that cannot
+            be proven by automated QA alone. Browser state is stored locally for
+            convenience; export the report when the pass is complete.
+          </p>
+        </div>
+        <div class="stamp">
+          Manual gate<br />
+          Windows V2
+        </div>
+      </header>
+
+      <section class="section">
+        <h2>Run Context</h2>
+        <div class="field-grid">
+          <label class="field">Tester <input data-field="tester" type="text" /></label>
+          <label class="field">Date <input data-field="date" type="text" placeholder="YYYY-MM-DD" /></label>
+          <label class="field">Windows version <input data-field="windowsVersion" type="text" /></label>
+          <label class="field">Deskagotchi build <input data-field="build" type="text" placeholder="0.1.0 / commit SHA" /></label>
+          <label class="field">Monitor setup <input data-field="monitorSetup" type="text" placeholder="primary + left/right/stacked, scale factors" /></label>
+          <label class="field">Installer path <input data-field="installerPath" type="text" placeholder="release/Deskagotchi Setup 0.1.0.exe" /></label>
+          <label class="field">Accepted out of scope by <input data-field="acceptedOutOfScopeBy" type="text" placeholder="Required only when deferring a gate" /></label>
+        </div>
+        <p class="warning">
+          Keep the imported build and installer path unchanged. If either one is
+          wrong, rerun `npm.cmd run qa:v2:manual-context`; closeout rejects
+          hand-edited or stale manual context identity.
+        </p>
+        <div class="actions">
+          <a href="./v2-completion-audit.md">Completion audit</a>
+          <a href="./v2-manual-acceptance-runbook.md">Manual runbook</a>
+          <a href="./v2-visual-acceptance.html">Visual acceptance</a>
+          <a href="./v2-visual-review-notes.md">Visual review notes</a>
+          <a href="./desktop-hardening-v2.md">Desktop hardening plan</a>
+        </div>
+        <div class="card context-import">
+          <h3>Manual Context Import</h3>
+          <p class="status-line">
+            Run `npm.cmd run qa:v2:manual-context` and open
+            `.qa-runs/latest-v2-manual-acceptance.html` to preload context
+            automatically. `npm.cmd run qa:v2:manual-open` does both steps.
+            You can also paste `manual-context.json` here and apply it. This
+            never checks manual gates.
+          </p>
+          <label class="field">Context JSON <textarea data-context-import></textarea></label>
+          <div class="actions">
+            <button type="button" data-action="apply-context">Apply Context</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Gate Batches</h2>
+        <p class="summary">
+          Work through these batches in order. The counts update when a gate is
+          checked or explicitly deferred with rationale and approver.
+        </p>
+        <div class="batch-grid" id="batch-progress"></div>
+      </section>
+
+      <section class="section">
+        <h2>Manual Gates</h2>
+        <div class="grid">
+          <article class="card" data-batch-name="Visual acceptance" data-batch-order="1" data-critical="true" data-section="visual">
+            <h3>Visual Acceptance</h3>
+            <div class="meta"><span class="chip">pets</span><span class="chip">food</span><span class="chip">style</span></div>
+            <ol class="steps">
+              <li>Open `v2-visual-acceptance.html`.</li>
+              <li>Review every pet at preview and contact-sheet size.</li>
+              <li>Review food-only and full item contact sheets.</li>
+            </ol>
+            <div class="checks">
+              <label class="check"><input data-check="visual.pets" type="checkbox" /><span>All five pets read as intended animals at desktop size.</span></label>
+              <label class="check"><input data-check="visual.animations" type="checkbox" /><span>Animation rows have visible but not distracting movement.</span></label>
+              <label class="check"><input data-check="visual.food" type="checkbox" /><span>Food icons are roughly identifiable without relying on labels.</span></label>
+              <label class="check"><input data-check="visual.cohesion" type="checkbox" /><span>Pets and food share a coherent monochrome LCD style.</span></label>
+            </div>
+            <label class="field">Notes <textarea data-field="visualNotes"></textarea></label>
+          </article>
+
+          <article class="card" data-batch-name="Interactive installer" data-batch-order="2" data-critical="true" data-section="installer">
+            <h3>Interactive Installer</h3>
+            <div class="meta"><span class="chip">NSIS</span><span class="chip">install</span><span class="chip">uninstall</span></div>
+            <ol class="steps">
+              <li>Run the installer manually.</li>
+              <li>Choose a temporary install directory.</li>
+              <li>Launch Deskagotchi from the installed location.</li>
+              <li>Run uninstall from Windows apps/settings or the generated uninstaller.</li>
+            </ol>
+            <div class="checks">
+              <label class="check"><input data-check="installer.install" type="checkbox" /><span>Interactive installer completes without confusing or broken UI.</span></label>
+              <label class="check"><input data-check="installer.launch" type="checkbox" /><span>Installed app launches to the pet overlay.</span></label>
+              <label class="check"><input data-check="installer.uninstall" type="checkbox" /><span>Interactive uninstall removes the installed executable.</span></label>
+            </div>
+            <label class="field">Notes <textarea data-field="installerNotes"></textarea></label>
+          </article>
+
+          <article class="card" data-batch-name="Startup on login" data-batch-order="3" data-critical="true" data-section="startup">
+            <h3>Startup On Login</h3>
+            <div class="meta"><span class="chip">packaged</span><span class="chip">Windows login</span></div>
+            <ol class="steps">
+              <li>Install the packaged app.</li>
+              <li>Enable Launch on startup in Settings.</li>
+              <li>Sign out/in or restart Windows.</li>
+              <li>Confirm Deskagotchi opens once and the pet remains recoverable.</li>
+              <li>Disable Launch on startup after the test.</li>
+            </ol>
+            <p class="warning">This intentionally touches the real Windows startup setting. Do not run it from automated QA.</p>
+            <div class="checks">
+              <label class="check"><input data-check="startup.enable" type="checkbox" /><span>Packaged app registers startup after enabling the setting.</span></label>
+              <label class="check"><input data-check="startup.login" type="checkbox" /><span>App opens once after login/restart.</span></label>
+              <label class="check"><input data-check="startup.disable" type="checkbox" /><span>Startup is disabled again after the test.</span></label>
+            </div>
+            <label class="field">Notes <textarea data-field="startupNotes"></textarea></label>
+          </article>
+
+          <article class="card" data-batch-name="Physical monitor layouts" data-batch-order="5" data-critical="true" data-section="monitors">
+            <h3>Physical Monitor Layouts</h3>
+            <div class="meta"><span class="chip">right</span><span class="chip">stacked</span><span class="chip">DPI</span></div>
+            <ol class="steps">
+              <li>Run `npm.cmd run qa:desktop:drag` on each physical layout when available.</li>
+              <li>Manually drag the pet across displays.</li>
+              <li>Quit and relaunch to confirm visible restoration.</li>
+            </ol>
+            <div class="checks">
+              <label class="check"><input data-check="monitors.right" type="checkbox" /><span>Right-side monitor layout works.</span></label>
+              <label class="check"><input data-check="monitors.stacked" type="checkbox" /><span>Stacked-above or stacked-below layout works.</span></label>
+              <label class="check"><input data-check="monitors.dpi" type="checkbox" /><span>Mixed-DPI drag and restore behavior is acceptable.</span></label>
+            </div>
+            <label class="field">Run IDs / notes <textarea data-field="monitorNotes"></textarea></label>
+          </article>
+
+          <article class="card" data-batch-name="Sleep and recovery" data-batch-order="4" data-section="sleep">
+            <h3>Real Sleep/Wake</h3>
+            <div class="meta"><span class="chip">sleep</span><span class="chip">wake</span><span class="chip">unlock</span></div>
+            <ol class="steps">
+              <li>Launch the packaged or dev app.</li>
+              <li>Put the machine to sleep for at least five minutes.</li>
+              <li>Wake and unlock.</li>
+              <li>Confirm the pet is visible, clickable, and state refreshes.</li>
+            </ol>
+            <div class="checks">
+              <label class="check"><input data-check="sleep.visible" type="checkbox" /><span>Pet remains visible or recoverable after wake.</span></label>
+              <label class="check"><input data-check="sleep.state" type="checkbox" /><span>Stats/state refresh after wake.</span></label>
+              <label class="check"><input data-check="sleep.process" type="checkbox" /><span>No duplicate or stuck Deskagotchi processes remain.</span></label>
+            </div>
+            <label class="field">Notes <textarea data-field="sleepNotes"></textarea></label>
+          </article>
+
+          <article class="card" data-batch-name="Environment caveats" data-batch-order="6" data-section="environment">
+            <h3>Environment Edge Cases</h3>
+            <div class="meta"><span class="chip">RDP</span><span class="chip">taskbar</span><span class="chip">SmartScreen</span></div>
+            <ol class="steps">
+              <li>Test under RDP if available.</li>
+              <li>Test with unusual taskbar positions or auto-hide if available.</li>
+              <li>Record SmartScreen/signing behavior for the installer.</li>
+            </ol>
+            <div class="checks">
+              <label class="check"><input data-check="environment.rdp" type="checkbox" /><span>RDP behavior is acceptable or explicitly deferred.</span></label>
+              <label class="check"><input data-check="environment.taskbar" type="checkbox" /><span>Unusual taskbar layout is acceptable or explicitly deferred.</span></label>
+              <label class="check"><input data-check="environment.smartscreen" type="checkbox" /><span>SmartScreen/signing caveat is documented for this build.</span></label>
+            </div>
+            <label class="field">Notes <textarea data-field="environmentNotes"></textarea></label>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Export</h2>
+        <p class="summary">Use this JSON as the manual evidence blob in the V2 audit or PR notes. Checked gates mean tested and passed. Deferred gates require a rationale and an approver in the run context.</p>
+        <div class="card">
+          <h3>Closeout Target</h3>
+          <p class="status-line">
+            Save or move the exported JSON to `docs/qa/v2-manual-acceptance-export.json`,
+            then run `npm.cmd run qa:v2:audit -- --manual docs\qa\v2-manual-acceptance-export.json`.
+            Strict closeout still requires committing the export and refreshed report before
+            `npm.cmd run qa:v2:closeout` can pass.
+          </p>
+        </div>
+        <h3>Accepted Deferrals</h3>
+        <p class="summary">Use these only when a gate is explicitly accepted as out of scope for this V2 release. A deferred gate without rationale or approver still blocks closeout.</p>
+        <div class="deferral-grid" id="deferral-grid"></div>
+        <div class="actions">
+          <button type="button" data-action="export">Export Report</button>
+          <button type="button" data-action="download">Download JSON</button>
+          <button type="button" data-action="clear">Clear Local State</button>
+        </div>
+        <p class="status-line" id="export-status"></p>
+        <label class="field">Report JSON <textarea id="export-output" readonly></textarea></label>
+      </section>
+    </main>
+    <script id="deskagotchi-manual-context" type="application/json"></script>
+
+    <script>
+      const storageKey = "deskagotchi-v2-manual-acceptance";
+      let currentManualContextSignature = "";
+      const fields = Array.from(document.querySelectorAll("[data-field]"));
+      const checks = Array.from(document.querySelectorAll("[data-check]"));
+      const batchProgress = document.querySelector("#batch-progress");
+      const deferralGrid = document.querySelector("#deferral-grid");
+      const exportOutput = document.querySelector("#export-output");
+      const exportStatus = document.querySelector("#export-status");
+      const requiredManualFields = [
+        "tester",
+        "date",
+        "windowsVersion",
+        "build",
+        "monitorSetup",
+        "installerPath"
+      ];
+      const sectionEvidenceFields = [
+        {
+          section: "visual",
+          label: "Visual acceptance notes",
+          field: "visualNotes"
+        },
+        {
+          section: "installer",
+          label: "Installer notes",
+          field: "installerNotes"
+        },
+        {
+          section: "startup",
+          label: "Startup notes",
+          field: "startupNotes"
+        },
+        {
+          section: "monitors",
+          label: "Monitor run IDs / notes",
+          field: "monitorNotes"
+        },
+        {
+          section: "sleep",
+          label: "Sleep/wake notes",
+          field: "sleepNotes"
+        },
+        {
+          section: "environment",
+          label: "Environment notes",
+          field: "environmentNotes"
+        }
+      ];
+      const manualBatches = Array.from(document.querySelectorAll("[data-batch-name]"))
+        .map((section) => ({
+          name: section.dataset.batchName,
+          order: Number.parseInt(section.dataset.batchOrder, 10),
+          gateIds: Array.from(section.querySelectorAll("[data-check]")).map(
+            (check) => check.dataset.check
+          )
+        }))
+        .sort((left, right) => left.order - right.order);
+      const fieldLabels = Object.fromEntries(
+        fields.map((field) => [
+          field.dataset.field,
+          field.closest(".field").childNodes[0].textContent.trim()
+        ])
+      );
+
+      function renderDeferrals() {
+        deferralGrid.innerHTML = checks
+          .map((check) => {
+            const key = check.dataset.check;
+            const label = check.closest(".check").querySelector("span").textContent;
+            return `
+              <article class="deferral">
+                <label>
+                  <input data-deferral="${key}" type="checkbox" />
+                  <span>${key}: ${label}</span>
+                </label>
+                <textarea data-deferral-note="${key}" placeholder="Why this gate is accepted as out of scope for V2"></textarea>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function loadState() {
+        try {
+          return JSON.parse(localStorage.getItem(storageKey) || "{}");
+        } catch {
+          return {};
+        }
+      }
+
+      function saveState() {
+        const state = collectState();
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function collectState() {
+        const deferrals = Object.fromEntries(
+          Array.from(document.querySelectorAll("[data-deferral]")).map((deferral) => {
+            const key = deferral.dataset.deferral;
+            const note = document.querySelector(`[data-deferral-note="${key}"]`).value;
+            return [
+              key,
+              {
+                accepted: deferral.checked,
+                rationale: note
+              }
+            ];
+          })
+        );
+        return {
+          manualContextSignature: currentManualContextSignature,
+          fields: Object.fromEntries(fields.map((field) => [field.dataset.field, field.value])),
+          checks: Object.fromEntries(checks.map((check) => [check.dataset.check, check.checked])),
+          deferrals,
+          exportedAt: new Date().toISOString()
+        };
+      }
+
+      function restoreState() {
+        const state = loadState();
+        currentManualContextSignature = state.manualContextSignature || "";
+        for (const field of fields) {
+          field.value = state.fields?.[field.dataset.field] || "";
+        }
+        for (const check of checks) {
+          check.checked = Boolean(state.checks?.[check.dataset.check]);
+        }
+        for (const deferral of Array.from(document.querySelectorAll("[data-deferral]"))) {
+          const key = deferral.dataset.deferral;
+          deferral.checked = Boolean(state.deferrals?.[key]?.accepted);
+          const note = document.querySelector(`[data-deferral-note="${key}"]`);
+          note.value = state.deferrals?.[key]?.rationale || "";
+        }
+        updateProgress();
+      }
+
+      function buildReport() {
+        const state = collectState();
+        const hasDeferrals = Object.values(state.deferrals).some((deferral) => deferral.accepted);
+        const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
+        const fieldFailures = buildFieldFailures(state, hasDeferrals);
+        const evidenceFailures = buildEvidenceFailures(state);
+        const conflictFailures = buildConflictFailures(state);
+        const blockingChecks = checks
+          .map((check) => check.dataset.check)
+          .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
+        return {
+          ...state,
+          expectedChecks: checks.map((check) => check.dataset.check),
+          requiredFields: requiredManualFields,
+          requiredEvidenceFields: sectionEvidenceFields,
+          manualExecutionBatches: buildManualBatchReport(state, acceptedOutOfScopeBy),
+          fieldFailures,
+          evidenceFailures,
+          conflictFailures,
+          blockingChecks,
+          hasDeferrals,
+          manualPass: blockingChecks.length === 0 && fieldFailures.length === 0 && evidenceFailures.length === 0 && conflictFailures.length === 0
+        };
+      }
+
+      function exportReport() {
+        const report = buildReport();
+        exportOutput.value = JSON.stringify(report, null, 2);
+        updateProgress();
+      }
+
+      function downloadReport() {
+        const report = buildReport();
+        const payload = JSON.stringify(report, null, 2);
+        exportOutput.value = payload;
+        const blob = new Blob([payload], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "v2-manual-acceptance-export.json";
+        link.click();
+        URL.revokeObjectURL(link.href);
+        updateProgress("Downloaded v2-manual-acceptance-export.json. Move it to docs/qa/ or pass it to npm.cmd run qa:v2:audit -- --manual <path>.");
+      }
+
+      function updateProgress(message) {
+        const state = collectState();
+        const hasDeferrals = Object.values(state.deferrals).some((deferral) => deferral.accepted);
+        const acceptedOutOfScopeBy = state.fields.acceptedOutOfScopeBy?.trim() || "";
+        const blockingChecks = checks
+          .map((check) => check.dataset.check)
+          .filter((key) => !isGateResolved(key, state, acceptedOutOfScopeBy));
+        const fieldFailures = buildFieldFailures(state, hasDeferrals);
+        const evidenceFailures = buildEvidenceFailures(state);
+        const conflictFailures = buildConflictFailures(state);
+        const passed = checks.length - blockingChecks.length;
+        const contextFailureCount = fieldFailures.length + evidenceFailures.length + conflictFailures.length;
+        const fieldStatus = fieldFailures.length === 0
+          ? "Required run context complete."
+          : `${fieldFailures.length} required run context issue${fieldFailures.length === 1 ? "" : "s"}.`;
+        const evidenceStatus = evidenceFailures.length === 0
+          ? "Required evidence notes complete."
+          : `${evidenceFailures.length} required evidence note${evidenceFailures.length === 1 ? "" : "s"} missing.`;
+        const conflictStatus = conflictFailures.length === 0
+          ? ""
+          : ` ${conflictFailures.length} gate conflict${conflictFailures.length === 1 ? "" : "s"} must be resolved.`;
+        const passStatus = blockingChecks.length === 0 && contextFailureCount === 0
+          ? "Manual pass ready to export."
+          : "Manual pass is still blocked.";
+        const prefix = `${passed}/${checks.length} gates resolved. ${fieldStatus} ${evidenceStatus}${conflictStatus} ${passStatus}`;
+        renderBatchProgress(state, acceptedOutOfScopeBy);
+        exportStatus.textContent = message ? `${prefix} ${message}` : prefix;
+      }
+
+      function renderBatchProgress(state, acceptedOutOfScopeBy) {
+        batchProgress.innerHTML = buildManualBatchReport(state, acceptedOutOfScopeBy)
+          .map((batch) => {
+            const openItems = batch.blockingGateIds.length === 0
+              ? "<li>Ready for export.</li>"
+              : batch.blockingGateIds
+                  .map((gateId) => `<li><code>${escapeHtml(gateId)}</code> ${escapeHtml(gateLabel(gateId))}</li>`)
+                  .join("");
+            return `
+              <article class="batch-card" data-batch="${escapeHtml(batch.name)}" data-status="${batch.status}">
+                <header>
+                  <h3>${escapeHtml(batch.name)}</h3>
+                  <span class="batch-count">${batch.resolvedCount}/${batch.totalCount}</span>
+                </header>
+                <ol class="batch-list">${openItems}</ol>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function buildManualBatchReport(state, acceptedOutOfScopeBy) {
+        return manualBatches.map((batch) => {
+          const blockingGateIds = batch.gateIds.filter(
+            (key) => !isGateResolved(key, state, acceptedOutOfScopeBy)
+          );
+          return {
+            name: batch.name,
+            gateIds: batch.gateIds,
+            resolvedCount: batch.gateIds.length - blockingGateIds.length,
+            totalCount: batch.gateIds.length,
+            status: blockingGateIds.length === 0 ? "complete" : "open",
+            blockingGateIds
+          };
+        });
+      }
+
+      function gateLabel(key) {
+        return document
+          .querySelector(`[data-check="${key}"]`)
+          ?.closest(".check")
+          ?.querySelector("span")
+          ?.textContent || key;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function buildFieldFailures(state, hasDeferrals) {
+        const failures = requiredManualFields
+          .filter((fieldName) => !state.fields[fieldName]?.trim())
+          .map((fieldName) => `Missing run context field: ${fieldLabels[fieldName] || fieldName}`);
+        if (!currentManualContextSignature) {
+          failures.push("Manual context must be imported from qa:v2:manual-context.");
+        }
+        failures.push(...buildContextIdentityFailures(state));
+        if (hasDeferrals && !state.fields.acceptedOutOfScopeBy?.trim()) {
+          failures.push("Missing run context field: Accepted out of scope by");
+        }
+        return failures;
+      }
+
+      function buildContextIdentityFailures(state) {
+        if (!currentManualContextSignature) {
+          return [];
+        }
+
+        const signatureParts = currentManualContextSignature.split("|");
+        if (signatureParts.length < 4) {
+          return ["Imported manual context signature is malformed."];
+        }
+
+        const expectedBuild = signatureParts[2];
+        const expectedInstallerPath = signatureParts[3];
+        const failures = [];
+        if ((state.fields.build || "").trim() !== expectedBuild) {
+          failures.push("Deskagotchi build changed after manual context import.");
+        }
+        if ((state.fields.installerPath || "").trim() !== expectedInstallerPath) {
+          failures.push("Installer path changed after manual context import.");
+        }
+        return failures;
+      }
+
+      function buildEvidenceFailures(state) {
+        return sectionEvidenceFields
+          .filter((sectionEvidence) => isSectionTouched(sectionEvidence.section, state))
+          .filter((sectionEvidence) => !state.fields[sectionEvidence.field]?.trim())
+          .map((sectionEvidence) => `Missing evidence note: ${sectionEvidence.label}`);
+      }
+
+      function buildConflictFailures(state) {
+        return checks
+          .map((check) => check.dataset.check)
+          .filter((key) => state.checks[key] === true && state.deferrals[key]?.accepted === true)
+          .map((key) => `Gate cannot be both checked and deferred: ${key}`);
+      }
+
+      function isSectionTouched(section, state) {
+        const sectionChecks = Array.from(
+          document.querySelectorAll(`[data-section="${section}"] [data-check]`)
+        ).map((check) => check.dataset.check);
+        return sectionChecks.some(
+          (key) => state.checks[key] || state.deferrals[key]?.accepted
+        );
+      }
+
+      function isGateResolved(key, state, acceptedOutOfScopeBy) {
+        if (state.checks[key]) {
+          return true;
+        }
+        const deferral = state.deferrals[key];
+        return Boolean(
+          deferral?.accepted &&
+            deferral.rationale?.trim() &&
+            acceptedOutOfScopeBy
+        );
+      }
+
+      function buildManualContextSignature(context) {
+        return [
+          context.runId || "",
+          context.generatedAt || "",
+          context.fields?.build || "",
+          context.fields?.installerPath || ""
+        ].join("|");
+      }
+
+      function clearGateResolutionState() {
+        for (const check of checks) {
+          check.checked = false;
+        }
+        for (const deferral of Array.from(document.querySelectorAll("[data-deferral]"))) {
+          const key = deferral.dataset.deferral;
+          deferral.checked = false;
+          document.querySelector(`[data-deferral-note="${key}"]`).value = "";
+        }
+        const approverField = document.querySelector("[data-field='acceptedOutOfScopeBy']");
+        if (approverField) {
+          approverField.value = "";
+        }
+      }
+
+      renderDeferrals();
+      restoreState();
+      for (const element of [
+        ...fields,
+        ...checks,
+        ...Array.from(document.querySelectorAll("[data-deferral]")),
+        ...Array.from(document.querySelectorAll("[data-deferral-note]"))
+      ]) {
+        element.addEventListener("input", () => {
+          normalizeGateResolution(element);
+          saveState();
+          updateProgress();
+        });
+        element.addEventListener("change", () => {
+          normalizeGateResolution(element);
+          saveState();
+          updateProgress();
+        });
+      }
+      document.querySelector("[data-action='export']").addEventListener("click", exportReport);
+      document.querySelector("[data-action='download']").addEventListener("click", downloadReport);
+      document.querySelector("[data-action='apply-context']").addEventListener("click", applyManualContextFromInput);
+      document.querySelector("[data-action='clear']").addEventListener("click", () => {
+        localStorage.removeItem(storageKey);
+        restoreState();
+        exportOutput.value = "";
+        updateProgress();
+      });
+
+      applyEmbeddedManualContext();
+
+      function applyManualContextFromInput() {
+        const input = document.querySelector("[data-context-import]");
+        applyManualContextPayload(
+          input.value || "{}",
+          "Manual context imported. Manual gates still require human checks or explicit deferrals."
+        );
+      }
+
+      function applyEmbeddedManualContext() {
+        const embeddedContext = document.querySelector("#deskagotchi-manual-context");
+        const payload = embeddedContext?.textContent?.trim();
+        if (!payload) {
+          return;
+        }
+
+        const input = document.querySelector("[data-context-import]");
+        input.value = payload;
+        applyManualContextPayload(
+          payload,
+          "Manual context loaded from this generated session. Manual gates still require human checks or explicit deferrals."
+        );
+      }
+
+      function applyManualContextPayload(payload, successMessage) {
+        let context;
+        try {
+          context = JSON.parse(payload);
+        } catch {
+          updateProgress("Manual context import failed: JSON could not be parsed.");
+          return;
+        }
+
+        const nextManualContextSignature = buildManualContextSignature(context);
+        if (
+          nextManualContextSignature &&
+          nextManualContextSignature !== currentManualContextSignature
+        ) {
+          clearGateResolutionState();
+          exportOutput.value = "";
+        }
+        currentManualContextSignature = nextManualContextSignature;
+
+        for (const [fieldName, value] of Object.entries(context.fields || {})) {
+          const field = document.querySelector(`[data-field="${fieldName}"]`);
+          if (field && typeof value === "string") {
+            field.value = value;
+          }
+        }
+        for (const [fieldName, value] of Object.entries(context.evidenceNoteStarters || {})) {
+          const field = document.querySelector(`[data-field="${fieldName}"]`);
+          if (field && typeof value === "string") {
+            field.value = value;
+          }
+        }
+        saveState();
+        updateProgress(successMessage);
+      }
+
+      function normalizeGateResolution(element) {
+        if (element.matches("[data-check]") && element.checked) {
+          const deferral = document.querySelector(`[data-deferral="${element.dataset.check}"]`);
+          if (deferral) {
+            deferral.checked = false;
+          }
+          return;
+        }
+
+        if (element.matches("[data-deferral]") && element.checked) {
+          const check = document.querySelector(`[data-check="${element.dataset.deferral}"]`);
+          if (check) {
+            check.checked = false;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

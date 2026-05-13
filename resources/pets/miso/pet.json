@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "packageId": "miso",
+  "packageVersion": "0.1.0",
+  "minAppVersion": "0.1.0",
+  "name": "Miso",
+  "description": "A tiny curious cat desk companion with cozy retro-LCD sprite animations.",
+  "source": "built-in",
+  "species": "Cat-like desk companion",
+  "personality": "Curious, cozy, alert, and fond of tiny desk rituals.",
+  "createdAt": "2026-05-08T00:00:00.000Z",
+  "assetVersion": "0.2.0",
+  "assets": {
+    "spritesheet": "spritesheet.png",
+    "preview": "preview.png",
+    "icon": "icon.png"
+  },
+  "animations": [
+    {
+      "id": "idle",
+      "row": 0,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true
+    },
+    {
+      "id": "happy",
+      "row": 1,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sad",
+      "row": 2,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 4,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "hungry",
+      "row": 3,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "eating",
+      "row": 4,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "playing",
+      "row": 5,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 7,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sleeping",
+      "row": 6,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 2,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "sick",
+      "row": 7,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 5,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "cleaning",
+      "row": 8,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "walking",
+      "row": 9,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 8,
+      "loop": true,
+      "fallback": "idle"
+    },
+    {
+      "id": "attention",
+      "row": 10,
+      "frames": 6,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "fps": 6,
+      "loop": true,
+      "fallback": "idle"
+    }
+  ],
+  "growthStages": [
+    {
+      "id": "egg",
+      "stage": "egg",
+      "label": "Miso Egg",
+      "minAgeHours": 0,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "baby",
+      "stage": "baby",
+      "label": "Kitten Miso",
+      "minAgeHours": 24,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "child",
+      "stage": "child",
+      "label": "Little Miso",
+      "minAgeHours": 72,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "teen",
+      "stage": "teen",
+      "label": "Spry Miso",
+      "minAgeHours": 240,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    },
+    {
+      "id": "adult",
+      "stage": "adult",
+      "label": "Miso",
+      "minAgeHours": 504,
+      "careScoreMin": 0,
+      "careScoreMax": 100,
+      "animationSet": [
+        "idle",
+        "happy",
+        "sad",
+        "hungry",
+        "eating",
+        "playing",
+        "sleeping",
+        "sick",
+        "cleaning",
+        "walking",
+        "attention"
+      ]
+    }
+  ],
+  "foodPreferences": {
+    "sharedFoodIds": [
+      "meal-rice-ball",
+      "meal-steamed-bun",
+      "snack-biscuit"
+    ],
+    "likedFoodIds": [
+      "meal-chicken-bite"
+    ],
+    "favoriteFoodIds": [
+      "meal-fish-bite",
+      "snack-milk"
+    ],
+    "dislikedFoodIds": [
+      "meal-leafy-bundle"
+    ],
+    "eatingAnchor": {
+      "x": 0.57,
+      "y": 0.58,
+      "size": 21
+    }
+  },
+  "favoritePlayStyle": "chase",
+  "careModifiers": {
+    "hungerDecayMultiplier": 1,
+    "happinessDecayMultiplier": 1,
+    "energyDecayMultiplier": 0.95,
+    "cleanlinessDecayMultiplier": 0.9,
+    "affectionGainMultiplier": 1.15
+  },
+  "colorPalette": [
+    "#f7f8e7",
+    "#dceca8",
+    "#7d9d58",
+    "#123716"
+  ],
+  "author": "Deskagotchi",
+  "license": "Original Deskagotchi imagegen-assisted retro-LCD pixel asset",
+  "capabilities": [
+    "mvp-animation",
+    "growth-v1",
+    "retro-lcd",
+    "imagegen-art",
+    "cat"
+  ],
+  "validationStatus": "passed",
+  "assetHash": "d39188a9e7e54a141e15656fc072b83dc8671a0ae365c5b8d2e90be8dd15dfca",
+  "generation": {
+    "mode": "imagegen",
+    "prompt": "Animation-first Miso reference sheet with stable same-scale cat poses for idle, happy, sad, hungry, eating, playing, sleeping, sick, cleaning, walking, and attention.",
+    "referenceImageStored": true,
+    "referenceImage": "docs/qa/miso-animation-reference.png",
+    "frameLoop": "Each generated 4-frame row is packaged as 6 runtime frames using 0,1,2,3,2,1.",
+    "sizingFix": "Frames are normalized with one scale per animation row to avoid within-row size jumps."
+  }
+}

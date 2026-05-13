@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi V2 Roadmap</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23dceca8'/%3E%3Crect x='3' y='4' width='10' height='8' fill='%23123716'/%3E%3Crect x='5' y='6' width='2' height='2' fill='%23f7f8e7'/%3E%3Crect x='9' y='6' width='2' height='2' fill='%23f7f8e7'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f7f8e7;
+        --lcd: #dceca8;
+        --soft: #eef6c9;
+        --mid: #7d9d58;
+        --ink: #123716;
+        --line: rgba(18, 55, 22, 0.28);
+        --faint: rgba(18, 55, 22, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(transparent 23px, rgba(18, 55, 22, 0.035) 24px),
+          linear-gradient(90deg, transparent 23px, rgba(18, 55, 22, 0.03) 24px),
+          var(--paper);
+        background-size: 24px 24px;
+        color: var(--ink);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      a {
+        color: inherit;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      main {
+        width: min(1320px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 44px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 22px;
+        align-items: end;
+        padding-bottom: 18px;
+        border-bottom: 2px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        font-size: clamp(28px, 4.6vw, 56px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 20px;
+        line-height: 1.1;
+      }
+
+      h3 {
+        font-size: 14px;
+      }
+
+      section {
+        margin-top: 24px;
+      }
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .kicker::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--ink);
+      }
+
+      .summary {
+        max-width: 760px;
+        margin-top: 12px;
+        color: rgba(18, 55, 22, 0.76);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .stamp {
+        min-width: 178px;
+        border: 2px solid var(--ink);
+        background: var(--lcd);
+        padding: 12px;
+        box-shadow: 6px 6px 0 var(--mid);
+      }
+
+      .stamp strong {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .stamp span {
+        display: block;
+        margin-top: 6px;
+        font-size: 22px;
+        font-weight: 900;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid.cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        border: 2px solid var(--line);
+        background: rgba(220, 236, 168, 0.5);
+        padding: 16px;
+      }
+
+      .panel--strong {
+        border-color: var(--ink);
+        background: var(--lcd);
+      }
+
+      .panel p,
+      .panel li {
+        color: rgba(18, 55, 22, 0.78);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .panel ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+      }
+
+      .metric-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        border: 2px solid var(--line);
+        background: var(--soft);
+        padding: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 8px;
+        color: rgba(18, 55, 22, 0.7);
+        font-size: 11px;
+        line-height: 1.35;
+        text-transform: uppercase;
+      }
+
+      .pet-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .pet-card {
+        min-width: 0;
+        border: 2px solid var(--line);
+        background: var(--soft);
+        padding: 12px;
+      }
+
+      .pet-card img {
+        width: 88px;
+        height: 88px;
+        image-rendering: pixelated;
+        object-fit: contain;
+        background:
+          linear-gradient(45deg, var(--faint) 25%, transparent 25%),
+          linear-gradient(-45deg, var(--faint) 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, var(--faint) 75%),
+          linear-gradient(-45deg, transparent 75%, var(--faint) 75%);
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0;
+        background-size: 16px 16px;
+        border: 1px solid var(--line);
+      }
+
+      .pet-card h3 {
+        margin-top: 10px;
+        font-size: 16px;
+      }
+
+      .pet-card p {
+        margin-top: 6px;
+        font-size: 11px;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        padding: 4px 6px;
+        font-size: 10px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 10px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) 170px;
+        gap: 12px;
+        align-items: start;
+        border: 2px solid var(--line);
+        background: rgba(247, 248, 231, 0.72);
+        padding: 12px;
+      }
+
+      .step__phase {
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .step__body p {
+        margin-top: 5px;
+      }
+
+      .step__status {
+        justify-self: end;
+        border: 2px solid var(--line);
+        background: var(--lcd);
+        padding: 7px 9px;
+        font-size: 11px;
+        font-weight: 800;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .roadmap-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(247, 248, 231, 0.7);
+        font-size: 12px;
+      }
+
+      .roadmap-table th,
+      .roadmap-table td {
+        border: 1px solid var(--line);
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .roadmap-table th {
+        background: var(--lcd);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .asset-strip {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .asset-strip img {
+        image-rendering: pixelated;
+        border: 2px solid var(--line);
+        background: var(--lcd);
+        padding: 8px;
+      }
+
+      .checklist {
+        columns: 2;
+        column-gap: 28px;
+      }
+
+      .checklist li {
+        break-inside: avoid;
+        margin-bottom: 8px;
+      }
+
+      @media (max-width: 1040px) {
+        .grid.cols-3,
+        .pet-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .metric-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100vw - 18px, 1320px);
+          padding-top: 14px;
+        }
+
+        header,
+        .grid.cols-2,
+        .grid.cols-3,
+        .pet-grid,
+        .metric-row {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp {
+          width: 100%;
+        }
+
+        .step {
+          grid-template-columns: 1fr;
+        }
+
+        .step__status {
+          justify-self: start;
+        }
+
+        .checklist {
+          columns: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="kicker">Project state document</div>
+          <h1>Deskagotchi V2 Roadmap</h1>
+          <p class="summary">
+            A repo-grounded snapshot of what Deskagotchi is today, what V2 must
+            feel like, and the concrete work needed to get from prototype to a
+            usable long-term desktop companion.
+          </p>
+        </div>
+        <aside class="stamp" aria-label="Version target">
+          <strong>Target</strong>
+          <span>V2 usable pet</span>
+        </aside>
+      </header>
+
+      <section aria-labelledby="current-state-heading">
+        <h2 id="current-state-heading">Current State</h2>
+        <p class="summary">
+          Deskagotchi is already past a blank prototype. It has the native
+          Electron shell, a transparent overlay pet, care interactions, a
+          manifest-based pet package system, a local Hatch prototype, QA
+          harnesses, and a cohesive monochrome LCD asset direction. It is not
+          yet a fully satisfying Tamagotchi-like companion because the
+          long-term care loop, evolution consequences, desktop feel, and some
+          UX polish still need to mature. Custom pet generation is archived for
+          V2 planning until the asset pipeline is designed properly.
+        </p>
+
+        <div class="metric-row" style="margin-top: 16px">
+          <div class="metric">
+            <strong>5</strong>
+            <span>Built-in original pets</span>
+          </div>
+          <div class="metric">
+            <strong>11</strong>
+            <span>Animation rows per built-in pet</span>
+          </div>
+          <div class="metric">
+            <strong>27</strong>
+            <span>LCD item catalog entries</span>
+          </div>
+          <div class="metric">
+            <strong>5</strong>
+            <span>Life stages currently modeled</span>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="capabilities-heading">
+        <h2 id="capabilities-heading">What Works Now</h2>
+        <div class="grid cols-3" style="margin-top: 14px">
+          <article class="panel panel--strong">
+            <h3>Desktop shell</h3>
+            <ul>
+              <li>Electron, React, TypeScript, Vite runtime.</li>
+              <li>Transparent frameless pet overlay.</li>
+              <li>Always-on-top setting and tray controls.</li>
+              <li>Single-instance behavior and explicit quit path.</li>
+              <li>Crash-safe save file with backup recovery.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Pet overlay</h3>
+            <ul>
+              <li>Clickable pet surface with compact in-overlay care menu.</li>
+              <li>Sprite drag moves the native overlay window.</li>
+              <li>Health, feed, play, clean, medicine, and sleep flows stay in overlay.</li>
+              <li>Ball play expands to the current monitor work area.</li>
+              <li>Food cue renders during eating from package anchor metadata.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Simulation</h3>
+            <ul>
+              <li>Deterministic simulation with injected time.</li>
+              <li>Offline progression capped at 36 hours.</li>
+              <li>Tracks hunger, happiness, energy, cleanliness, health, affection, discipline, age, weight, mess, illness, and mood.</li>
+              <li>Current long-term thresholds: baby 1 day, child 3 days, teen 10 days, adult 21 days.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Pet packages</h3>
+            <ul>
+              <li>Built-in and custom pets use the same schema.</li>
+              <li>Packages include manifest, spritesheet, preview, icon, growth stages, animations, personality, care modifiers, and foods.</li>
+              <li>Import rejects unsafe paths, oversized entries, executable files, duplicate ids, invalid manifests, and missing assets.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Hatch prototype archived</h3>
+            <ul>
+              <li>Full panel accepts name, description, concept, personality, colors, accessory, and theme.</li>
+              <li>Local placeholder package creation is schema validated before install.</li>
+              <li>Import and export support `.deskagotchi-pet` packages.</li>
+              <li>User-facing custom pet generation is not part of the V2 critical path.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>QA and validation</h3>
+            <ul>
+              <li>Lint, typecheck, Vitest, and package validation scripts exist.</li>
+              <li>Desktop QA covers launch, drag, overlay, play, lifecycle, renderer, pet assets, and item assets.</li>
+              <li>Contact sheets exist for pet and item asset review.</li>
+              <li>QA evidence is written under `.qa-runs/`.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="roster-heading">
+        <h2 id="roster-heading">Current Built-In Roster</h2>
+        <div class="pet-grid" style="margin-top: 14px">
+          <article class="pet-card">
+            <img src="../../resources/pets/bao/preview.png" alt="Bao preview" />
+            <h3>Bao</h3>
+            <p>Shih tzu desk companion. Sweet, calm, snack-curious.</p>
+            <div class="tags">
+              <span class="tag">kibble</span>
+              <span class="tag">chicken</span>
+              <span class="tag">11 rows</span>
+            </div>
+          </article>
+          <article class="pet-card">
+            <img src="../../resources/pets/miso/preview.png" alt="Miso preview" />
+            <h3>Miso</h3>
+            <p>Cat-like desk companion. Curious, cozy, alert.</p>
+            <div class="tags">
+              <span class="tag">fish</span>
+              <span class="tag">milk</span>
+              <span class="tag">11 rows</span>
+            </div>
+          </article>
+          <article class="pet-card">
+            <img src="../../resources/pets/mochi/preview.png" alt="Mochi preview" />
+            <h3>Mochi</h3>
+            <p>Monkey-like desk companion. Playful, curious, energetic.</p>
+            <div class="tags">
+              <span class="tag">banana</span>
+              <span class="tag">mango</span>
+              <span class="tag">11 rows</span>
+            </div>
+          </article>
+          <article class="pet-card">
+            <img src="../../resources/pets/peanut/preview.png" alt="Peanut preview" />
+            <h3>Peanut</h3>
+            <p>Elephant-like desk companion. Gentle, playful, patient.</p>
+            <div class="tags">
+              <span class="tag">leafy</span>
+              <span class="tag">sugarcane</span>
+              <span class="tag">11 rows</span>
+            </div>
+          </article>
+          <article class="pet-card">
+            <img src="../../resources/pets/puddles/preview.png" alt="Puddles preview" />
+            <h3>Puddles</h3>
+            <p>Duck desk companion. Cheerful, waddly, tidy.</p>
+            <div class="tags">
+              <span class="tag">peas</span>
+              <span class="tag">corn</span>
+              <span class="tag">11 rows</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="asset-state-heading">
+        <h2 id="asset-state-heading">Asset System State</h2>
+        <div class="grid cols-2" style="margin-top: 14px">
+          <article class="panel">
+            <h3>LCD item atlas</h3>
+            <p>
+              Food, toy, medicine, clean, and sleep items are packed into a
+              lightweight monochrome atlas. Pet packages reference item ids for
+              favorite, liked, shared, and disliked foods. The current food
+              icons are functional but not yet at the V2 recognizability bar.
+            </p>
+            <div class="asset-strip" style="margin-top: 12px">
+              <img
+                src="../../resources/items/lcd-core/items.png"
+                alt="LCD item atlas"
+                width="288"
+              />
+            </div>
+          </article>
+          <article class="panel">
+            <h3>Current visual direction</h3>
+            <p>
+              The approved V2 direction is monochrome LCD toy art: readable
+              tiny silhouettes, limited palette, transparent sprites, compact
+              icon-first care UI, and no large web-app panels in the normal pet
+              overlay.
+            </p>
+            <ul>
+              <li>Runtime palette: LCD background, mid pixels, ink pixels, paper backing.</li>
+              <li>Pet frames stay pixelated and readable at small desktop sizes.</li>
+              <li>Generated source art belongs outside the packaged app unless needed for metadata.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="gap-heading">
+        <h2 id="gap-heading">Main Gaps Before V2</h2>
+        <div class="grid cols-3" style="margin-top: 14px">
+          <article class="panel">
+            <h3>Care loop needs sharper consequences</h3>
+            <p>
+              The current simulation is deterministic and useful, but V2 needs
+              clearer care deadlines, mistakes, illness duration, sleep/wake
+              rhythm, and evolution branch consequences so the pet feels alive
+              over weeks.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Custom pet generation is archived</h3>
+            <p>
+              Current Hatch proves package installation, but production custom
+              generation is not simple enough to include casually. V2 should not
+              promise user-facing Hatch until the generation, approval,
+              packaging, QA, moderation, and failure-recovery flow is designed.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Assets need production discipline</h3>
+            <p>
+              Bao, Miso, Mochi, Peanut, and Puddles now look directionally good,
+              but V2 should enforce consistent frame anchors, expressive eating
+              and play frames, readable small-size silhouettes, recognizable
+              food icons, and no row that looks static by accident.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Desktop behavior needs hardening</h3>
+            <p>
+              Dragging and multi-monitor support exist, but V2 needs more
+              evidence across DPI scaling, negative-coordinate monitors,
+              sleep/wake resume, startup restore, click-through state, and
+              close-to-tray behavior. Frozen-window cleanup, tray recovery, and
+              always-on-top correctness are release gates after the main
+              companion features are improved.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Play is still MVP</h3>
+            <p>
+              Ball play is a good direction, but V2 needs a polished pet chase
+              loop, no ugly boundary affordances, obvious exit, scoring or
+              affection feedback, and good behavior on all monitor sizes.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Packaging readiness remains</h3>
+            <p>
+              Windows packaging exists, but V2 needs installer QA, update-safe
+              save migrations, startup-on-boot validation, resource size checks,
+              and a clear local data/export story.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="goal-heading">
+        <h2 id="goal-heading">End Goal For V2</h2>
+        <div class="panel panel--strong" style="margin-top: 14px">
+          <p>
+            V2 should feel like a small living creature on the laptop, not a
+            normal web app in a window. The user can leave it running for weeks,
+            drag it around, care for it without opening a full panel, feed it
+            food that visually matches the pet, play with it, watch moods and
+            growth change from care quality, and switch between original
+            built-in pets while custom generation remains deferred R&amp;D.
+          </p>
+        </div>
+
+        <div class="grid cols-3" style="margin-top: 14px">
+          <article class="panel">
+            <h3>Product definition</h3>
+            <ul>
+              <li>Transparent always-on-top pet overlay is the primary app.</li>
+              <li>Full panel is only for management: settings, pet switch, import/export, and future archived Hatch experiments.</li>
+              <li>All normal care happens inside the compact overlay.</li>
+              <li>Built-in pets are original, cute, and cohesive.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Simulation definition</h3>
+            <ul>
+              <li>Real-time/offline progression feels fair but meaningful.</li>
+              <li>Care mistakes, discipline, sleep, illness, mess, play, and affection affect evolution.</li>
+              <li>Growth is measured in days, not hours.</li>
+              <li>The engine stays framework-agnostic and testable.</li>
+              <li>The care simulation spec is updated with every logic change.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Quality definition</h3>
+            <ul>
+              <li>Low idle CPU and memory overhead.</li>
+              <li>No stuck windows or unclosable panels.</li>
+              <li>No care button covers the pet in normal state.</li>
+              <li>Desktop hardening has evidence across launch, drag, lifecycle, play, monitor, always-on-top, and sleep/wake scenarios.</li>
+              <li>QA evidence exists before claiming desktop behavior is fixed.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="success-heading">
+        <h2 id="success-heading">V2 Success Criteria</h2>
+        <div class="grid cols-3" style="margin-top: 14px">
+          <article class="panel">
+            <h3>Feature evidence</h3>
+            <ul>
+              <li>Overlay care works without opening management panels.</li>
+              <li>Five built-in pets pass package and visual QA.</li>
+              <li>Food icons are recognizable without labels.</li>
+              <li>Simulation rules are documented and tested.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Desktop evidence</h3>
+            <ul>
+              <li>Launch, drag, overlay, play, and lifecycle QA pass.</li>
+              <li>Frozen-window cleanup and tray recovery are tested.</li>
+              <li>Multi-monitor, DPI, always-on-top, and sleep/wake behavior have evidence.</li>
+              <li>Manual desktop acceptance is recorded.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Release evidence</h3>
+            <ul>
+              <li>`npm.cmd run check` passes.</li>
+              <li>`npm.cmd run qa` passes.</li>
+              <li>`npm.cmd run build` passes.</li>
+              <li>`npm.cmd run package:win` passes or has a documented release exception.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="roadmap-heading">
+        <h2 id="roadmap-heading">Roadmap To V2</h2>
+        <div class="timeline" style="margin-top: 14px">
+          <article class="step">
+            <div class="step__phase">Tranche 1</div>
+            <div class="step__body">
+              <h3>Stabilize the current companion surface</h3>
+              <p>
+                Remove remaining overlay friction: no accidental full panel
+                opens from care actions, compact controls never cover the pet at
+                rest, drag feels native, close/quit behavior is predictable, and
+                play mode exits cleanly.
+              </p>
+            </div>
+            <div class="step__status">Ship blocker</div>
+          </article>
+
+          <article class="step">
+            <div class="step__phase">Tranche 2</div>
+            <div class="step__body">
+              <h3>Upgrade the care simulation</h3>
+              <p>
+                Add explicit care deadlines, discipline calls, sleep/lights
+                windows, illness duration, mess consequences, and stage-specific
+                care scoring. Keep constants centralized, tests deterministic,
+                and the living simulation spec updated with each rule change.
+              </p>
+            </div>
+            <div class="step__status">Core loop</div>
+          </article>
+
+          <article class="step">
+            <div class="step__phase">Tranche 3</div>
+            <div class="step__body">
+              <h3>Finish the V2 pet asset bar</h3>
+              <p>
+                Re-QA Bao, Miso, Mochi, Peanut, and Puddles against the same
+                checklist: stable size, readable silhouette, real animation
+                motion, good eating cues, and consistent LCD style.
+              </p>
+            </div>
+            <div class="step__status">Visual quality</div>
+          </article>
+
+          <article class="step">
+            <div class="step__phase">Tranche 4</div>
+            <div class="step__body">
+              <h3>Make food and play feel intentional</h3>
+              <p>
+                Use pet-specific food choices that animals actually like, keep
+                shared foods simple, improve food icons until they are
+                recognizable without labels, render the selected food while
+                eating, and make Ball play feel like a pet chase interaction
+                rather than a debug physics demo.
+              </p>
+            </div>
+            <div class="step__status">Interaction</div>
+          </article>
+
+          <article class="step">
+            <div class="step__phase">Tranche 5</div>
+            <div class="step__body">
+              <h3>Archive Hatch and protect the package boundary</h3>
+              <p>
+                Keep the custom pet generation prototype out of the V2 promise.
+                Preserve safe import/export and package validation, document the
+                open design questions, and revisit Hatch after the core pet loop
+                is good enough to justify generated assets.
+              </p>
+            </div>
+            <div class="step__status">Deferred R&amp;D</div>
+          </article>
+
+          <article class="step">
+            <div class="step__phase">Tranche 6</div>
+            <div class="step__body">
+              <h3>Harden desktop behavior and prove Windows readiness</h3>
+              <p>
+                After the main care, pet, food, and play features settle,
+                verify frozen-window cleanup, tray recovery, always-on-top,
+                startup-on-boot, sleep/wake recovery, high-DPI displays,
+                multiple monitors, save migration, installer behavior, and
+                resource size.
+              </p>
+            </div>
+            <div class="step__status">Release gate</div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="tasks-heading">
+        <h2 id="tasks-heading">Implementation Task Board</h2>
+        <table class="roadmap-table" style="margin-top: 14px">
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Next tasks</th>
+              <th>Acceptance evidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Overlay UX</td>
+              <td>Audit button placement, pet occlusion, transient tray/card sizing, X buttons, Escape handling, and all care actions.</td>
+              <td>`npm.cmd run qa:desktop:overlay`, screenshots, manual click-through check.</td>
+            </tr>
+            <tr>
+              <td>Drag and monitors</td>
+              <td>Stress drag on primary, right-side, left-side negative-coordinate, stacked, and scaled displays.</td>
+              <td>`npm.cmd run qa:desktop:drag`, bounds logs, manual DPI note.</td>
+            </tr>
+            <tr>
+              <td>Desktop hardening</td>
+              <td>Verify frozen-window cleanup, tray recovery, explicit quit, always-on-top persistence, sleep/wake refresh, click-through state, and play-mode bounds restore.</td>
+              <td>`npm.cmd run qa:desktop:launch`, `qa:desktop:lifecycle`, `qa:desktop:play`, manual desktop acceptance, and updated `docs/qa/desktop-hardening-v2.md`.</td>
+            </tr>
+            <tr>
+              <td>Simulation V2</td>
+              <td>Add care/deadline model, sleep windows, illness age, discipline calls, stage mistake windows, and evolution branch rules.</td>
+              <td>Unit tests for each rule, offline catch-up snapshots, and updated `docs/simulation/care-simulation-v2.md`.</td>
+            </tr>
+            <tr>
+              <td>Pet assets</td>
+              <td>Run visual QA on each pet row, repair weak rows, and document any accepted limitations in contact sheets.</td>
+              <td>`npm.cmd run qa:assets:pets`, updated gallery, per-pet contact sheets.</td>
+            </tr>
+            <tr>
+              <td>Items and food</td>
+              <td>Finalize shared/species food catalog, redraw unclear food icons, and validate selected-food eating cue per pet.</td>
+              <td>`npm.cmd run qa:assets:items`, food contact sheet review, feed picker smoke, eating screenshots.</td>
+            </tr>
+            <tr>
+              <td>Hatch archive</td>
+              <td>Remove Hatch from the V2 user promise, keep custom generation as an explicit future design discussion, and preserve safe package import/export only.</td>
+              <td>Roadmap says deferred, UI copy does not overpromise, package security tests remain covered.</td>
+            </tr>
+            <tr>
+              <td>Packaging</td>
+              <td>Build installer, verify state survives updates, keep packaged resources lean, and document recovery paths.</td>
+              <td>`npm.cmd run package:win`, install smoke, local data inspection.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section aria-labelledby="acceptance-heading">
+        <h2 id="acceptance-heading">V2 Acceptance Checklist</h2>
+        <article class="panel" style="margin-top: 14px">
+          <ul class="checklist">
+            <li>Launching the app shows only the compact transparent pet overlay by default.</li>
+            <li>The pet can be dragged by the visible sprite without triggering a click.</li>
+            <li>Care controls do not cover the pet in the normal resting state.</li>
+            <li>Feed lets the user choose real food items with clear icons.</li>
+            <li>Food icons are roughly identifiable without reading labels.</li>
+            <li>Eating shows the selected food near the pet mouth or configured anchor.</li>
+            <li>Play mode uses the monitor as the play area and exits cleanly.</li>
+            <li>Clean, medicine, sleep/lights, and health stay inside the overlay.</li>
+            <li>All built-in pets have stable, expressive animation rows.</li>
+            <li>Offline simulation applies real elapsed time with fair caps.</li>
+            <li>Evolution depends on care quality, sleep, play, health, and missed care.</li>
+            <li>Care simulation docs match the implemented rules and constants.</li>
+            <li>Custom pet generation is explicitly deferred and not promised as a V2 feature.</li>
+            <li>Normal care gameplay works offline and does not require image generation or network access.</li>
+            <li>Frozen-window cleanup, tray recovery, explicit quit, and reset-position flows are tested.</li>
+            <li>Always-on-top, multi-monitor, DPI, sleep/wake, and startup restore behavior have QA evidence.</li>
+            <li>Windows installer works, tray quit works, and no window remains frozen after close.</li>
+            <li>QA artifacts exist for desktop behavior, renderer behavior, pet assets, and item assets.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section aria-labelledby="docs-heading">
+        <h2 id="docs-heading">Useful Local References</h2>
+        <div class="grid cols-3" style="margin-top: 14px">
+          <article class="panel">
+            <h3>Animation gallery</h3>
+            <p>
+              <a href="./pet-animation-gallery.html">Open current pet animation gallery</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>V2 goal</h3>
+            <p>
+              <a href="../v2-goal-success-criteria.md">Open V2 goal and success criteria</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>LCD style guide</h3>
+            <p>
+              <a href="../design/monochrome-lcd-style.md">Open monochrome LCD style guide</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Care simulation spec</h3>
+            <p>
+              <a href="../simulation/care-simulation-v2.md">Open V2 care simulation spec</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Food icon standards</h3>
+            <p>
+              <a href="../design/lcd-food-icon-standards.md">Open LCD food icon standards</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>QA workflow</h3>
+            <p>
+              <a href="./using-qa.md">Open Deskagotchi QA workflow</a>
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Desktop hardening</h3>
+            <p>
+              <a href="./desktop-hardening-v2.md">Open V2 desktop hardening plan</a>
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

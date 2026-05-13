@@ -11,6 +11,9 @@ export const CURRENT_PET_PACKAGE_SCHEMA_VERSION = 1;
 /** Current persisted pet instance state schema version accepted by the app. */
 export const CURRENT_PET_STATE_SCHEMA_VERSION = 1;
 
+/** Current top-level save-file schema version accepted by the app. */
+export const CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION = 1;
+
 /** Current simulation tuning schema version used by default configuration. */
 export const CURRENT_SIMULATION_CONFIG_VERSION = 1;
 
@@ -149,6 +152,29 @@ export const GrowthStageManifestSchema = z.object({
 /** Growth branch metadata used to select package art as pets age. */
 export type GrowthStageManifest = z.infer<typeof GrowthStageManifestSchema>;
 
+/** Validates food item identifiers referenced by package-level preferences. */
+export const PetFoodIdSchema = z.string().min(1).max(80).regex(/^[a-z0-9][a-z0-9-]+$/);
+
+/** Sprite-relative anchor used for the selected food cue during eating. */
+export const EatingAnchorSchema = z
+  .object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    size: z.number().int().min(8).max(48).default(22)
+  })
+  .strict();
+
+/** Package-level diet metadata used by the feed picker and simulation modifiers. */
+export const FoodPreferencesSchema = z
+  .object({
+    sharedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    likedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    favoriteFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    dislikedFoodIds: z.array(PetFoodIdSchema).max(8).default([]),
+    eatingAnchor: EatingAnchorSchema.default({ x: 0.58, y: 0.58, size: 22 })
+  })
+  .strict();
+
 /** Validates installable pet package metadata, assets, growth, and modifiers. */
 export const PetPackageSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_PACKAGE_SCHEMA_VERSION),
@@ -169,8 +195,13 @@ export const PetPackageSchema = z.object({
   }),
   animations: z.array(AnimationManifestEntrySchema).min(1),
   growthStages: z.array(GrowthStageManifestSchema).min(1),
-  preferredFoods: z.array(z.string().min(1).max(40)).default([]),
-  dislikedFoods: z.array(z.string().min(1).max(40)).default([]),
+  foodPreferences: FoodPreferencesSchema.default({
+    sharedFoodIds: [],
+    likedFoodIds: [],
+    favoriteFoodIds: [],
+    dislikedFoodIds: [],
+    eatingAnchor: { x: 0.58, y: 0.58, size: 22 }
+  }),
   favoritePlayStyle: z.nativeEnum(PlayStyle),
   careModifiers: z.object({
     hungerDecayMultiplier: z.number().min(0.25).max(3),
@@ -229,6 +260,18 @@ export const CareHistorySchema = z.object({
 /** Rolling care-quality counters retained between simulation ticks. */
 export type CareHistory = z.infer<typeof CareHistorySchema>;
 
+/** Validates explicit need deadlines that gate care mistakes. */
+export const CareDeadlinesSchema = z.object({
+  hunger: z.string().datetime().nullable(),
+  happiness: z.string().datetime().nullable(),
+  mess: z.string().datetime().nullable(),
+  sickness: z.string().datetime().nullable(),
+  sleep: z.string().datetime().nullable()
+});
+
+/** Explicit wall-clock deadlines for urgent care needs. */
+export type CareDeadlines = z.infer<typeof CareDeadlinesSchema>;
+
 /** Validates one persisted pet instance and its gameplay state. */
 export const PetInstanceStateSchema = z.object({
   schemaVersion: z.literal(CURRENT_PET_STATE_SCHEMA_VERSION),
@@ -248,7 +291,8 @@ export const PetInstanceStateSchema = z.object({
   clockRollbackCount: z.number().int().min(0),
   offlineDebtHours: z.number().min(0),
   stats: PetStatsSchema,
-  careHistory: CareHistorySchema
+  careHistory: CareHistorySchema,
+  careDeadlines: CareDeadlinesSchema.optional()
 });
 
 /** Persisted gameplay state for one hatched pet instance. */
@@ -256,7 +300,7 @@ export type PetInstanceState = z.infer<typeof PetInstanceStateSchema>;
 
 /** Validates the top-level Deskagotchi save file shared across app processes. */
 export const DeskagotchiSaveSchema = z.object({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(CURRENT_DESKAGOTCHI_SAVE_SCHEMA_VERSION),
   activeInstanceId: z.string().min(3).max(100),
   instances: z.array(PetInstanceStateSchema),
   settings: z.object({

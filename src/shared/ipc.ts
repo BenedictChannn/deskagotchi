@@ -10,6 +10,7 @@ import type {
   PetPackage,
   ValidationIssue
 } from "./domain";
+import type { ItemCatalogEntry } from "./itemIcons";
 
 /** IPC channel names shared by preload, renderer, and Electron main process. */
 export enum IpcChannel {
@@ -20,18 +21,29 @@ export enum IpcChannel {
   OpenPanel = "deskagotchi:openPanel",
   HidePanel = "deskagotchi:hidePanel",
   ResetPetWindow = "deskagotchi:resetPetWindow",
+  MovePetWindow = "deskagotchi:movePetWindow",
+  FinishPetWindowDrag = "deskagotchi:finishPetWindowDrag",
+  SetPetWindowUiMode = "deskagotchi:setPetWindowUiMode",
+  EnterPetWindowPlayMode = "deskagotchi:enterPetWindowPlayMode",
+  ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
-  HatchCreateDraft = "deskagotchi:hatchCreateDraft",
+  RecordQaEvent = "deskagotchi:recordQaEvent",
   ExportPet = "deskagotchi:exportPet",
   ImportPet = "deskagotchi:importPet",
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
+}
+
+/** Transient overlay size modes used while compact pet controls are open. */
+export enum PetWindowUiMode {
+  Compact = "compact",
+  Tray = "tray",
+  Card = "card"
 }
 
 /** Panel routes the main process can ask the renderer shell to display. */
 export enum PanelView {
   Status = "status",
   Settings = "settings",
-  Hatch = "hatch",
   PetSelector = "pet-selector"
 }
 
@@ -56,31 +68,36 @@ export interface DeskagotchiSnapshot {
   userDataPath: string;
 }
 
-/** Input collected by Hatch before generating or installing a draft pet package. */
-export interface HatchDraftInput {
-  name: string;
-  description: string;
-  species: string;
-  personality: string;
-  preferredColors: string[];
-  accessory?: string;
-  theme?: string;
+/** Renderer-originated QA telemetry event passed through the preload bridge. */
+export interface QaTelemetryInput {
+  event: string;
+  source?: string;
+  windowRole?: string;
+  displayId?: string;
+  scaleFactor?: number;
+  payload?: Record<string, unknown>;
+  error?: string;
 }
 
-/** Result of creating and installing a Hatch draft package. */
-export interface HatchDraftResult {
-  packageId: string;
-  installed: boolean;
-  issues: ValidationIssue[];
+/** Care action request sent by renderer controls. */
+export interface CareActionRequest {
+  type: CareActionType;
+  itemId?: ItemCatalogEntry["id"];
 }
 
 /** Partial save-settings update accepted over IPC. */
 export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
 
+/** Screen-space pointer position used while dragging the native pet window. */
+export interface ScreenPointInput {
+  x: number;
+  y: number;
+}
+
 /** Renderer-facing API exposed by preload for desktop pet operations. */
 export interface DeskagotchiApi {
   getSnapshot: () => Promise<DeskagotchiSnapshot>;
-  performAction: (actionType: CareActionType) => Promise<DeskagotchiSnapshot>;
+  performAction: (request: CareActionRequest) => Promise<DeskagotchiSnapshot>;
   switchPet: (packageId: string) => Promise<DeskagotchiSnapshot>;
   updateSettings: (
     settings: UpdateSettingsInput
@@ -88,8 +105,17 @@ export interface DeskagotchiApi {
   openPanel: (view: PanelView) => Promise<void>;
   hidePanel: () => Promise<void>;
   resetPetWindow: () => Promise<void>;
+  movePetWindow: (
+    deltaX: number,
+    deltaY: number,
+    pointer?: ScreenPointInput
+  ) => Promise<void>;
+  finishPetWindowDrag: () => Promise<void>;
+  setPetWindowUiMode: (mode: PetWindowUiMode) => Promise<void>;
+  enterPetWindowPlayMode: () => Promise<void>;
+  exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
-  hatchCreateDraft: (input: HatchDraftInput) => Promise<HatchDraftResult>;
+  recordQaEvent: (event: QaTelemetryInput) => Promise<void>;
   exportPet: (packageId: string) => Promise<string | undefined>;
   importPet: () => Promise<DeskagotchiSnapshot>;
   onSnapshotUpdated: (callback: () => void) => () => void;
