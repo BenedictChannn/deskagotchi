@@ -1,31 +1,34 @@
-import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+import {
+  packageManagerDisplayCommand,
+  packageManagerScriptArgs,
+  spawnPackageManager
+} from "./package-manager.mjs";
+
 const COMMANDS = [
-  ["npm.cmd", ["run", "qa:check"]],
-  ["npm.cmd", ["run", "qa:desktop:launch"]],
-  ["npm.cmd", ["run", "qa:desktop:drag"]],
-  ["npm.cmd", ["run", "qa:desktop:overlay"]],
-  ["npm.cmd", ["run", "qa:desktop:play"]],
-  ["npm.cmd", ["run", "qa:desktop:lifecycle"]],
-  ["npm.cmd", ["run", "qa:renderer"]],
-  ["npm.cmd", ["run", "qa:assets:pets"]],
-  ["npm.cmd", ["run", "qa:assets:items"]],
-  ["npm.cmd", ["run", "qa:v2:scope"]],
-  ["npm.cmd", ["run", "qa:v2:visual-page"]]
+  "qa:check",
+  "qa:desktop:launch",
+  "qa:desktop:drag",
+  "qa:desktop:overlay",
+  "qa:desktop:play",
+  "qa:desktop:lifecycle",
+  "qa:renderer",
+  "qa:assets:pets",
+  "qa:assets:items",
+  "qa:v2:scope",
+  "qa:v2:visual-page"
 ];
 
-for (const [command, args] of COMMANDS) {
-  console.log(`\n[qa] ${command} ${args.join(" ")}`);
-  const commandParts = process.platform === "win32"
-    ? ["cmd.exe", ["/d", "/s", "/c", command, ...args]]
-    : [command, args];
-  const child = spawnSync(commandParts[0], commandParts[1], {
+for (const scriptName of COMMANDS) {
+  const args = packageManagerScriptArgs(scriptName);
+  console.log(`\n[qa] ${packageManagerDisplayCommand(args)}`);
+  const { child } = spawnPackageManager(args, {
     stdio: "inherit",
     env: {
       ...process.env,
       DESKAGOTCHI_QA_SKIP_BUILD:
-        args.includes("qa:check") || args.includes("qa:desktop:launch") ? "0" : "1"
+        scriptName === "qa:check" || scriptName === "qa:desktop:launch" ? "0" : "1"
     }
   });
   if (child.status !== 0) {

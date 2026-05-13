@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -10,6 +9,7 @@ import {
   hasQaFailures,
   recordQaCheck
 } from "./qa-run-utils.mjs";
+import { packageManagerScriptArgs, spawnPackageManager } from "./package-manager.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -17,18 +17,15 @@ const QA_RUNS_DIR = path.join(ROOT_DIR, ".qa-runs");
 
 const STAGES = [
   {
-    command: "npm.cmd",
-    args: ["run", "lint"],
+    scriptName: "lint",
     checkName: "lint passed"
   },
   {
-    command: "npm.cmd",
-    args: ["run", "typecheck"],
+    scriptName: "typecheck",
     checkName: "typecheck passed"
   },
   {
-    command: "npm.cmd",
-    args: ["run", "test"],
+    scriptName: "test",
     checkName: "test suite passed"
   }
 ];
@@ -62,15 +59,12 @@ function main() {
 }
 
 function runCommandCheck(run, stage) {
-  const commandParts = process.platform === "win32"
-    ? ["cmd.exe", ["/d", "/s", "/c", stage.command, ...stage.args]]
-    : [stage.command, stage.args];
-  const child = spawnSync(commandParts[0], commandParts[1], {
+  const { child, displayCommand } = spawnPackageManager(packageManagerScriptArgs(stage.scriptName), {
     cwd: ROOT_DIR,
     encoding: "utf8",
     stdio: "pipe"
   });
-  const command = `${stage.command} ${stage.args.join(" ")}`;
+  const command = displayCommand;
   const outputFileName = `${stage.checkName.replaceAll(" ", "-")}.log`;
   const outputPath = path.join(run.runDir, outputFileName);
   const output = [

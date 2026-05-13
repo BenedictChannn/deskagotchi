@@ -13,6 +13,7 @@ import {
   recordQaEvidence,
   writeLatestRun
 } from "./qa-run-utils.mjs";
+import { packageManagerScriptArgs, spawnPackageManager } from "./package-manager.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -161,7 +162,7 @@ function ensureBuild() {
   if (process.env.DESKAGOTCHI_QA_SKIP_BUILD === "1" && fs.existsSync(MAIN_ENTRY)) {
     return;
   }
-  runCommand("npm.cmd", ["run", "build"], { cwd: ROOT_DIR });
+  runPackageManagerScript("build", { cwd: ROOT_DIR });
 }
 
 async function launchApp(run) {
@@ -1304,7 +1305,7 @@ Get-CimInstance Win32_Process |
     ($_.CommandLine -notlike '*scripts\\qa\\desktop-qa.mjs*') -and
     ($_.CommandLine -notlike '*qa:desktop*') -and
     ($_.CommandLine -notlike '*qa:renderer*') -and
-    ($_.CommandLine -notlike '*npm.cmd run qa*')
+    ($_.CommandLine -notlike '*pnpm run qa*')
   } |
   Select-Object ProcessId, Name, CommandLine |
   ConvertTo-Json -Compress
@@ -1853,11 +1854,8 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function runCommand(command, args, options = {}) {
-  const commandParts = IS_WINDOWS
-    ? ["cmd.exe", ["/d", "/s", "/c", command, ...args]]
-    : [command, args];
-  const child = spawnSync(commandParts[0], commandParts[1], {
+function runPackageManagerScript(scriptName, options = {}) {
+  const { child, displayCommand } = spawnPackageManager(packageManagerScriptArgs(scriptName), {
     cwd: options.cwd ?? ROOT_DIR,
     env: process.env,
     stdio: "inherit"
@@ -1865,7 +1863,7 @@ function runCommand(command, args, options = {}) {
   if (child.status !== 0) {
     const error = child.error instanceof Error ? `: ${child.error.message}` : "";
     throw new Error(
-      `${command} ${args.join(" ")} exited with ${child.status}${error}`
+      `${displayCommand} exited with ${child.status}${error}`
     );
   }
 }

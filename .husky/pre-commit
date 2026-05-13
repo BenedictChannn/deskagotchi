@@ -1,1 +1,1 @@
-npm run precommit
+corepack pnpm run precommit

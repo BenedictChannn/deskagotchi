@@ -6,6 +6,10 @@
   "author": "Deskagotchi",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@11.1.1",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "generate:icon": "node scripts/generate-app-icon.mjs",
@@ -23,7 +27,7 @@
     "qa:check": "node scripts/qa/check-qa.mjs",
     "qa:assets:pets": "node scripts/qa/assets-qa.mjs pets",
     "qa:assets:items": "node scripts/qa/assets-qa.mjs items",
-    "qa:release": "npm run package:win && node scripts/qa/release-qa.mjs",
+    "qa:release": "corepack pnpm run package:win && node scripts/qa/release-qa.mjs",
     "qa:v2:audit": "node scripts/qa/v2-closeout-audit.mjs",
     "qa:v2:audit:smoke": "node scripts/qa/v2-closeout-audit-smoke.mjs",
     "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
@@ -39,14 +43,15 @@
     "qa:v2:visual-page:update": "node scripts/qa/v2-visual-page-smoke.mjs --update-screenshot",
     "qa": "node scripts/qa/run-all.mjs",
     "lint": "eslint . --max-warnings=0",
-    "build": "npm run typecheck && electron-vite build",
+    "build": "corepack pnpm run typecheck && electron-vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "npm run lint && npm run typecheck && npm run test",
-    "precommit": "npm run lint && npm run typecheck",
+    "check": "corepack pnpm run lint && corepack pnpm run typecheck && corepack pnpm run test",
+    "precommit": "corepack pnpm run lint && corepack pnpm run typecheck",
     "prepare": "husky",
-    "package:win": "npm run build && electron-builder --win nsis --x64",
-    "package:mac": "npm run build && electron-builder --mac dmg zip --x64 --arm64"
+    "ensure:pnpm-shim": "corepack enable pnpm --install-directory node_modules/.bin",
+    "package:win": "corepack pnpm run build && corepack pnpm run ensure:pnpm-shim && electron-builder --win nsis --x64",
+    "package:mac": "corepack pnpm run build && corepack pnpm run ensure:pnpm-shim && electron-builder --mac dmg zip --x64 --arm64"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",

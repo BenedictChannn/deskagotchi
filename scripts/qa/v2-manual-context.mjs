@@ -202,10 +202,10 @@ function buildManualContext(startedAt) {
       "The final exported manual JSON must still come from the manual acceptance page."
     ],
     closeoutCommands: [
-      "npm.cmd run qa:v2:audit -- --manual docs\\qa\\v2-manual-acceptance-export.json",
+      "corepack pnpm run qa:v2:audit --manual docs\\qa\\v2-manual-acceptance-export.json",
       "git add docs\\qa\\v2-manual-acceptance-export.json docs\\qa\\v2-closeout-report.md",
       "git commit -m \"docs(qa): add v2 manual acceptance evidence\"",
-      "npm.cmd run qa:v2:closeout"
+      "corepack pnpm run qa:v2:closeout"
     ]
   };
 }
@@ -341,7 +341,7 @@ function readLatestDisplayTopology(dragRunDirName) {
 
 function summarizeDisplayTopology(topology) {
   if (topology === null || !Array.isArray(topology.displays)) {
-    return "Unknown; run npm.cmd run qa:desktop:drag and record physical monitor layout.";
+    return "Unknown; run corepack pnpm run qa:desktop:drag and record physical monitor layout.";
   }
 
   return topology.displays
