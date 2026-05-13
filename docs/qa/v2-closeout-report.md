@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-13T08:51:22.700Z
+Generated: 2026-05-13T09:09:47.371Z
 
 Completion status: **complete**
 
@@ -27,19 +27,19 @@ captures the source commit/freshness checks used by the audit.
 
 | Area | Status | Latest evidence | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| Launch | PASS | .qa-runs/2026-05-13T08-41-53-618Z-52976-91776b79-release-launch/report.md | automated-pass | passed automated launch QA for tested scope |
-| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-13T08-33-14-693Z-28040-d4ad74df-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
-| Overlay care interactions | PASS | .qa-runs/2026-05-13T08-34-20-390Z-35396-0e512c4a-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
-| Ball play mode | PASS | .qa-runs/2026-05-13T08-34-58-684Z-32088-00d9ff09-play/report.md | automated-pass | passed automated play QA for tested scope |
-| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-13T08-40-52-617Z-52976-5e1635c5-release-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
-| Renderer panel routes | PASS | .qa-runs/2026-05-13T08-36-21-840Z-10112-f3f58291-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
-| Five-minute idle CPU | PASS | .qa-runs/2026-05-13T08-44-03-786Z-52268-3cda3e80-idle/report.md | automated-pass | passed automated idle QA for tested scope |
-| Packaged release and installer smoke | PASS | .qa-runs/2026-05-13T08-40-17-061Z-52976-4f0235fc-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
-| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-13T08-32-13-341Z-27260-1cd5e419-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
-| Built-in pet asset QA | PASS | .qa-runs/2026-05-13T08-36-57-757Z-50068-ccd4ca9b-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
-| Food and item asset QA | PASS | .qa-runs/2026-05-13T08-36-59-770Z-35700-8d9f90f8-assets-items/report.md | automated-pass | passed assets-items static asset QA |
-| V2 visual acceptance pages | PASS | .qa-runs/2026-05-13T08-37-01-437Z-51860-1c593d51-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
-| V2 user-facing scope | PASS | .qa-runs/2026-05-13T08-37-00-392Z-52688-c31d684e-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
+| Launch | PASS | .qa-runs/2026-05-13T09-08-13-446Z-3208-c203d9db-release-launch/report.md | automated-pass | passed automated launch QA for tested scope |
+| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-13T08-54-07-532Z-41084-0a0eefd4-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
+| Overlay care interactions | PASS | .qa-runs/2026-05-13T08-55-09-083Z-39592-4eba5c0f-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
+| Ball play mode | PASS | .qa-runs/2026-05-13T08-55-59-280Z-51016-ff4f9227-play/report.md | automated-pass | passed automated play QA for tested scope |
+| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-13T09-06-52-943Z-3208-ec72fc32-release-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
+| Renderer panel routes | PASS | .qa-runs/2026-05-13T08-57-43-731Z-36748-f251f7a3-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
+| Five-minute idle CPU | PASS | .qa-runs/2026-05-13T08-58-48-974Z-5880-a417124f-idle/report.md | automated-pass | passed automated idle QA for tested scope |
+| Packaged release and installer smoke | PASS | .qa-runs/2026-05-13T09-05-58-470Z-3208-ba26d066-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
+| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-13T08-52-52-136Z-51496-49395844-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
+| Built-in pet asset QA | PASS | .qa-runs/2026-05-13T08-58-32-185Z-17208-e44178a3-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
+| Food and item asset QA | PASS | .qa-runs/2026-05-13T08-58-34-283Z-38848-7803afce-assets-items/report.md | automated-pass | passed assets-items static asset QA |
+| V2 visual acceptance pages | PASS | .qa-runs/2026-05-13T08-58-35-979Z-42476-2fa49fa4-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
+| V2 user-facing scope | PASS | .qa-runs/2026-05-13T08-58-34-915Z-39676-b8cdf190-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
 
 ## Prompt-To-Artifact Checklist
 
@@ -63,7 +63,7 @@ captures the source commit/freshness checks used by the audit.
 
 Status: **PASS**
 
-Commit: `9b32dd1`
+Commit: `44a72bb`
 
 Workspace is clean.
 
