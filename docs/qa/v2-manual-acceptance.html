@@ -376,7 +376,7 @@
       <section class="section">
         <h2>Manual Gates</h2>
         <div class="grid">
-          <article class="card" data-critical="true" data-section="visual">
+          <article class="card" data-batch-name="Visual acceptance" data-batch-order="1" data-critical="true" data-section="visual">
             <h3>Visual Acceptance</h3>
             <div class="meta"><span class="chip">pets</span><span class="chip">food</span><span class="chip">style</span></div>
             <ol class="steps">
@@ -393,7 +393,7 @@
             <label class="field">Notes <textarea data-field="visualNotes"></textarea></label>
           </article>
 
-          <article class="card" data-critical="true" data-section="installer">
+          <article class="card" data-batch-name="Interactive installer" data-batch-order="2" data-critical="true" data-section="installer">
             <h3>Interactive Installer</h3>
             <div class="meta"><span class="chip">NSIS</span><span class="chip">install</span><span class="chip">uninstall</span></div>
             <ol class="steps">
@@ -410,7 +410,7 @@
             <label class="field">Notes <textarea data-field="installerNotes"></textarea></label>
           </article>
 
-          <article class="card" data-critical="true" data-section="startup">
+          <article class="card" data-batch-name="Startup on login" data-batch-order="3" data-critical="true" data-section="startup">
             <h3>Startup On Login</h3>
             <div class="meta"><span class="chip">packaged</span><span class="chip">Windows login</span></div>
             <ol class="steps">
@@ -429,7 +429,7 @@
             <label class="field">Notes <textarea data-field="startupNotes"></textarea></label>
           </article>
 
-          <article class="card" data-critical="true" data-section="monitors">
+          <article class="card" data-batch-name="Physical monitor layouts" data-batch-order="5" data-critical="true" data-section="monitors">
             <h3>Physical Monitor Layouts</h3>
             <div class="meta"><span class="chip">right</span><span class="chip">stacked</span><span class="chip">DPI</span></div>
             <ol class="steps">
@@ -445,7 +445,7 @@
             <label class="field">Run IDs / notes <textarea data-field="monitorNotes"></textarea></label>
           </article>
 
-          <article class="card" data-section="sleep">
+          <article class="card" data-batch-name="Sleep and recovery" data-batch-order="4" data-section="sleep">
             <h3>Real Sleep/Wake</h3>
             <div class="meta"><span class="chip">sleep</span><span class="chip">wake</span><span class="chip">unlock</span></div>
             <ol class="steps">
@@ -462,7 +462,7 @@
             <label class="field">Notes <textarea data-field="sleepNotes"></textarea></label>
           </article>
 
-          <article class="card" data-section="environment">
+          <article class="card" data-batch-name="Environment caveats" data-batch-order="6" data-section="environment">
             <h3>Environment Edge Cases</h3>
             <div class="meta"><span class="chip">RDP</span><span class="chip">taskbar</span><span class="chip">SmartScreen</span></div>
             <ol class="steps">
@@ -555,57 +555,15 @@
           field: "environmentNotes"
         }
       ];
-      const manualBatches = [
-        {
-          name: "Visual acceptance",
-          gateIds: [
-            "visual.pets",
-            "visual.animations",
-            "visual.food",
-            "visual.cohesion"
-          ]
-        },
-        {
-          name: "Interactive installer",
-          gateIds: [
-            "installer.install",
-            "installer.launch",
-            "installer.uninstall"
-          ]
-        },
-        {
-          name: "Startup on login",
-          gateIds: [
-            "startup.enable",
-            "startup.login",
-            "startup.disable"
-          ]
-        },
-        {
-          name: "Sleep and recovery",
-          gateIds: [
-            "sleep.visible",
-            "sleep.state",
-            "sleep.process"
-          ]
-        },
-        {
-          name: "Physical monitor layouts",
-          gateIds: [
-            "monitors.right",
-            "monitors.stacked",
-            "monitors.dpi"
-          ]
-        },
-        {
-          name: "Environment caveats",
-          gateIds: [
-            "environment.rdp",
-            "environment.taskbar",
-            "environment.smartscreen"
-          ]
-        }
-      ];
+      const manualBatches = Array.from(document.querySelectorAll("[data-batch-name]"))
+        .map((section) => ({
+          name: section.dataset.batchName,
+          order: Number.parseInt(section.dataset.batchOrder, 10),
+          gateIds: Array.from(section.querySelectorAll("[data-check]")).map(
+            (check) => check.dataset.check
+          )
+        }))
+        .sort((left, right) => left.order - right.order);
       const fieldLabels = Object.fromEntries(
         fields.map((field) => [
           field.dataset.field,

@@ -4,11 +4,13 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { readQaSourceState } from "./qa-git.mjs";
 import {
-  createQaRunId,
-  recordQaEvidence,
-  writeLatestRun
+  createQaRun,
+  finishQaRun,
+  hasQaFailures,
+  recordQaCheck,
+  recordQaFail,
+  recordQaPass
 } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -21,35 +23,32 @@ function main() {
     throw new Error(`Unknown asset QA mode '${MODE}'.`);
   }
 
-  const run = createRun(`assets-${MODE}`);
+  const run = createQaRun({
+    rootDir: ROOT_DIR,
+    qaRunsDir: QA_RUNS_DIR,
+    scenario: `assets-${MODE}`,
+    evidenceTier: "static-assets"
+  });
   if (MODE === "pets") {
     auditPets(run);
   } else {
     auditItems(run);
   }
-  finishRun(run);
+  const result = finishQaRun(
+    { rootDir: ROOT_DIR, qaRunsDir: QA_RUNS_DIR, run },
+    {
+      exactClaimAllowed: `passed ${run.scenario} static asset QA`,
+      uncoveredConditions: [
+        "subjective visual appeal still requires manual V2 acceptance",
+        "runtime animation feel is covered by desktop and visual-page QA"
+      ]
+    }
+  );
+  console.log(JSON.stringify(result, null, 2));
 
-  if (run.checks.some((check) => check.status === "fail")) {
+  if (hasQaFailures(run)) {
     process.exit(1);
   }
-}
-
-function createRun(scenario) {
-  const runId = createQaRunId(scenario);
-  const runDir = path.join(QA_RUNS_DIR, runId);
-  fs.mkdirSync(runDir, { recursive: true });
-  writeLatestRun(QA_RUNS_DIR, runDir);
-  return {
-    scenario,
-    runId,
-    runDir,
-    startedAt: new Date().toISOString(),
-    sourceState: readQaSourceState(ROOT_DIR),
-    confidenceLabel: "failed",
-    evidenceTier: "static-assets",
-    checks: [],
-    artifacts: []
-  };
 }
 
 function auditPets(run) {
@@ -92,11 +91,11 @@ function auditItems(run) {
 function checkFile(run, relativePath, checkName) {
   const absolutePath = path.join(ROOT_DIR, relativePath);
   if (fs.existsSync(absolutePath)) {
-    recordPass(run, checkName, { path: relativePath });
+    recordQaPass(run, checkName, { path: relativePath });
     run.artifacts.push(relativePath);
     return true;
   }
-  recordFail(run, checkName, { path: relativePath });
+  recordQaFail(run, checkName, { path: relativePath });
   return false;
 }
 
@@ -104,11 +103,11 @@ function checkJsonFile(run, relativePath, checkName) {
   const absolutePath = path.join(ROOT_DIR, relativePath);
   try {
     const parsed = JSON.parse(fs.readFileSync(absolutePath, "utf8"));
-    recordPass(run, checkName, { path: relativePath });
+    recordQaPass(run, checkName, { path: relativePath });
     run.artifacts.push(relativePath);
     return parsed;
   } catch (error) {
-    recordFail(run, checkName, {
+    recordQaFail(run, checkName, {
       path: relativePath,
       error: error instanceof Error ? error.message : String(error)
     });
@@ -140,13 +139,13 @@ function checkBuiltInPetTheme(run) {
     }
   }
 
-  recordCheck(
+  recordQaCheck(
     run,
     "built-in pet manifests use retro-LCD capability",
     themeFailures.length === 0,
     { failures: themeFailures }
   );
-  recordCheck(
+  recordQaCheck(
     run,
     "built-in pet palettes use at most four colors",
     paletteFailures.length === 0,
@@ -159,10 +158,10 @@ function checkItemManifest(run, manifest) {
   const foodItems = icons.filter((item) => item.category === "meal" || item.category === "snack");
   const atlas = typeof manifest.atlas === "string" ? manifest.atlas : "";
 
-  recordCheck(run, "item manifest includes food items", foodItems.length > 0, {
+  recordQaCheck(run, "item manifest includes food items", foodItems.length > 0, {
     foodItemCount: foodItems.length
   });
-  recordCheck(run, "item atlas referenced by manifest exists", atlas.length > 0 &&
+  recordQaCheck(run, "item atlas referenced by manifest exists", atlas.length > 0 &&
     fs.existsSync(path.join(ROOT_DIR, "resources", "items", "lcd-core", atlas)), {
     atlas
   });
@@ -183,88 +182,7 @@ function runCommandCheck(run, checkName, command, args) {
     stdout: child.stdout?.trim() ?? "",
     stderr: child.stderr?.trim() ?? ""
   };
-  recordCheck(run, checkName, child.status === 0, details);
-}
-
-function recordCheck(run, name, passed, details = {}) {
-  if (passed) {
-    recordPass(run, name, details);
-    return;
-  }
-  recordFail(run, name, details);
-}
-
-function recordPass(run, name, details = {}) {
-  run.checks.push({ name, status: "pass", details });
-}
-
-function recordFail(run, name, details = {}) {
-  run.checks.push({ name, status: "fail", details });
-}
-
-function finishRun(run) {
-  run.finishedAt = new Date().toISOString();
-  run.confidenceLabel = run.checks.some((check) => check.status === "fail")
-    ? "failed"
-    : "automated-pass";
-  run.exactClaimAllowed = run.confidenceLabel === "automated-pass"
-    ? `passed ${run.scenario} static asset QA`
-    : "No fixed claim allowed.";
-  run.uncoveredConditions = [
-    "subjective visual appeal still requires manual V2 acceptance",
-    "runtime animation feel is covered by desktop and visual-page QA"
-  ];
-  run.artifacts.push("summary.json", "report.md");
-  fs.writeFileSync(path.join(run.runDir, "summary.json"), JSON.stringify(run, null, 2));
-  fs.writeFileSync(path.join(run.runDir, "report.md"), renderReport(run), "utf8");
-  recordQaEvidence(QA_RUNS_DIR, run.scenario, run.runDir);
-  console.log(
-    JSON.stringify(
-      {
-        runId: run.runId,
-        checks: run.checks.length,
-        confidenceLabel: run.confidenceLabel,
-        report: path.relative(ROOT_DIR, path.join(run.runDir, "report.md"))
-      },
-      null,
-      2
-    )
-  );
-}
-
-function renderReport(run) {
-  const checks = run.checks
-    .map((check) => `- ${check.status.toUpperCase()}: ${check.name}`)
-    .join("\n");
-  const artifacts = Array.from(new Set(run.artifacts))
-    .map((artifact) => `- ${artifact}`)
-    .join("\n");
-  return `# Deskagotchi Asset QA
-
-Scenario: ${run.scenario}
-
-Run id: ${run.runId}
-
-Confidence: ${run.confidenceLabel}
-
-Evidence tier: ${run.evidenceTier}
-
-## Checks
-
-${checks}
-
-## Artifacts
-
-${artifacts}
-
-## Exact Claim Allowed
-
-${run.exactClaimAllowed}
-
-## Uncovered Conditions
-
-${run.uncoveredConditions.map((condition) => `- ${condition}`).join("\n")}
-`;
+  recordQaCheck(run, checkName, child.status === 0, details);
 }
 
 main();

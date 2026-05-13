@@ -1344,6 +1344,10 @@ ${deliverableRows}
 
 ## Automated Evidence
 
+The evidence paths below are local \`.qa-runs\` artifacts. They are not committed
+release artifacts; this report is the committed summary, and each row also
+captures the source commit/freshness checks used by the audit.
+
 | Area | Status | Latest evidence | Confidence | Notes |
 | --- | --- | --- | --- | --- |
 ${scenarioRows}

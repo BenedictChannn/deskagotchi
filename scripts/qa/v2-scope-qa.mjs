@@ -3,11 +3,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { readQaSourceState } from "./qa-git.mjs";
 import {
-  createQaRunId,
-  recordQaEvidence,
-  writeLatestRun
+  createQaRun,
+  finishQaRun,
+  hasQaFailures,
+  recordQaFail,
+  recordQaPass
 } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -50,7 +51,12 @@ const REQUIRED_DOC_SNIPPETS = [
 ];
 
 function main() {
-  const run = createRun();
+  const run = createQaRun({
+    rootDir: ROOT_DIR,
+    qaRunsDir: QA_ROOT,
+    scenario: SCENARIO,
+    evidenceTier: "static-source"
+  });
 
   for (const [relativePath, checkName] of SURFACE_FILES) {
     assertNoHatchSurface(run, relativePath, checkName);
@@ -60,38 +66,31 @@ function main() {
     assertSnippet(run, relativePath, snippet, checkName);
   }
 
-  finishRun(run);
-  if (run.checks.some((check) => check.status === "fail")) {
+  const result = finishQaRun(
+    { rootDir: ROOT_DIR, qaRunsDir: QA_ROOT, run },
+    {
+      exactClaimAllowed:
+        "passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces",
+      uncoveredConditions: [
+        "archived Hatch helper internals are not production custom generation",
+        "future user-facing custom generation requires a separate design and QA gate"
+      ]
+    }
+  );
+  console.log(JSON.stringify(result, null, 2));
+  if (hasQaFailures(run)) {
     process.exit(1);
   }
-}
-
-function createRun() {
-  const runId = createQaRunId(SCENARIO);
-  const runDir = path.join(QA_ROOT, runId);
-  fs.mkdirSync(runDir, { recursive: true });
-  writeLatestRun(QA_ROOT, runDir);
-  return {
-    scenario: SCENARIO,
-    runId,
-    runDir,
-    startedAt: new Date().toISOString(),
-    sourceState: readQaSourceState(ROOT_DIR),
-    confidenceLabel: "failed",
-    evidenceTier: "static-source",
-    checks: [],
-    artifacts: []
-  };
 }
 
 function assertNoHatchSurface(run, relativePath, checkName) {
   const source = readProjectFile(relativePath);
   const match = FORBIDDEN_HATCH_SURFACE_PATTERN.exec(source);
   if (match === null) {
-    recordPass(run, checkName, { path: relativePath });
+    recordQaPass(run, checkName, { path: relativePath });
     return;
   }
-  recordFail(run, checkName, {
+  recordQaFail(run, checkName, {
     path: relativePath,
     matched: match[0],
     index: match.index
@@ -101,10 +100,10 @@ function assertNoHatchSurface(run, relativePath, checkName) {
 function assertSnippet(run, relativePath, snippet, checkName) {
   const source = readProjectFile(relativePath);
   if (source.includes(snippet)) {
-    recordPass(run, checkName, { path: relativePath });
+    recordQaPass(run, checkName, { path: relativePath });
     return;
   }
-  recordFail(run, checkName, {
+  recordQaFail(run, checkName, {
     path: relativePath,
     expectedSnippet: snippet
   });
@@ -112,76 +111,6 @@ function assertSnippet(run, relativePath, snippet, checkName) {
 
 function readProjectFile(relativePath) {
   return fs.readFileSync(path.join(ROOT_DIR, relativePath), "utf8");
-}
-
-function recordPass(run, name, details = {}) {
-  run.checks.push({ name, status: "pass", details });
-}
-
-function recordFail(run, name, details = {}) {
-  run.checks.push({ name, status: "fail", details });
-}
-
-function finishRun(run) {
-  run.finishedAt = new Date().toISOString();
-  run.confidenceLabel = run.checks.some((check) => check.status === "fail")
-    ? "failed"
-    : "automated-pass";
-  run.exactClaimAllowed =
-    run.confidenceLabel === "automated-pass"
-      ? "passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces"
-      : "No fixed claim allowed.";
-  run.uncoveredConditions = [
-    "archived Hatch helper internals are not production custom generation",
-    "future user-facing custom generation requires a separate design and QA gate"
-  ];
-  const summaryPath = path.join(run.runDir, "summary.json");
-  const reportPath = path.join(run.runDir, "report.md");
-  run.artifacts.push("summary.json", "report.md");
-  fs.writeFileSync(summaryPath, JSON.stringify(run, null, 2));
-  fs.writeFileSync(reportPath, renderReport(run), "utf8");
-  recordQaEvidence(QA_ROOT, run.scenario, run.runDir);
-  console.log(
-    JSON.stringify(
-      {
-        runId: run.runId,
-        checks: run.checks.length,
-        report: path.relative(ROOT_DIR, reportPath),
-        confidenceLabel: run.confidenceLabel
-      },
-      null,
-      2
-    )
-  );
-}
-
-function renderReport(run) {
-  const checks = run.checks
-    .map((check) => `- ${check.status.toUpperCase()}: ${check.name}`)
-    .join("\n");
-  const uncovered = run.uncoveredConditions.map((condition) => `- ${condition}`).join("\n");
-  return `# Deskagotchi V2 Scope QA
-
-Scenario: ${run.scenario}
-
-Run id: ${run.runId}
-
-Confidence: ${run.confidenceLabel}
-
-Evidence tier: ${run.evidenceTier}
-
-## Checks
-
-${checks}
-
-## Exact Claim Allowed
-
-${run.exactClaimAllowed}
-
-## Uncovered Conditions
-
-${uncovered}
-`;
 }
 
 main();

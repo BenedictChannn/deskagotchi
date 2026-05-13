@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { launchQaBrowser } from "./browser-smoke-utils.mjs";
 import { readQaSourceState } from "./qa-git.mjs";
 import { createQaRunId, writeLatestRun } from "./qa-run-utils.mjs";
+import { buildManualExecutionBatches } from "./v2-manual-batches.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -87,6 +88,23 @@ async function main() {
     const batchCount = await page.locator("[data-batch]").count();
     assertEqual(batchCount, 6, "manual gate batch count");
     recordPass(checks, "manual gate batch progress rendered", { batchCount });
+    const renderedBatches = await page.locator("[data-batch]").evaluateAll((batches) =>
+      batches.map((batch) => ({
+        name: batch.querySelector("h3")?.textContent?.trim() ?? "",
+        gateIds: Array.from(batch.querySelectorAll("code")).map(
+          (code) => code.textContent ?? ""
+        )
+      }))
+    );
+    const expectedBatches = buildManualExecutionBatches(REQUIRED_FIELD_FIXTURE).map(
+      ({ name, gateIds }) => ({ name, gateIds })
+    );
+    assertEqual(
+      JSON.stringify(renderedBatches),
+      JSON.stringify(expectedBatches),
+      "manual gate batch source"
+    );
+    recordPass(checks, "manual gate batches match shared source");
 
     await assertStatusIncludes(page, [
       "0/19 gates resolved.",

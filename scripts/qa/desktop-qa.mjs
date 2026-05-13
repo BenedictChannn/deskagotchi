@@ -36,6 +36,8 @@ const IDLE_SECONDS = Number.parseInt(process.env.DESKAGOTCHI_IDLE_SECONDS ?? "60
 const IDLE_CPU_LIMIT_PERCENT = Number.parseFloat(
   process.env.DESKAGOTCHI_IDLE_CPU_LIMIT_PERCENT ?? "10"
 );
+const QA_PROCESS_MARKER_ARG = "--deskagotchi-qa-run";
+const ORPHANED_QA_PROCESS_TTL_MS = 10 * 60 * 1000;
 
 class QaRun {
   constructor(scenario) {
@@ -164,9 +166,11 @@ function ensureBuild() {
 
 async function launchApp(run) {
   const app = await electron.launch({
-    ...(QA_EXECUTABLE_PATH === undefined
-      ? { args: [ROOT_DIR] }
-      : { executablePath: QA_EXECUTABLE_PATH }),
+    args:
+      QA_EXECUTABLE_PATH === undefined
+        ? [ROOT_DIR, `${QA_PROCESS_MARKER_ARG}=${run.runId}`]
+        : [`${QA_PROCESS_MARKER_ARG}=${run.runId}`],
+    ...(QA_EXECUTABLE_PATH === undefined ? {} : { executablePath: QA_EXECUTABLE_PATH }),
     cwd: ROOT_DIR,
     env: {
       ...process.env,
@@ -969,6 +973,12 @@ async function runRendererScenario(run, app) {
       continue;
     }
     await panelPage.waitForLoadState("domcontentloaded");
+    await panelPage.waitForURL((url) => url.hash === `#/panel/${view}`, {
+      timeout: 10_000
+    });
+    await panelPage
+      .getByTestId(`panel-view-${view}`)
+      .waitFor({ state: "visible", timeout: 10_000 });
     await panelPage.screenshot({ path: path.join(run.runDir, `panel-${view}.png`) });
     run.artifact(`panel-${view}.png`);
     run.pass(`panel route ${view} rendered`);
@@ -1244,12 +1254,27 @@ async function waitForQaEvent(run, eventName, expectedPayload = {}) {
 
 function recordQaProcess(run, pid) {
   const processRecordPath = path.join(run.runDir, "qa-processes.json");
-  const existing = readJsonOr(processRecordPath, { processIds: [] });
-  const processIds = [...new Set([...(existing.processIds ?? []), pid])];
+  const existing = readJsonOr(processRecordPath, { processIds: [], processes: [] });
+  const legacyIds = Array.isArray(existing.processIds) ? existing.processIds : [];
+  const existingProcesses = Array.isArray(existing.processes) ? existing.processes : [];
+  const processIds = [...new Set([...legacyIds, pid])];
+  const processRecord = {
+    pid,
+    runId: run.runId,
+    marker: run.runId,
+    runDir: run.runDir,
+    profileDir: run.profileDir,
+    recordedAt: new Date().toISOString()
+  };
+  const processes = [
+    ...existingProcesses.filter((entry) => entry?.pid !== pid),
+    processRecord
+  ];
   writeJson(processRecordPath, {
     runId: run.runId,
     updatedAt: new Date().toISOString(),
-    processIds
+    processIds,
+    processes
   });
   run.artifact("qa-processes.json");
 }
@@ -1296,70 +1321,38 @@ function cleanupOrphanedQaProcesses(run) {
   if (!IS_WINDOWS) {
     return;
   }
-  const qaRoot = QA_ROOT.replaceAll("'", "''");
-  const recordedIds = readRecordedQaProcessIds(run.runDir).join(", ");
-  const script = `
-$qaRoot = '${qaRoot}'
-$recordedIds = @(${recordedIds})
-$recordedIds | ForEach-Object {
-  $process = Get-Process -Id $_ -ErrorAction SilentlyContinue
-  if ($process) {
-    try {
-      $process.Kill()
-      $process.WaitForExit(2000) | Out-Null
-    } catch {
+  const records = readRecordedQaProcessRecords(run.runDir);
+  let cleanedCount = 0;
+  let skippedCount = 0;
+  for (const record of records) {
+    if (isFreshQaProcessRecord(record)) {
+      skippedCount += 1;
+      continue;
     }
-  }
-}
-$processes = Get-CimInstance Win32_Process |
-  Where-Object {
-    $_.CommandLine -and
-    (($_.Name -eq 'electron.exe') -or ($_.Name -eq 'Deskagotchi.exe')) -and
-    ($_.CommandLine -like "*$qaRoot*")
-  }
-$count = @($processes).Count
-$processes | ForEach-Object {
-  $process = Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue
-  if ($process) {
-    try {
-      $process.Kill()
-      $process.WaitForExit(2000) | Out-Null
-    } catch {
+    const processInfo = getProcessInfo(record.pid);
+    if (processInfo === undefined) {
+      continue;
     }
-  }
-}
-Start-Sleep -Milliseconds 800
-Get-CimInstance Win32_Process |
-  Where-Object {
-    $_.CommandLine -and
-    (($_.Name -eq 'electron.exe') -or ($_.Name -eq 'Deskagotchi.exe')) -and
-    ($_.CommandLine -like "*$qaRoot*")
-  } |
-  ForEach-Object {
-    $process = Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue
-    if ($process) {
-      try {
-        $process.Kill()
-        $process.WaitForExit(2000) | Out-Null
-      } catch {
-      }
+    if (!isProcessOwnedByQaRecord(processInfo, record)) {
+      skippedCount += 1;
+      continue;
     }
+    killWindowsProcess(record.pid);
+    cleanedCount += 1;
   }
-$count
-`;
-  const output = runPowerShell(script, { allowFailure: true }).trim();
-  const cleanedCount = Number.parseInt(output, 10);
-  const recordedCount = recordedIds.length === 0 ? 0 : recordedIds.split(", ").length;
-  if ((Number.isFinite(cleanedCount) && cleanedCount > 0) || recordedCount > 0) {
-    run.pass("orphaned QA Electron processes cleaned up", { count: cleanedCount });
+  if (cleanedCount > 0 || skippedCount > 0) {
+    run.pass("orphaned QA Electron processes inspected", {
+      cleanedCount,
+      skippedCount
+    });
   }
 }
 
-function readRecordedQaProcessIds(currentRunDir) {
+function readRecordedQaProcessRecords(currentRunDir) {
   if (!fs.existsSync(QA_ROOT)) {
     return [];
   }
-  const processIds = [];
+  const records = [];
   for (const entry of fs.readdirSync(QA_ROOT, { withFileTypes: true })) {
     if (!entry.isDirectory()) {
       continue;
@@ -1369,15 +1362,69 @@ function readRecordedQaProcessIds(currentRunDir) {
       continue;
     }
     const processRecord = readJsonOr(path.join(runDir, "qa-processes.json"), {
-      processIds: []
+      processIds: [],
+      processes: []
     });
+    if (Array.isArray(processRecord.processes)) {
+      for (const processInfo of processRecord.processes) {
+        const pid = Number(processInfo?.pid);
+        if (Number.isInteger(pid) && pid > 0) {
+          records.push({
+            pid,
+            runId: stringOrUndefined(processInfo.runId) ?? stringOrUndefined(processRecord.runId),
+            marker:
+              stringOrUndefined(processInfo.marker) ?? stringOrUndefined(processRecord.runId),
+            runDir: stringOrUndefined(processInfo.runDir) ?? runDir,
+            profileDir: stringOrUndefined(processInfo.profileDir),
+            recordedAt:
+              stringOrUndefined(processInfo.recordedAt) ??
+              stringOrUndefined(processRecord.updatedAt)
+          });
+        }
+      }
+      continue;
+    }
     for (const processId of processRecord.processIds ?? []) {
-      if (Number.isInteger(processId) && processId > 0) {
-        processIds.push(processId);
+      const pid = Number(processId);
+      if (Number.isInteger(pid) && pid > 0) {
+        records.push({
+          pid,
+          runId: stringOrUndefined(processRecord.runId),
+          marker: stringOrUndefined(processRecord.runId),
+          runDir,
+          profileDir: undefined,
+          recordedAt: stringOrUndefined(processRecord.updatedAt)
+        });
       }
     }
   }
-  return [...new Set(processIds)];
+  const recordsByPid = new Map();
+  for (const record of records) {
+    recordsByPid.set(record.pid, record);
+  }
+  return [...recordsByPid.values()];
+}
+
+function stringOrUndefined(value) {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function isFreshQaProcessRecord(record) {
+  if (record.recordedAt === undefined) {
+    return false;
+  }
+  const recordedAtMs = Date.parse(record.recordedAt);
+  if (!Number.isFinite(recordedAtMs)) {
+    return false;
+  }
+  return Date.now() - recordedAtMs < ORPHANED_QA_PROCESS_TTL_MS;
+}
+
+function isProcessOwnedByQaRecord(processInfo, record) {
+  const commandLine = normalizeCommandLine(processInfo.CommandLine);
+  return [record.marker, record.runId, record.runDir, record.profileDir]
+    .filter((value) => typeof value === "string" && value.length > 0)
+    .some((value) => commandLine.includes(normalizeCommandLine(value)));
 }
 
 async function closeApp(app, run) {
@@ -1435,11 +1482,6 @@ async function closeApp(app, run) {
       ...descendants.map((processInfo) => processInfo.ProcessId),
       ...(rootRunning ? [pid] : [])
     ];
-    for (const processId of remainingIds) {
-      spawnSync("taskkill", ["/PID", String(processId), "/T", "/F"], {
-        stdio: "ignore"
-      });
-    }
     forceKillQaProcessTree(run, remainingIds);
     await waitForProcessTreeExit(pid, run, 8_000);
   }
@@ -1480,14 +1522,14 @@ function isQaProcessRunning(pid, run) {
 }
 
 function isDeskagotchiQaProcess(processInfo, run) {
-  const name = String(processInfo.Name ?? "").toLowerCase();
-  const commandLine = String(processInfo.CommandLine ?? "");
-  return (
-    name === "electron.exe" ||
-    name === "deskagotchi.exe" ||
-    commandLine.includes(run.runDir) ||
-    commandLine.includes(run.profileDir)
-  );
+  const commandLine = normalizeCommandLine(processInfo.CommandLine);
+  return [run.runId, run.runDir, run.profileDir]
+    .map((value) => normalizeCommandLine(value))
+    .some((value) => value.length > 0 && commandLine.includes(value));
+}
+
+function normalizeCommandLine(value) {
+  return String(value ?? "").replaceAll("\\", "/").toLowerCase();
 }
 
 function getProcessInfo(pid) {
@@ -1509,12 +1551,13 @@ Get-CimInstance Win32_Process -Filter "ProcessId = ${pid}" |
 }
 
 function forceKillQaProcessTree(run, processIds) {
-  forceKillProcessIds(processIds);
   if (!IS_WINDOWS) {
+    forceKillProcessIds(processIds);
     return;
   }
   const runDir = run.runDir.replaceAll("'", "''");
   const profileDir = run.profileDir.replaceAll("'", "''");
+  const marker = run.runId.replaceAll("'", "''");
   const uniqueIds = [...new Set(processIds)]
     .map((processId) => Number(processId))
     .filter((processId) => Number.isInteger(processId) && processId > 0);
@@ -1524,11 +1567,13 @@ function forceKillQaProcessTree(run, processIds) {
 $ids = @(${idList})
 $runDir = '${runDir}'
 $profileDir = '${profileDir}'
+$marker = '${marker}'
 for ($attempt = 0; $attempt -lt 3; $attempt++) {
   $processes = Get-CimInstance Win32_Process |
     Where-Object {
-      ($ids -contains $_.ProcessId) -or
-      ($_.CommandLine -and (($_.CommandLine -like "*$runDir*") -or ($_.CommandLine -like "*$profileDir*")))
+      ($ids -contains $_.ProcessId) -and
+      $_.CommandLine -and
+      (($_.CommandLine -like "*$runDir*") -or ($_.CommandLine -like "*$profileDir*") -or ($_.CommandLine -like "*$marker*"))
     }
   foreach ($processInfo in $processes) {
     $process = Get-Process -Id $processInfo.ProcessId -ErrorAction SilentlyContinue
@@ -1541,6 +1586,26 @@ for ($attempt = 0; $attempt -lt 3; $attempt++) {
     }
   }
   Start-Sleep -Milliseconds 500
+}
+`,
+    { allowFailure: true }
+  );
+}
+
+function killWindowsProcess(pid) {
+  const processId = Number(pid);
+  if (!Number.isInteger(processId) || processId <= 0) {
+    return;
+  }
+  runPowerShell(
+    `
+$process = Get-Process -Id ${processId} -ErrorAction SilentlyContinue
+if ($process) {
+  try {
+    $process.Kill()
+    $process.WaitForExit(2000) | Out-Null
+  } catch {
+  }
 }
 `,
     { allowFailure: true }

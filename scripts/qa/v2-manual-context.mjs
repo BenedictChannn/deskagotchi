@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { createQaRunId } from "./qa-run-utils.mjs";
+import { createQaRunId, readQaEvidenceRunDir } from "./qa-run-utils.mjs";
 import { buildManualExecutionBatches } from "./v2-manual-batches.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -226,13 +226,23 @@ function readLatestRun(suffix) {
     ),
     confidenceLabel: summary?.confidenceLabel ?? "unknown",
     exactClaimAllowed: summary?.exactClaimAllowed ?? "",
-    finishedAt: summary?.finishedAt ?? ""
+    finishedAt: summary?.finishedAt ?? "",
+    freshnessFailures: validateRunFreshness(summary)
   };
 }
 
 function findLatestRunDir(suffix) {
   if (!fs.existsSync(QA_RUNS_DIR)) {
     return null;
+  }
+
+  const manifestedRunDir = readQaEvidenceRunDir(QA_RUNS_DIR, suffix);
+  if (manifestedRunDir !== null) {
+    const manifestedRunId = path.basename(manifestedRunDir);
+    const manifestedSummary = readJson(path.join(QA_RUNS_DIR, manifestedRunId, "summary.json"));
+    if (manifestedSummary !== null && typeof manifestedSummary.finishedAt === "string") {
+      return manifestedRunId;
+    }
   }
 
   return fs
@@ -244,6 +254,48 @@ function findLatestRunDir(suffix) {
       return summary !== null && typeof summary.finishedAt === "string";
     })
     .sort((left, right) => right.localeCompare(left))[0] ?? null;
+}
+
+function validateRunFreshness(summary) {
+  const sourceState = summary?.sourceState;
+  if (sourceState === undefined || sourceState === null || typeof sourceState !== "object") {
+    return ["missing sourceState metadata"];
+  }
+
+  const commit = typeof sourceState.commit === "string" ? sourceState.commit.trim() : "";
+  if (commit.length === 0 || commit === "unknown") {
+    return ["missing source commit"];
+  }
+  if (sourceState.dirty === true) {
+    return ["source checkout was dirty when the QA run was captured"];
+  }
+
+  const commitExists = runCommand("git", ["cat-file", "-e", `${commit}^{commit}`]);
+  if (!commitExists.ok) {
+    return [`source commit does not exist: ${commit}`];
+  }
+  const commitIsAncestor = runCommand("git", ["merge-base", "--is-ancestor", commit, "HEAD"]);
+  if (!commitIsAncestor.ok) {
+    return [`source commit is not an ancestor of HEAD: ${commit}`];
+  }
+  const diff = runCommand("git", ["diff", "--name-only", `${commit}..HEAD`]);
+  if (!diff.ok) {
+    return [`unable to inspect source changes after QA commit: ${commit}`];
+  }
+
+  const stalePaths = diff.stdout
+    .split(/\r?\n/)
+    .map((filePath) => filePath.trim())
+    .filter((filePath) => filePath.length > 0)
+    .filter((filePath) => !isAllowedPostQaEvidencePath(filePath));
+  return stalePaths.length === 0
+    ? []
+    : [`source changed after QA run: ${stalePaths.join(", ")}`];
+}
+
+function isAllowedPostQaEvidencePath(filePath) {
+  const normalizedPath = filePath.replaceAll("\\", "/");
+  return normalizedPath === "README.md" || normalizedPath.startsWith("docs/");
 }
 
 function findReleaseCandidates() {
@@ -492,7 +544,17 @@ function buildSummary(context, startedAt) {
       expectedConfidenceLabel: scenario.expectedConfidenceLabel,
       actualConfidenceLabel: context.latestRuns[scenario.suffix].confidenceLabel
     }));
-  const automatedEvidenceReady = missingRuns.length === 0 && nonPassingRuns.length === 0;
+  const staleRuns = REQUIRED_AUTOMATED_SCENARIOS
+    .filter((scenario) => {
+      const run = context.latestRuns[scenario.suffix];
+      return run !== null && run.freshnessFailures.length > 0;
+    })
+    .map((scenario) => ({
+      suffix: scenario.suffix,
+      failures: context.latestRuns[scenario.suffix].freshnessFailures
+    }));
+  const automatedEvidenceReady =
+    missingRuns.length === 0 && nonPassingRuns.length === 0 && staleRuns.length === 0;
   const checks = [
     {
       name: "manual context collected",
@@ -514,7 +576,8 @@ function buildSummary(context, startedAt) {
         foundRuns: Object.values(context.latestRuns).filter(Boolean).length,
         expectedRuns: REQUIRED_AUTOMATED_SCENARIOS.length,
         missingRuns,
-        nonPassingRuns
+        nonPassingRuns,
+        staleRuns
       }
     },
     {

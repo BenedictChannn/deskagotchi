@@ -5,7 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { readQaSourceState } from "./qa-git.mjs";
-import { createQaRunId } from "./qa-run-utils.mjs";
+import { createQaRunId, recordQaEvidence } from "./qa-run-utils.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -165,7 +165,7 @@ function writeAutomatedRunFixture(suffix) {
     scenario: suffix,
     runId,
     startedAt: "9999-12-31T23:58:00.000Z",
-    sourceState: readQaSourceState(ROOT_DIR),
+    sourceState: cleanSourceState(),
     confidenceLabel: "automated-pass",
     evidenceTier: "manual-context-smoke-fixture",
     checks: [
@@ -182,6 +182,16 @@ function writeAutomatedRunFixture(suffix) {
   };
   fs.writeFileSync(path.join(runDir, "summary.json"), JSON.stringify(summary, null, 2));
   fs.writeFileSync(path.join(runDir, "report.md"), `# ${suffix} smoke fixture\n`);
+  recordQaEvidence(SMOKE_EVIDENCE_DIR, suffix, runDir);
+}
+
+function cleanSourceState() {
+  const sourceState = readQaSourceState(ROOT_DIR);
+  return {
+    ...sourceState,
+    dirty: false,
+    dirtyEntries: []
+  };
 }
 
 function assertArrayEquals(actual, expected, label) {
