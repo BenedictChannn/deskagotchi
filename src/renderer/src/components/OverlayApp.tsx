@@ -22,6 +22,17 @@ interface OverlayAppProps {
   snapshot: DeskagotchiSnapshot;
 }
 
+type CareFlow = "medicine" | "clean" | "sleep";
+
+type OverlayMode =
+  | { kind: "compact" }
+  | { kind: "menu" }
+  | { kind: "health" }
+  | { kind: "feed" }
+  | { kind: "play-picker" }
+  | { kind: "play-active" }
+  | { kind: "care"; flow: CareFlow };
+
 /**
  * Render the compact overlay pet and its quick action radial menu.
  *
@@ -29,20 +40,15 @@ interface OverlayAppProps {
  * @returns The desktop overlay renderer view.
  */
 export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [healthOpen, setHealthOpen] = useState(false);
-  const [feedOpen, setFeedOpen] = useState(false);
-  const [playOpen, setPlayOpen] = useState(false);
-  const [playActive, setPlayActive] = useState(false);
-  const [careFlow, setCareFlow] = useState<"medicine" | "clean" | "sleep" | null>(
-    null
-  );
+  const [mode, setMode] = useState<OverlayMode>({ kind: "compact" });
   const [feedCategory, setFeedCategory] = useState<ItemCategory.Meal | ItemCategory.Snack>(
     ItemCategory.Meal
   );
   const [eatingCueItem, setEatingCueItem] = useState<ItemCatalogEntry | undefined>();
-  const hasTrayOverlay = menuOpen || playOpen;
-  const hasCardOverlay = healthOpen || feedOpen || careFlow !== null;
+  const hasTrayOverlay = mode.kind === "menu" || mode.kind === "play-picker";
+  const hasCardOverlay =
+    mode.kind === "health" || mode.kind === "feed" || mode.kind === "care";
+  const playActive = mode.kind === "play-active";
   const petSpriteSize = 148;
   const petDragPlaneClassName = [
     "pet-drag-plane",
@@ -71,11 +77,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     itemId?: string
   ): Promise<void> => {
     await window.deskagotchi.performAction({ type: actionType, itemId });
-    setMenuOpen(false);
-    setHealthOpen(false);
-    setFeedOpen(false);
-    setPlayOpen(false);
-    setCareFlow(null);
+    setMode({ kind: "compact" });
   };
 
   const recordQaEvent = (
@@ -91,7 +93,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   };
 
   const closePlay = useCallback((): void => {
-    setPlayActive(false);
+    setMode({ kind: "compact" });
     void window.deskagotchi
       .exitPetWindowPlayMode()
       .catch(() => undefined);
@@ -106,14 +108,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (
-      !menuOpen &&
-      !healthOpen &&
-      !feedOpen &&
-      !playOpen &&
-      !playActive &&
-      careFlow === null
-    ) {
+    if (mode.kind === "compact") {
       return undefined;
     }
 
@@ -125,16 +120,12 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         closePlay();
         return;
       }
-      setMenuOpen(false);
-      setHealthOpen(false);
-      setFeedOpen(false);
-      setPlayOpen(false);
-      setCareFlow(null);
+      setMode({ kind: "compact" });
     };
 
     window.addEventListener("keydown", closeTransientUi);
     return () => window.removeEventListener("keydown", closeTransientUi);
-  }, [careFlow, closePlay, feedOpen, healthOpen, menuOpen, playActive, playOpen]);
+  }, [closePlay, mode.kind, playActive]);
 
   useEffect(() => {
     if (playActive) {
@@ -237,18 +228,13 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         y: event.screenY - currentDrag.originScreenY,
         absolute: currentDrag.totalDelta
       },
-      menuOpen
+      menuOpen: mode.kind === "menu"
     });
     if (currentDrag.totalDelta > 4) {
       suppressNextClick.current = true;
       suppressClicksUntil.current =
         window.performance.now() + DRAG_CLICK_SUPPRESSION_MS;
-      setMenuOpen(false);
-      setHealthOpen(false);
-      setFeedOpen(false);
-      setPlayOpen(false);
-      setPlayActive(false);
-      setCareFlow(null);
+      setMode({ kind: "compact" });
     }
     dragState.current = undefined;
     void window.deskagotchi.finishPetWindowDrag();
@@ -263,51 +249,34 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       return;
     }
 
-    setMenuOpen((current) => {
-      if (!current) {
-        setHealthOpen(false);
-        setFeedOpen(false);
-        setPlayOpen(false);
-        setCareFlow(null);
-        recordQaEvent("menu:open", {
-          reason: "pet-click",
-          duringDrag: false
-        });
-      }
-      return !current;
-    });
+    if (mode.kind !== "menu") {
+      recordQaEvent("menu:open", {
+        reason: "pet-click",
+        duringDrag: false
+      });
+      setMode({ kind: "menu" });
+      return;
+    }
+    setMode({ kind: "compact" });
   };
 
   const openFeed = (): void => {
-    setMenuOpen(false);
-    setHealthOpen(false);
-    setPlayOpen(false);
-    setPlayActive(false);
-    setCareFlow(null);
     recordQaEvent("overlay:feed-open");
-    setFeedOpen(true);
+    setMode({ kind: "feed" });
   };
 
   const openPlay = (): void => {
-    setMenuOpen(false);
-    setHealthOpen(false);
-    setFeedOpen(false);
-    setCareFlow(null);
     recordQaEvent("overlay:play-open");
-    setPlayOpen(true);
+    setMode({ kind: "play-picker" });
   };
 
   const startPlay = (): void => {
-    setMenuOpen(false);
-    setHealthOpen(false);
-    setFeedOpen(false);
-    setPlayOpen(false);
-    setCareFlow(null);
     recordQaEvent("play:enter");
+    setMode({ kind: "compact" });
     void window.deskagotchi
       .enterPetWindowPlayMode()
-      .then(() => setPlayActive(true))
-      .catch(() => setPlayActive(false));
+      .then(() => setMode({ kind: "play-active" }))
+      .catch(() => setMode({ kind: "compact" }));
   };
 
   const rewardPlay = useCallback(async (): Promise<void> => {
@@ -315,25 +284,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
   }, []);
 
   const toggleHealth = (): void => {
-    setMenuOpen(false);
-    setFeedOpen(false);
-    setPlayOpen(false);
-    setCareFlow(null);
     recordQaEvent("overlay:health-open", {
-      nextOpen: !healthOpen
+      nextOpen: mode.kind !== "health"
     });
-    setHealthOpen((current) => !current);
+    setMode(mode.kind === "health" ? { kind: "compact" } : { kind: "health" });
   };
 
-  const openCareFlow = (flow: "medicine" | "clean" | "sleep"): void => {
-    setMenuOpen(false);
-    setHealthOpen(false);
-    setFeedOpen(false);
-    setPlayOpen(false);
+  const openCareFlow = (flow: CareFlow): void => {
     recordQaEvent("overlay:care-flow-open", {
       flow
     });
-    setCareFlow(flow);
+    setMode({ kind: "care", flow });
   };
 
   return (
@@ -364,7 +325,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         <MessMarkers count={snapshot.activeState.messCount} />
       ) : null}
 
-      {menuOpen ? (
+      {mode.kind === "menu" ? (
         <nav
           className="overlay-actions"
           aria-label="Pet actions"
@@ -409,18 +370,18 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
         </nav>
       ) : null}
 
-      {healthOpen ? (
+      {mode.kind === "health" ? (
         <OverlayHealthCard
           snapshot={snapshot}
-          onClose={() => setHealthOpen(false)}
+          onClose={() => setMode({ kind: "compact" })}
         />
       ) : null}
-      {feedOpen ? (
+      {mode.kind === "feed" ? (
         <FeedPicker
           activeCategory={feedCategory}
           petPackage={snapshot.activePackage.petPackage}
           onCategoryChange={setFeedCategory}
-          onCancel={() => setFeedOpen(false)}
+          onCancel={() => setMode({ kind: "compact" })}
           onSelect={(item) => {
             setEatingCueItem(item);
             if (eatingCueTimeout.current !== undefined) {
@@ -437,17 +398,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
           }}
         />
       ) : null}
-      {playOpen ? (
+      {mode.kind === "play-picker" ? (
         <PlayPicker
-          onCancel={() => setPlayOpen(false)}
+          onCancel={() => setMode({ kind: "compact" })}
           onStart={startPlay}
         />
       ) : null}
-      {careFlow !== null ? (
+      {mode.kind === "care" ? (
         <CareFlowCard
-          flow={careFlow}
+          flow={mode.flow}
           snapshot={snapshot}
-          onCancel={() => setCareFlow(null)}
+          onCancel={() => setMode({ kind: "compact" })}
           onConfirm={(actionType) => void performAction(actionType)}
         />
       ) : null}
@@ -472,7 +433,7 @@ function CareFlowCard({
   onCancel,
   onConfirm
 }: {
-  flow: "medicine" | "clean" | "sleep";
+  flow: CareFlow;
   snapshot: DeskagotchiSnapshot;
   onCancel: () => void;
   onConfirm: (actionType: CareActionType) => void;
@@ -507,7 +468,7 @@ function CareFlowCard({
 }
 
 function getCareFlowConfig(
-  flow: "medicine" | "clean" | "sleep",
+  flow: CareFlow,
   snapshot: DeskagotchiSnapshot
 ): {
   label: string;

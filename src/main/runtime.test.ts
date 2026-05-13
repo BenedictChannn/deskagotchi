@@ -29,6 +29,10 @@ vi.mock("electron", () => ({
 }));
 
 describe("runtime import and simulation safety", () => {
+  beforeEach(() => {
+    electronMocks.showOpenDialog.mockReset();
+  });
+
   it("removes partial import folders when an archive path is unsafe", async () => {
     const { runtime, userDataDir } = await createInitializedRuntime();
     const archivePath = await writeArchive("unsafe-path", (archive) => {
@@ -102,6 +106,25 @@ describe("runtime import and simulation safety", () => {
     await expect(runtime.importPet()).rejects.toThrow("existing package id");
 
     await expectCustomPets(userDataDir, []);
+  });
+
+  it("rejects overlapping imports before opening a second file dialog", async () => {
+    const { runtime } = await createInitializedRuntime();
+    let resolveDialog:
+      | ((selection: { canceled: true; filePaths: string[] }) => void)
+      | undefined;
+    electronMocks.showOpenDialog.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveDialog = resolve;
+      })
+    );
+
+    const firstImport = runtime.importPet();
+    await expect(runtime.importPet()).rejects.toThrow("already in progress");
+    expect(electronMocks.showOpenDialog).toHaveBeenCalledTimes(1);
+
+    resolveDialog?.({ canceled: true, filePaths: [] });
+    await expect(firstImport).resolves.toBeDefined();
   });
 
   it("keeps snapshot reads separate from simulation progression", async () => {

@@ -9,7 +9,6 @@ import AdmZip from "adm-zip";
 import { app, dialog, Notification } from "electron";
 
 import {
-  CareActionType,
   DeskagotchiSaveSchema,
   type DeskagotchiSave,
   type PetInstanceState,
@@ -22,12 +21,8 @@ import {
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
-import {
-  ItemCategory,
-  ItemIconManifestSchema,
-  type ItemCatalogEntry,
-  type ItemIconManifest
-} from "@shared/itemIcons";
+import { resolveCareItem } from "@shared/careItems";
+import { ItemIconManifestSchema, type ItemIconManifest } from "@shared/itemIcons";
 import { hasBlockingIssues } from "@shared/packageValidation";
 import {
   applyCareAction,
@@ -66,6 +61,7 @@ export class DeskagotchiRuntime {
   private itemManifest: ItemIconManifest | undefined;
   private save: DeskagotchiSave | undefined;
   private persistQueue: Promise<void> = Promise.resolve();
+  private importInFlight: Promise<DeskagotchiSnapshot> | undefined;
   private lastNotificationAt = 0;
 
   /**
@@ -158,7 +154,7 @@ export class DeskagotchiRuntime {
     const save = this.requireSave();
     const activeState = this.getActiveState(save);
     const activePackage = this.getPetPackage(activeState.packageId);
-    const item = this.resolveCareItem(request);
+    const item = resolveCareItem(request, this.requireItemManifest());
     const actionResult = applyCareAction(activeState, activePackage.petPackage, {
       type: request.type,
       now,
@@ -314,6 +310,18 @@ export class DeskagotchiRuntime {
    * @throws Error when the selected archive violates package safety rules.
    */
   async importPet(): Promise<DeskagotchiSnapshot> {
+    if (this.importInFlight !== undefined) {
+      throw new Error("A pet import is already in progress.");
+    }
+    this.importInFlight = this.runImportPet();
+    try {
+      return await this.importInFlight;
+    } finally {
+      this.importInFlight = undefined;
+    }
+  }
+
+  private async runImportPet(): Promise<DeskagotchiSnapshot> {
     const selection = await dialog.showOpenDialog({
       title: "Import Deskagotchi Pet Pack",
       properties: ["openFile"],
@@ -492,34 +500,6 @@ export class DeskagotchiRuntime {
     const itemManifestPath = path.join(this.resourceItemsDir, "lcd-core", "items.json");
     const rawManifest = await readFile(itemManifestPath, "utf8");
     this.itemManifest = ItemIconManifestSchema.parse(JSON.parse(rawManifest));
-  }
-
-  private resolveCareItem(
-    request: CareActionRequest
-  ): ItemCatalogEntry | undefined {
-    if (request.itemId === undefined) {
-      return undefined;
-    }
-
-    const itemManifest = this.requireItemManifest();
-    const item = itemManifest.items.find(
-      (candidate) => candidate.id === request.itemId
-    );
-    if (item === undefined) {
-      throw new Error(`Unknown care item '${request.itemId}'.`);
-    }
-
-    if (request.type === CareActionType.FeedMeal && item.category !== ItemCategory.Meal) {
-      throw new Error(`Care item '${item.id}' is not a meal.`);
-    }
-    if (
-      request.type === CareActionType.FeedSnack &&
-      item.category !== ItemCategory.Snack
-    ) {
-      throw new Error(`Care item '${item.id}' is not a snack.`);
-    }
-
-    return item;
   }
 
   private requireItemManifest(): ItemIconManifest {

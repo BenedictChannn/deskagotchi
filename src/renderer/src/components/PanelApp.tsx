@@ -93,13 +93,19 @@ export function PanelApp({
 
       <section className="panel-content">
         {activeView === PanelView.Status ? (
-          <StatusView snapshot={snapshot} onAction={performAction} />
+          <section data-testid="panel-view-status">
+            <StatusView snapshot={snapshot} onAction={performAction} />
+          </section>
         ) : null}
         {activeView === PanelView.PetSelector ? (
-          <PetSelectorView snapshot={snapshot} />
+          <section data-testid="panel-view-pet-selector">
+            <PetSelectorView snapshot={snapshot} />
+          </section>
         ) : null}
         {activeView === PanelView.Settings ? (
-          <SettingsView snapshot={snapshot} />
+          <section data-testid="panel-view-settings">
+            <SettingsView snapshot={snapshot} />
+          </section>
         ) : null}
       </section>
     </main>
@@ -225,6 +231,7 @@ function PetSelectorView({
 }: {
   snapshot: DeskagotchiSnapshot;
 }): React.JSX.Element {
+  const [importing, setImporting] = useState(false);
   const switchPet = async (petPackage: RuntimePetPackage): Promise<void> => {
     await window.deskagotchi.switchPet(petPackage.petPackage.packageId);
   };
@@ -234,7 +241,15 @@ function PetSelectorView({
   };
 
   const importPet = async (): Promise<void> => {
-    await window.deskagotchi.importPet();
+    if (importing) {
+      return;
+    }
+    setImporting(true);
+    try {
+      await window.deskagotchi.importPet();
+    } finally {
+      setImporting(false);
+    }
   };
 
   return (
@@ -246,8 +261,9 @@ function PetSelectorView({
         </div>
         <CommandButton
           icon={<Import size={18} />}
-          label="Import"
+          label={importing ? "Importing" : "Import"}
           onClick={() => void importPet()}
+          disabled={importing}
         />
       </header>
       <div className="pet-grid">
@@ -388,14 +404,21 @@ function PanelNavButton({
 function CommandButton({
   icon,
   label,
+  disabled = false,
   onClick
 }: {
   icon: React.ReactNode;
   label: string;
+  disabled?: boolean;
   onClick: () => void;
 }): React.JSX.Element {
   return (
-    <button className="command-button" type="button" onClick={onClick}>
+    <button
+      className="command-button"
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+    >
       {icon}
       {label}
     </button>

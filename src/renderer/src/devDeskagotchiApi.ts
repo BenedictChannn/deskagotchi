@@ -11,6 +11,7 @@ import {
   type RuntimePetPackage,
   type UpdateSettingsInput
 } from "@shared/ipc";
+import { resolveCareItem } from "@shared/careItems";
 import {
   applyCareAction,
   createInitialPetState
@@ -150,9 +151,7 @@ class DevDeskagotchiApi {
   ): Promise<DeskagotchiSnapshot> {
     const activeState = this.getActiveState();
     const activePackage = this.getRuntimePackage(activeState.packageId);
-    const item = request.itemId === undefined
-      ? undefined
-      : ITEM_MANIFEST.items.find((candidate) => candidate.id === request.itemId);
+    const item = resolveCareItem(request, ITEM_MANIFEST);
     const next = applyCareAction(activeState, activePackage.petPackage, {
       type: request.type,
       now: new Date(),
@@ -368,8 +367,8 @@ function repairDevSave(
  * @returns Runtime packages backed by the same committed PNG assets as Electron.
  */
 function createDevPackages(): RuntimePetPackage[] {
-  return builtInRoster.petIds.map((petId) => {
-    const asset = BUILT_IN_PACKAGE_ASSETS[petId as keyof typeof BUILT_IN_PACKAGE_ASSETS];
+  return builtInDevPetIds().map((petId) => {
+    const asset = BUILT_IN_PACKAGE_ASSETS[petId];
     return {
       petPackage: PetPackageSchema.parse(asset.manifest),
       assetUrls: {
@@ -380,4 +379,34 @@ function createDevPackages(): RuntimePetPackage[] {
       issues: []
     };
   });
+}
+
+function builtInDevPetIds(): Array<keyof typeof BUILT_IN_PACKAGE_ASSETS> {
+  const rosterIds = new Set(builtInRoster.petIds);
+  const assetIds = new Set(Object.keys(BUILT_IN_PACKAGE_ASSETS));
+  const missingAssets = builtInRoster.petIds.filter((petId) => !assetIds.has(petId));
+  const staleAssets = [...assetIds].filter((petId) => !rosterIds.has(petId));
+  if (missingAssets.length > 0 || staleAssets.length > 0) {
+    throw new Error(
+      [
+        "Built-in pet roster and browser dev assets are out of sync.",
+        missingAssets.length > 0 ? `Missing assets: ${missingAssets.join(", ")}` : "",
+        staleAssets.length > 0 ? `Stale assets: ${staleAssets.join(", ")}` : ""
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+  }
+  return builtInRoster.petIds.map((petId) => {
+    if (!isBuiltInAssetId(petId)) {
+      throw new Error(`Built-in pet '${petId}' does not have browser dev assets.`);
+    }
+    return petId;
+  });
+}
+
+function isBuiltInAssetId(
+  petId: string
+): petId is keyof typeof BUILT_IN_PACKAGE_ASSETS {
+  return petId in BUILT_IN_PACKAGE_ASSETS;
 }
