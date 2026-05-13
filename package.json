@@ -45,7 +45,8 @@
     "check": "npm run lint && npm run typecheck && npm run test",
     "precommit": "npm run lint && npm run typecheck",
     "prepare": "husky",
-    "package:win": "npm run build && electron-builder --win nsis --x64"
+    "package:win": "npm run build && electron-builder --win nsis --x64",
+    "package:mac": "npm run build && electron-builder --mac dmg zip --x64 --arm64"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -96,6 +97,15 @@
       "icon": "build/icon.ico",
       "target": [
         "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.lifestyle",
+      "identity": null,
+      "target": [
+        "dmg",
+        "zip"
       ]
     },
     "nsis": {
