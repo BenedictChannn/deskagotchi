@@ -26,6 +26,24 @@ The app runs as a small transparent frameless pet window with tray controls, loc
 - Custom pet import/export as `.deskagotchi-pet`.
 - Settings for always-on-top, startup, sound, reduced motion, low maintenance, and notifications.
 
+## Desktop App Downloads
+
+V2 release downloads should include Windows and macOS desktop builds:
+
+- Windows installer: `Deskagotchi Setup <version>.exe`
+- macOS Apple silicon: arm64 DMG or zip artifact
+- macOS Intel: x64 DMG or zip artifact
+
+See `docs/desktop-app.md` for download, install, first-run, usage,
+troubleshooting, and release-publisher instructions.
+
+Use `docs/qa/v2-pr-readiness.md` as the V2 pull request and release artifact
+checklist.
+
+The `Desktop Release Artifacts` GitHub Actions workflow builds Windows and
+macOS artifacts on manual runs and publishes them to GitHub Releases for `v*`
+tags.
+
 ## Install
 
 ```powershell
@@ -136,8 +154,9 @@ checks the clean worktree gate:
 npm.cmd run qa:v2:closeout
 ```
 
-Strict mode exits non-zero until the manual V2 acceptance JSON is also exported
-and passing.
+Strict mode exits non-zero until automated evidence, required artifacts, and the
+workspace are clean. Manual acceptance evidence is advisory for the current V2
+audit and can still be supplied with `--manual`.
 
 If the manual checklist JSON is downloaded outside the repo, pass it directly:
 
@@ -215,11 +234,15 @@ docs/qa/v2-manual-acceptance-runbook.md
 The checklist can download `v2-manual-acceptance-export.json`. Keep that JSON
 with the release evidence or pass it to the V2 audit with `--manual`.
 
-Regenerate the Windows app icon:
+Regenerate the desktop app icons:
 
 ```powershell
 npm.cmd run generate:icon
 ```
+
+The canonical icon source is `build/icon-source.png`; generated packaging
+outputs are `build/icon.png`, `build/icon.ico`, and `build/icon.icns`. See
+`docs/design/app-icon.md` for the imagegen prompt and icon acceptance notes.
 
 ## Build
 
@@ -233,7 +256,14 @@ Build a Windows installer:
 npm.cmd run package:win
 ```
 
+Build macOS DMG and zip artifacts on macOS:
+
+```bash
+npm run package:mac
+```
+
 Unsigned Windows builds may trigger SmartScreen warnings until the binary has signing and reputation.
+Unsigned or unnotarized macOS builds may require Finder's Open flow on first launch.
 
 ## Local Data
 
