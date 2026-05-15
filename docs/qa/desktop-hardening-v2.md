@@ -32,7 +32,7 @@ renderer-only check.
 
 Minimum evidence:
 
-- Relevant `npm.cmd run qa:desktop:*` command.
+- Relevant `pnpm run qa:desktop:*` command.
 - `.qa-runs/<run-id>/report.md`.
 - Bounds or lifecycle artifacts where applicable.
 - Manual acceptance note for subjective desktop feel.
@@ -59,12 +59,12 @@ Minimum evidence:
 Use these while iterating:
 
 ```powershell
-npm.cmd run qa:desktop:launch
-npm.cmd run qa:desktop:drag
-npm.cmd run qa:desktop:overlay
-npm.cmd run qa:desktop:play
-npm.cmd run qa:desktop:lifecycle
-npm.cmd run qa:desktop:idle
+pnpm run qa:desktop:launch
+pnpm run qa:desktop:drag
+pnpm run qa:desktop:overlay
+pnpm run qa:desktop:play
+pnpm run qa:desktop:lifecycle
+pnpm run qa:desktop:idle
 ```
 
 `qa:desktop:drag` records `display-topology.json` and exercises a real
@@ -87,13 +87,13 @@ pass.
 Run the full gate before making a broad readiness claim:
 
 ```powershell
-npm.cmd run qa
+pnpm run qa
 ```
 
 Run release smoke before installer readiness claims:
 
 ```powershell
-npm.cmd run qa:release
+pnpm run qa:release
 ```
 
 That command rebuilds the installer, checks packaged resources, verifies the

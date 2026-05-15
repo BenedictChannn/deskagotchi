@@ -41,9 +41,9 @@ Verifiable criteria:
 
 Evidence required:
 
-- `npm.cmd run qa:desktop:launch`
-- `npm.cmd run qa:desktop:overlay`
-- `npm.cmd run qa:desktop:drag`
+- `pnpm run qa:desktop:launch`
+- `pnpm run qa:desktop:overlay`
+- `pnpm run qa:desktop:drag`
 - Manual acceptance note for pet click/drag feel.
 
 ### 2. Built-In Pet Quality
@@ -73,8 +73,8 @@ Verifiable criteria:
 
 Evidence required:
 
-- `npm.cmd run validate:pets`
-- `npm.cmd run qa:assets:pets`
+- `pnpm run validate:pets`
+- `pnpm run qa:assets:pets`
 - Updated `docs/qa/pet-animation-gallery.html`
 - Per-pet contact sheet review notes when assets change.
 
@@ -93,8 +93,8 @@ Verifiable criteria:
 
 Evidence required:
 
-- `npm.cmd run generate:items` after item-source changes.
-- `npm.cmd run qa:assets:items`
+- `pnpm run generate:items` after item-source changes.
+- `pnpm run qa:assets:items`
 - Review of `docs/qa/lcd-food-icons-contact-sheet.png`
 - Feed picker smoke evidence.
 - Eating screenshots or QA artifacts for all built-in pets.
@@ -124,8 +124,8 @@ Evidence required:
 - Unit tests for care deadlines and missed care.
 - Unit tests for sleep/wake and sickness behavior.
 - Unit tests for growth/evolution branch selection.
-- `npm.cmd run test`
-- `npm.cmd run typecheck`
+- `pnpm run test`
+- `pnpm run typecheck`
 
 ### 5. Desktop Hardening
 
@@ -148,12 +148,12 @@ Verifiable criteria:
 
 Evidence required:
 
-- `npm.cmd run qa:desktop:launch`
-- `npm.cmd run qa:desktop:drag`
+- `pnpm run qa:desktop:launch`
+- `pnpm run qa:desktop:drag`
 - `qa:desktop:drag` artifact `display-topology.json` and cross-monitor bounds
   artifacts when a negative-coordinate monitor is available.
-- `npm.cmd run qa:desktop:play`
-- `npm.cmd run qa:desktop:lifecycle`
+- `pnpm run qa:desktop:play`
+- `pnpm run qa:desktop:lifecycle`
 - Manual acceptance form from `docs/qa/desktop-hardening-v2.md`
 - Process cleanup check after quit.
 
@@ -179,8 +179,8 @@ Evidence required:
 - Package validation tests.
 - Runtime import/export tests.
 - Storage tests.
-- `npm.cmd run validate:pets`
-- `npm.cmd run test`
+- `pnpm run validate:pets`
+- `pnpm run test`
 
 ### 7. Packaging And Release Readiness
 
@@ -201,10 +201,10 @@ Verifiable criteria:
 
 Evidence required:
 
-- `npm.cmd run build`
-- `npm.cmd run package:win`
-- `npm.cmd run qa:release`
-- `DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle`
+- `pnpm run build`
+- `pnpm run package:win`
+- `pnpm run qa:release`
+- `DESKAGOTCHI_IDLE_SECONDS=300 pnpm run qa:desktop:idle`
 - Installer smoke evidence from `qa:release`, including silent install,
   installed executable launch, and silent uninstall.
 - Manual idle observation note.
@@ -216,21 +216,21 @@ Do not call V2 complete until all of these pass or have an explicit documented
 exception:
 
 ```powershell
-npm.cmd run check
-npm.cmd run validate:pets
-npm.cmd run qa
-npm.cmd run package:win
-npm.cmd run qa:release
-DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
-npm.cmd run qa:v2:scope
-npm.cmd run qa:v2:visual-page
-npm.cmd run qa:v2:audit:smoke
-npm.cmd run qa:v2:closeout
+pnpm run check
+pnpm run validate:pets
+pnpm run qa
+pnpm run package:win
+pnpm run qa:release
+DESKAGOTCHI_IDLE_SECONDS=300 pnpm run qa:desktop:idle
+pnpm run qa:v2:scope
+pnpm run qa:v2:visual-page
+pnpm run qa:v2:audit:smoke
+pnpm run qa:v2:closeout
 ```
 
 Required manual evidence:
 
-- `npm.cmd run qa:v2:manual-context` output can be used to prefill build,
+- `pnpm run qa:v2:manual-context` output can be used to prefill build,
   installer, latest QA run, monitor, and evidence-note context. This helper is
   not a pass condition by itself.
 - `docs/qa/v2-manual-acceptance.html` export with every required gate either
@@ -243,7 +243,7 @@ Required manual evidence:
 - Multi-monitor, high-DPI, sleep/wake, RDP, taskbar, and SmartScreen
   acceptance where available in the test environment.
 
-`npm.cmd run qa:v2:closeout` is the final gate. It runs the closeout audit in
+`pnpm run qa:v2:closeout` is the final gate. It runs the closeout audit in
 strict check-only mode, so it must not rewrite tracked evidence and it must fail
 until the manual acceptance JSON is present and passing.
 

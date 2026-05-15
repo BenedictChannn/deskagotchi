@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -12,6 +11,7 @@ import {
   recordQaFail,
   recordQaPass
 } from "./qa-run-utils.mjs";
+import { packageManagerScriptArgs, spawnPackageManager } from "./package-manager.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
@@ -55,8 +55,7 @@ function auditPets(run) {
   runCommandCheck(
     run,
     "built-in pet package registry validation passed",
-    "npm.cmd",
-    ["run", "validate:pets"]
+    "validate:pets"
   );
   for (const petId of loadBuiltInPetIds()) {
     checkFile(run, `resources/pets/${petId}/pet.json`, `${petId} manifest exists`);
@@ -167,17 +166,14 @@ function checkItemManifest(run, manifest) {
   });
 }
 
-function runCommandCheck(run, checkName, command, args) {
-  const commandParts = process.platform === "win32"
-    ? ["cmd.exe", ["/d", "/s", "/c", command, ...args]]
-    : [command, args];
-  const child = spawnSync(commandParts[0], commandParts[1], {
+function runCommandCheck(run, checkName, scriptName) {
+  const { child, displayCommand } = spawnPackageManager(packageManagerScriptArgs(scriptName), {
     cwd: ROOT_DIR,
     encoding: "utf8",
     stdio: "pipe"
   });
   const details = {
-    command: `${command} ${args.join(" ")}`,
+    command: displayCommand,
     status: child.status,
     stdout: child.stdout?.trim() ?? "",
     stderr: child.stderr?.trim() ?? ""

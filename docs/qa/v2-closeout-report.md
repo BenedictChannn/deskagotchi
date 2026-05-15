@@ -50,10 +50,10 @@ captures the source commit/freshness checks used by the audit.
 | Feed picker uses icon-first food choices and selected food appears in eating feedback. | PASS | overlay QA plus item contact sheets | manual acceptance is advisory and not required for automated closeout |
 | Ball play expands to the monitor work area and restores the compact overlay. | PASS | latest play QA report |  |
 | Pet dragging works by the visible sprite and persists restored bounds. | PASS | latest drag QA report | manual acceptance is advisory and not required for automated closeout |
-| Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through npm.cmd run check |  |
+| Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through pnpm run check |  |
 | Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | PASS | pet asset contact sheets and visual acceptance page | manual acceptance is advisory and not required for automated closeout |
-| Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through npm.cmd run check |  |
-| Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through npm.cmd run check |  |
+| Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through pnpm run check |  |
+| Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through pnpm run check |  |
 | Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README, renderer route removal, and V2 scope QA |  |
 | Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
 | Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
@@ -126,7 +126,7 @@ No exported manual acceptance JSON found.
 Run this audit with strict mode when preparing a release branch:
 
 ```powershell
-npm.cmd run qa:v2:closeout
+pnpm run qa:v2:closeout
 ```
 
 Use `--check-only` for final release validation so the tracked report does not
@@ -136,13 +136,13 @@ you intentionally want to refresh this Markdown report artifact.
 Optional manual acceptance files can still be audited separately when needed:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json
 ```
 
 Use a separate report path for fixture or release-candidate checks:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json --report .qa-runs\v2-closeout-report.md
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json --report .qa-runs\v2-closeout-report.md
 ```
 
 Use `--allow-dirty` only for fixture smoke checks that intentionally run

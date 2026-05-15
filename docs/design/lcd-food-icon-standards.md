@@ -83,12 +83,12 @@ preview background.
 
 Before accepting food icon changes:
 
-- Regenerate the atlas with `npm.cmd run generate:items`.
+- Regenerate the atlas with `pnpm run generate:items`.
 - Open `docs/qa/lcd-food-icons-contact-sheet.png`.
 - Check every food without reading item labels.
 - Check the feed picker in the actual overlay.
 - Check the eating food cue for at least Bao, Miso, Mochi, Peanut, and Puddles.
-- Verify the atlas and manifest still pass `npm.cmd run qa:assets:items`.
+- Verify the atlas and manifest still pass `pnpm run qa:assets:items`.
 
 Acceptance language should be concrete:
 

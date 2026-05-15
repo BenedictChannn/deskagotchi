@@ -17,17 +17,17 @@ manual gate by either:
 - deferring the gate with `Accepted out of scope by` and a gate-specific
   rationale.
 
-That JSON is required before `npm.cmd run qa:v2:closeout` can pass.
+That JSON is required before `pnpm run qa:v2:closeout` can pass.
 
 ## Prep
 
 Start from a clean branch and run the current automated evidence set:
 
 ```powershell
-npm.cmd run qa
-npm.cmd run qa:release
-DESKAGOTCHI_IDLE_SECONDS=300 npm.cmd run qa:desktop:idle
-npm.cmd run qa:v2:manual-context
+pnpm run qa
+pnpm run qa:release
+DESKAGOTCHI_IDLE_SECONDS=300 pnpm run qa:desktop:idle
+pnpm run qa:v2:manual-context
 ```
 
 `qa:v2:manual-context` now fails if any required automated evidence run is
@@ -45,7 +45,7 @@ docs/qa/v2-manual-acceptance.html
 You can also generate the context and open the latest session page in one step:
 
 ```powershell
-npm.cmd run qa:v2:manual-open
+pnpm run qa:v2:manual-open
 ```
 
 Prefer opening `.qa-runs/latest-v2-manual-acceptance.html`, or the generated
@@ -63,7 +63,7 @@ Keep the generated `Build` and `Installer path` fields unchanged. The closeout
 audit verifies that the exported build contains the current `package.json`
 version, a real Git commit from this repository, and the same build and
 installer path embedded in the manual context signature. If you need to test a
-newer build or installer, rerun `npm.cmd run qa:v2:manual-context` instead of
+newer build or installer, rerun `pnpm run qa:v2:manual-context` instead of
 editing either field by hand.
 After that build is tested, only documentation/evidence commits should be added
 before closeout. Any app, source, package, or asset change after the manual
@@ -95,8 +95,8 @@ restart, or monitor-layout changes.
 | `startup.enable` | In the packaged app, enable Launch on startup in Settings. | Note that this used the packaged app, not dev/QA mode. |
 | `startup.login` | Sign out/in or restart Windows. Confirm Deskagotchi opens once and the pet is recoverable. | Login/restart method, timestamp, and whether any duplicate app instances appeared. |
 | `startup.disable` | Disable Launch on startup after the login test. | Note that startup was disabled again after the test. |
-| `monitors.right` | With a right-side monitor layout, run `npm.cmd run qa:desktop:drag`, manually drag across displays, quit, and relaunch. | Drag QA run ID, monitor arrangement, scale factors, and restore observation. |
-| `monitors.stacked` | With a stacked-above or stacked-below layout, run `npm.cmd run qa:desktop:drag`, manually drag across displays, quit, and relaunch. | Drag QA run ID, monitor arrangement, scale factors, and restore observation. |
+| `monitors.right` | With a right-side monitor layout, run `pnpm run qa:desktop:drag`, manually drag across displays, quit, and relaunch. | Drag QA run ID, monitor arrangement, scale factors, and restore observation. |
+| `monitors.stacked` | With a stacked-above or stacked-below layout, run `pnpm run qa:desktop:drag`, manually drag across displays, quit, and relaunch. | Drag QA run ID, monitor arrangement, scale factors, and restore observation. |
 | `monitors.dpi` | With mixed-DPI displays, drag the pet across displays and relaunch. | Scale factors and whether drag delta or restore felt wrong. |
 | `sleep.visible` | Launch the packaged or dev app, put the machine to sleep for at least five minutes, wake/unlock, and confirm the pet is visible or tray-recoverable. | Sleep duration and visibility/recovery result. |
 | `sleep.state` | After wake, open health/status and confirm stats refresh instead of remaining stale. | Before/after observation if available. |
@@ -145,13 +145,13 @@ Run the focused manual preflight whenever you want to see only the manual
 acceptance blockers before trying final closeout:
 
 ```powershell
-npm.cmd run qa:v2:manual-preflight
+pnpm run qa:v2:manual-preflight
 ```
 
 For an export stored outside the repo:
 
 ```powershell
-npm.cmd run qa:v2:manual-preflight -- --manual C:\path\to\v2-manual-acceptance-export.json
+pnpm run qa:v2:manual-preflight --manual C:\path\to\v2-manual-acceptance-export.json
 ```
 
 The preflight writes `.qa-runs/<run-id>-manual-preflight/report.md` plus the
@@ -165,7 +165,7 @@ physical gates.
 3. Refresh the closeout report:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --manual docs\qa\v2-manual-acceptance-export.json
+pnpm run qa:v2:audit --manual docs\qa\v2-manual-acceptance-export.json
 ```
 
 4. Commit the manual evidence and refreshed report:
@@ -178,7 +178,7 @@ git commit -m "docs(qa): add v2 manual acceptance evidence"
 5. Run the final clean-worktree gate:
 
 ```powershell
-npm.cmd run qa:v2:closeout
+pnpm run qa:v2:closeout
 ```
 
 This is the normal release-branch path because `qa:v2:closeout` intentionally
@@ -190,11 +190,11 @@ If the export lives outside the repository, pass its absolute path to the
 strict audit command:
 
 ```powershell
-npm.cmd run qa:v2:audit -- --manual C:\path\to\v2-manual-acceptance-export.json --strict --check-only
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json --strict --check-only
 ```
 
 Use the external path only when the manual JSON is stored in another release
-evidence system. The tracked `npm.cmd run qa:v2:closeout` script only reads the
+evidence system. The tracked `pnpm run qa:v2:closeout` script only reads the
 default in-repo manual export paths.
 
 The strict gate should not pass until the manual JSON is complete and the Git

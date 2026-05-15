@@ -80,26 +80,26 @@ panel shows the resolved path. The main files are:
 Install dependencies:
 
 ```powershell
-npm.cmd install
+pnpm install --frozen-lockfile
 ```
 
 Build the app bundle:
 
 ```powershell
-npm.cmd run build
+pnpm run build
 ```
 
 Build the Windows installer on Windows:
 
 ```powershell
-npm.cmd run package:win
+pnpm run package:win
 ```
 
 Build macOS DMG and zip artifacts on macOS:
 
 ```bash
-npm install
-npm run package:mac
+pnpm install --frozen-lockfile
+pnpm run package:mac
 ```
 
 macOS builds should be created on macOS. Local V2 macOS builds are unsigned

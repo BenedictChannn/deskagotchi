@@ -23,7 +23,7 @@ Deskagotchi's MVP movement model treats the transparent Electron overlay as the 
 - `src/main/windowBounds.test.ts` covers pure display-selection and clamping
   behavior for right-side, negative-coordinate, stacked-above, stacked-below,
   largest-intersection, and no-intersection fallback layouts.
-- `npm.cmd run qa:desktop:drag` exercises a real OS drag and records
+- `pnpm run qa:desktop:drag` exercises a real OS drag and records
   `display-topology.json`; on the current test machine it also covers a
   left-side negative-coordinate monitor.
 - Right-side and stacked physical display arrangements still need manual or

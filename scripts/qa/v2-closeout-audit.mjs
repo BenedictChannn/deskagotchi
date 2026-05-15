@@ -359,7 +359,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   },
   {
     requirement: "Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts.",
-    evidence: "src/main/windowBounds.test.ts through npm.cmd run check",
+    evidence: "src/main/windowBounds.test.ts through pnpm run check",
     automatedKeys: ["check"],
     artifactPaths: ["src/main/windowBounds.test.ts", "docs/architecture/pet-overlay-boundaries.md"]
   },
@@ -380,13 +380,13 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
   },
   {
     requirement: "Care simulation is deterministic, documented, and tested for V2 rules.",
-    evidence: "simulation docs and test suite through npm.cmd run check",
+    evidence: "simulation docs and test suite through pnpm run check",
     automatedKeys: ["check"],
     artifactPaths: ["docs/simulation/care-simulation-v2.md", "src/shared/simulation.test.ts"]
   },
   {
     requirement: "Package validation and persistence safety remain covered by the checked test suite.",
-    evidence: "package, runtime, and storage tests through npm.cmd run check",
+    evidence: "package, runtime, and storage tests through pnpm run check",
     automatedKeys: ["check"],
     artifactPaths: [
       "src/main/packageRegistry.test.ts",
@@ -1391,7 +1391,7 @@ ${manualRows}
 Run this audit with strict mode when preparing a release branch:
 
 \`\`\`powershell
-npm.cmd run qa:v2:closeout
+pnpm run qa:v2:closeout
 \`\`\`
 
 Use \`--check-only\` for final release validation so the tracked report does not
@@ -1401,13 +1401,13 @@ you intentionally want to refresh this Markdown report artifact.
 Optional manual acceptance files can still be audited separately when needed:
 
 \`\`\`powershell
-npm.cmd run qa:v2:audit -- --manual C:\\path\\to\\v2-manual-acceptance-export.json
+pnpm run qa:v2:audit --manual C:\\path\\to\\v2-manual-acceptance-export.json
 \`\`\`
 
 Use a separate report path for fixture or release-candidate checks:
 
 \`\`\`powershell
-npm.cmd run qa:v2:audit -- --manual C:\\path\\to\\v2-manual-acceptance-export.json --report .qa-runs\\v2-closeout-report.md
+pnpm run qa:v2:audit --manual C:\\path\\to\\v2-manual-acceptance-export.json --report .qa-runs\\v2-closeout-report.md
 \`\`\`
 
 Use \`--allow-dirty\` only for fixture smoke checks that intentionally run

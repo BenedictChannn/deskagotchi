@@ -77,7 +77,7 @@ function main() {
       : "manual evidence is still incomplete; see summarized blockers",
     uncoveredConditions: [
       "this preflight does not execute physical manual gates",
-      "final release closeout still requires a clean worktree and npm.cmd run qa:v2:closeout"
+      "final release closeout still requires a clean worktree and pnpm run qa:v2:closeout"
     ],
     manualPath,
     closeoutAuditExitCode: audit.status,
@@ -160,11 +160,13 @@ function runCloseoutAudit(manualPath, reportPath) {
 }
 
 function extractManualSection(report) {
-  const startMarker = "## Manual Acceptance";
+  const startMarkers = ["## Optional Manual Acceptance", "## Manual Acceptance"];
   const endMarker = "## Strict Mode";
-  const startIndex = report.indexOf(startMarker);
+  const startIndex = startMarkers
+    .map((startMarker) => report.indexOf(startMarker))
+    .find((index) => index !== -1);
   const endIndex = report.indexOf(endMarker);
-  if (startIndex === -1) {
+  if (startIndex === undefined) {
     return "";
   }
   return report.slice(startIndex, endIndex === -1 ? report.length : endIndex).trim();

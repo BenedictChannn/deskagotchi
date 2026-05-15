@@ -27,8 +27,8 @@ Use this checklist when validating the remaining overlay care flows.
 
 ## Runtime Check
 
-1. Run `npm.cmd run check`.
-2. Start Electron with `npm.cmd run dev`.
+1. Run `pnpm run check`.
+2. Start Electron with `pnpm run dev`.
 3. Click the pet and open Med, Clean, and Sleep flows from the overlay.
 4. Confirm no flow opens the full management panel.
 5. Confirm X and Escape close transient care UI.

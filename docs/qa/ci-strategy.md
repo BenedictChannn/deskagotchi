@@ -6,10 +6,10 @@ CI can protect portable code paths, but it must not pretend to validate Windows 
 
 These can run in normal CI:
 
-- `npm.cmd run lint`
-- `npm.cmd run typecheck`
-- `npm.cmd run test`
-- `npm.cmd run validate:pets`
+- `pnpm run lint`
+- `pnpm run typecheck`
+- `pnpm run test`
+- `pnpm run validate:pets`
 - package and asset structure checks
 - renderer route smoke tests when a browser or Electron environment is available
 

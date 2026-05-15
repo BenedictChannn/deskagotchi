@@ -709,10 +709,10 @@
           <article class="panel">
             <h3>Release evidence</h3>
             <ul>
-              <li>`npm.cmd run check` passes.</li>
-              <li>`npm.cmd run qa` passes.</li>
-              <li>`npm.cmd run build` passes.</li>
-              <li>`npm.cmd run package:win` passes or has a documented release exception.</li>
+              <li>`pnpm run check` passes.</li>
+              <li>`pnpm run qa` passes.</li>
+              <li>`pnpm run build` passes.</li>
+              <li>`pnpm run package:win` passes or has a documented release exception.</li>
             </ul>
           </article>
         </div>
@@ -822,17 +822,17 @@
             <tr>
               <td>Overlay UX</td>
               <td>Audit button placement, pet occlusion, transient tray/card sizing, X buttons, Escape handling, and all care actions.</td>
-              <td>`npm.cmd run qa:desktop:overlay`, screenshots, manual click-through check.</td>
+              <td>`pnpm run qa:desktop:overlay`, screenshots, manual click-through check.</td>
             </tr>
             <tr>
               <td>Drag and monitors</td>
               <td>Stress drag on primary, right-side, left-side negative-coordinate, stacked, and scaled displays.</td>
-              <td>`npm.cmd run qa:desktop:drag`, bounds logs, manual DPI note.</td>
+              <td>`pnpm run qa:desktop:drag`, bounds logs, manual DPI note.</td>
             </tr>
             <tr>
               <td>Desktop hardening</td>
               <td>Verify frozen-window cleanup, tray recovery, explicit quit, always-on-top persistence, sleep/wake refresh, click-through state, and play-mode bounds restore.</td>
-              <td>`npm.cmd run qa:desktop:launch`, `qa:desktop:lifecycle`, `qa:desktop:play`, manual desktop acceptance, and updated `docs/qa/desktop-hardening-v2.md`.</td>
+              <td>`pnpm run qa:desktop:launch`, `qa:desktop:lifecycle`, `qa:desktop:play`, manual desktop acceptance, and updated `docs/qa/desktop-hardening-v2.md`.</td>
             </tr>
             <tr>
               <td>Simulation V2</td>
@@ -842,12 +842,12 @@
             <tr>
               <td>Pet assets</td>
               <td>Run visual QA on each pet row, repair weak rows, and document any accepted limitations in contact sheets.</td>
-              <td>`npm.cmd run qa:assets:pets`, updated gallery, per-pet contact sheets.</td>
+              <td>`pnpm run qa:assets:pets`, updated gallery, per-pet contact sheets.</td>
             </tr>
             <tr>
               <td>Items and food</td>
               <td>Finalize shared/species food catalog, redraw unclear food icons, and validate selected-food eating cue per pet.</td>
-              <td>`npm.cmd run qa:assets:items`, food contact sheet review, feed picker smoke, eating screenshots.</td>
+              <td>`pnpm run qa:assets:items`, food contact sheet review, feed picker smoke, eating screenshots.</td>
             </tr>
             <tr>
               <td>Hatch archive</td>
@@ -857,7 +857,7 @@
             <tr>
               <td>Packaging</td>
               <td>Build installer, verify state survives updates, keep packaged resources lean, and document recovery paths.</td>
-              <td>`npm.cmd run package:win`, install smoke, local data inspection.</td>
+              <td>`pnpm run package:win`, install smoke, local data inspection.</td>
             </tr>
           </tbody>
         </table>

@@ -338,7 +338,7 @@
         </div>
         <p class="warning">
           Keep the imported build and installer path unchanged. If either one is
-          wrong, rerun `npm.cmd run qa:v2:manual-context`; closeout rejects
+          wrong, rerun `pnpm run qa:v2:manual-context`; closeout rejects
           hand-edited or stale manual context identity.
         </p>
         <div class="actions">
@@ -351,9 +351,9 @@
         <div class="card context-import">
           <h3>Manual Context Import</h3>
           <p class="status-line">
-            Run `npm.cmd run qa:v2:manual-context` and open
+            Run `pnpm run qa:v2:manual-context` and open
             `.qa-runs/latest-v2-manual-acceptance.html` to preload context
-            automatically. `npm.cmd run qa:v2:manual-open` does both steps.
+            automatically. `pnpm run qa:v2:manual-open` does both steps.
             You can also paste `manual-context.json` here and apply it. This
             never checks manual gates.
           </p>
@@ -433,7 +433,7 @@
             <h3>Physical Monitor Layouts</h3>
             <div class="meta"><span class="chip">right</span><span class="chip">stacked</span><span class="chip">DPI</span></div>
             <ol class="steps">
-              <li>Run `npm.cmd run qa:desktop:drag` on each physical layout when available.</li>
+              <li>Run `pnpm run qa:desktop:drag` on each physical layout when available.</li>
               <li>Manually drag the pet across displays.</li>
               <li>Quit and relaunch to confirm visible restoration.</li>
             </ol>
@@ -487,9 +487,9 @@
           <h3>Closeout Target</h3>
           <p class="status-line">
             Save or move the exported JSON to `docs/qa/v2-manual-acceptance-export.json`,
-            then run `npm.cmd run qa:v2:audit -- --manual docs\qa\v2-manual-acceptance-export.json`.
+            then run `pnpm run qa:v2:audit --manual docs\qa\v2-manual-acceptance-export.json`.
             Strict closeout still requires committing the export and refreshed report before
-            `npm.cmd run qa:v2:closeout` can pass.
+            `pnpm run qa:v2:closeout` can pass.
           </p>
         </div>
         <h3>Accepted Deferrals</h3>
@@ -684,7 +684,7 @@
         link.download = "v2-manual-acceptance-export.json";
         link.click();
         URL.revokeObjectURL(link.href);
-        updateProgress("Downloaded v2-manual-acceptance-export.json. Move it to docs/qa/ or pass it to npm.cmd run qa:v2:audit -- --manual <path>.");
+        updateProgress("Downloaded v2-manual-acceptance-export.json. Move it to docs/qa/ or pass it to pnpm run qa:v2:audit --manual <path>.");
       }
 
       function updateProgress(message) {
