@@ -1464,7 +1464,7 @@ async function closeApp(app, run) {
     run.pass("QA process tree cleaned up", { pid });
     return;
   }
-  forceKillQaProcessTree(run, [
+  forceKillQaProcessTree([
     ...descendants.map((processInfo) => processInfo.ProcessId),
     ...(rootRunning ? [pid] : [])
   ]);
@@ -1483,7 +1483,7 @@ async function closeApp(app, run) {
       ...descendants.map((processInfo) => processInfo.ProcessId),
       ...(rootRunning ? [pid] : [])
     ];
-    forceKillQaProcessTree(run, remainingIds);
+    forceKillQaProcessTree(remainingIds);
     await waitForProcessTreeExit(pid, run, 8_000);
   }
   rootRunning = isQaProcessRunning(pid, run);
@@ -1509,9 +1509,11 @@ async function waitForProcessTreeExit(pid, run, timeoutMs) {
 }
 
 function getQaDescendantProcesses(pid, run) {
-  return getDescendantProcesses(pid).filter((processInfo) =>
-    isDeskagotchiQaProcess(processInfo, run)
-  );
+  const descendants = getDescendantProcesses(pid);
+  if (IS_WINDOWS) {
+    return descendants;
+  }
+  return descendants.filter((processInfo) => isDeskagotchiQaProcess(processInfo, run));
 }
 
 function isQaProcessRunning(pid, run) {
@@ -1551,46 +1553,8 @@ Get-CimInstance Win32_Process -Filter "ProcessId = ${pid}" |
   return JSON.parse(output);
 }
 
-function forceKillQaProcessTree(run, processIds) {
-  if (!IS_WINDOWS) {
-    forceKillProcessIds(processIds);
-    return;
-  }
-  const runDir = run.runDir.replaceAll("'", "''");
-  const profileDir = run.profileDir.replaceAll("'", "''");
-  const marker = run.runId.replaceAll("'", "''");
-  const uniqueIds = [...new Set(processIds)]
-    .map((processId) => Number(processId))
-    .filter((processId) => Number.isInteger(processId) && processId > 0);
-  const idList = uniqueIds.length > 0 ? uniqueIds.join(", ") : "";
-  runPowerShell(
-    `
-$ids = @(${idList})
-$runDir = '${runDir}'
-$profileDir = '${profileDir}'
-$marker = '${marker}'
-for ($attempt = 0; $attempt -lt 3; $attempt++) {
-  $processes = Get-CimInstance Win32_Process |
-    Where-Object {
-      ($ids -contains $_.ProcessId) -and
-      $_.CommandLine -and
-      (($_.CommandLine -like "*$runDir*") -or ($_.CommandLine -like "*$profileDir*") -or ($_.CommandLine -like "*$marker*"))
-    }
-  foreach ($processInfo in $processes) {
-    $process = Get-Process -Id $processInfo.ProcessId -ErrorAction SilentlyContinue
-    if ($process) {
-      try {
-        $process.Kill()
-        $process.WaitForExit(2000) | Out-Null
-      } catch {
-      }
-    }
-  }
-  Start-Sleep -Milliseconds 500
-}
-`,
-    { allowFailure: true }
-  );
+function forceKillQaProcessTree(processIds) {
+  forceKillProcessIds(processIds);
 }
 
 function killWindowsProcess(pid) {
