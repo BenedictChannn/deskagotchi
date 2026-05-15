@@ -7,25 +7,25 @@ This guide explains how to use the local QA loop when implementing, reviewing, o
 Run the full local QA gate:
 
 ```powershell
-corepack pnpm run qa
+pnpm run qa
 ```
 
 This runs:
 
-1. `corepack pnpm run qa:check`
-2. `corepack pnpm run qa:desktop:launch`
-3. `corepack pnpm run qa:desktop:drag`
-4. `corepack pnpm run qa:desktop:overlay`
-5. `corepack pnpm run qa:desktop:play`
-6. `corepack pnpm run qa:desktop:lifecycle`
-7. `corepack pnpm run qa:renderer`
-8. `corepack pnpm run qa:assets:pets`
-9. `corepack pnpm run qa:assets:items`
-10. `corepack pnpm run qa:v2:scope`
-11. `corepack pnpm run qa:v2:manual-context:smoke`
-12. `corepack pnpm run qa:v2:manual-preflight:smoke`
-13. `corepack pnpm run qa:v2:visual-page`
-14. `corepack pnpm run qa:v2:manual-page`
+1. `pnpm run qa:check`
+2. `pnpm run qa:desktop:launch`
+3. `pnpm run qa:desktop:drag`
+4. `pnpm run qa:desktop:overlay`
+5. `pnpm run qa:desktop:play`
+6. `pnpm run qa:desktop:lifecycle`
+7. `pnpm run qa:renderer`
+8. `pnpm run qa:assets:pets`
+9. `pnpm run qa:assets:items`
+10. `pnpm run qa:v2:scope`
+11. `pnpm run qa:v2:manual-context:smoke`
+12. `pnpm run qa:v2:manual-preflight:smoke`
+13. `pnpm run qa:v2:visual-page`
+14. `pnpm run qa:v2:manual-page`
 
 Use this before claiming a feature is ready when the change affects multiple surfaces.
 
@@ -35,28 +35,28 @@ Use targeted commands while iterating:
 
 | Command | Use When |
 | --- | --- |
-| `corepack pnpm run qa:check` | Writing persisted QA evidence for lint, typecheck, and unit tests. |
-| `corepack pnpm run qa:desktop:launch` | Checking the QA harness, isolated profile, startup metadata, preload bridge, and clean shutdown. |
-| `corepack pnpm run qa:desktop:drag` | Changing drag, overlay bounds, pointer handling, DPI behavior, persistence, or window movement. |
-| `corepack pnpm run qa:desktop:overlay` | Changing compact overlay menus, feed, health, care flows, or in-place overlay UI. |
-| `corepack pnpm run qa:desktop:play` | Changing Ball play, full-monitor overlay behavior, transient play bounds, or play exit restore. |
-| `corepack pnpm run qa:desktop:lifecycle` | Changing panel launch, reset position, hide/show, quit, or app lifecycle behavior. |
-| `corepack pnpm run qa:renderer` | Changing panel routes, renderer-only UI, settings, or pet selector UI. |
-| `corepack pnpm run qa:assets:pets` | Changing pet packages, pet manifests, or built-in pet assets. |
-| `corepack pnpm run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
-| `corepack pnpm run qa:release` | Rebuilding the Windows package, checking packaged resources, running packaged launch and lifecycle recovery smoke, then testing silent install, installed launch, and uninstall. |
-| `corepack pnpm run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
-| `corepack pnpm run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
-| `corepack pnpm run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
-| `corepack pnpm run qa:v2:manual-context` | Collecting the current build, installer candidate, monitor topology, latest QA run IDs, and starter evidence notes before filling the manual checklist. |
-| `corepack pnpm run qa:v2:manual-context:smoke` | Verifying manual-context generation fails when required automated evidence is missing and succeeds with complete fixture evidence. |
-| `corepack pnpm run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
-| `corepack pnpm run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
-| `corepack pnpm run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
-| `corepack pnpm run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
-| `corepack pnpm run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
-| `corepack pnpm run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
-| `corepack pnpm run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
+| `pnpm run qa:check` | Writing persisted QA evidence for lint, typecheck, and unit tests. |
+| `pnpm run qa:desktop:launch` | Checking the QA harness, isolated profile, startup metadata, preload bridge, and clean shutdown. |
+| `pnpm run qa:desktop:drag` | Changing drag, overlay bounds, pointer handling, DPI behavior, persistence, or window movement. |
+| `pnpm run qa:desktop:overlay` | Changing compact overlay menus, feed, health, care flows, or in-place overlay UI. |
+| `pnpm run qa:desktop:play` | Changing Ball play, full-monitor overlay behavior, transient play bounds, or play exit restore. |
+| `pnpm run qa:desktop:lifecycle` | Changing panel launch, reset position, hide/show, quit, or app lifecycle behavior. |
+| `pnpm run qa:renderer` | Changing panel routes, renderer-only UI, settings, or pet selector UI. |
+| `pnpm run qa:assets:pets` | Changing pet packages, pet manifests, or built-in pet assets. |
+| `pnpm run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
+| `pnpm run qa:release` | Rebuilding the Windows package, checking packaged resources, running packaged launch and lifecycle recovery smoke, then testing silent install, installed launch, and uninstall. |
+| `pnpm run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
+| `pnpm run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
+| `pnpm run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
+| `pnpm run qa:v2:manual-context` | Collecting the current build, installer candidate, monitor topology, latest QA run IDs, and starter evidence notes before filling the manual checklist. |
+| `pnpm run qa:v2:manual-context:smoke` | Verifying manual-context generation fails when required automated evidence is missing and succeeds with complete fixture evidence. |
+| `pnpm run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
+| `pnpm run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
+| `pnpm run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
+| `pnpm run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
+| `pnpm run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
+| `pnpm run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
+| `pnpm run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
 
 The current visual review notes live in
 `docs/qa/v2-visual-review-notes.md`. Update that file whenever pet or food
@@ -66,13 +66,13 @@ When the manual V2 checklist JSON is downloaded outside the repo, pass it
 directly:
 
 ```powershell
-corepack pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json
 ```
 
 For final release validation, use strict check-only mode:
 
 ```powershell
-corepack pnpm run qa:v2:closeout
+pnpm run qa:v2:closeout
 ```
 
 Check-only mode runs the same closeout checks but does not rewrite the tracked
@@ -88,7 +88,7 @@ fields.
 Before filling the V2 manual checklist, generate local context:
 
 ```powershell
-corepack pnpm run qa:v2:manual-context
+pnpm run qa:v2:manual-context
 ```
 
 This writes `.qa-runs/<run-id>-manual-context/report.md` with the current
@@ -103,7 +103,7 @@ fields without checking any gate.
 Before final closeout, run:
 
 ```powershell
-corepack pnpm run qa:v2:manual-preflight
+pnpm run qa:v2:manual-preflight
 ```
 
 This writes a focused manual blocker report under `.qa-runs/` and exits
@@ -114,10 +114,10 @@ Use `docs/qa/v2-manual-acceptance-runbook.md` while executing the checklist.
 It maps every manual gate ID to the required physical action, evidence note,
 deferral rule, and clean-worktree closeout flow. If you save the manual export
 inside `docs/qa/`, refresh `docs/qa/v2-closeout-report.md` and commit both
-files before running `corepack pnpm run qa:v2:closeout`.
+files before running `pnpm run qa:v2:closeout`.
 
 Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
-for fixture smoke checks such as `corepack pnpm run qa:v2:audit:smoke`; do not use it
+for fixture smoke checks such as `pnpm run qa:v2:audit:smoke`; do not use it
 for release closeout.
 
 ## Where Evidence Goes

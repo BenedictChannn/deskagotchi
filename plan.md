@@ -152,7 +152,7 @@ This goal creates only the minimum scaffolding needed to make the first drag loo
 
 ### Planned Command
 
-`corepack pnpm run qa:desktop:launch`
+`pnpm run qa:desktop:launch`
 
 ### Scope
 
@@ -190,7 +190,7 @@ Launch Deskagotchi in a clean QA run, collect startup evidence, and quit cleanly
 
 ### Verifiable Success Criteria
 
-- `corepack pnpm run qa:desktop:launch` launches and quits without manual action.
+- `pnpm run qa:desktop:launch` launches and quits without manual action.
 - No real user data path appears in `metadata.json`.
 - The report states `automated-pass` for launch/quit only.
 - The cleanup check targets only descendants of the QA run.
@@ -202,8 +202,8 @@ This is the first interaction goal. It directly addresses the current trust gap 
 
 ### Planned Commands
 
-- `corepack pnpm run qa:desktop:drag`
-- Future fallback or extension: `corepack pnpm run qa:desktop:drag:os`
+- `pnpm run qa:desktop:drag`
+- Future fallback or extension: `pnpm run qa:desktop:drag:os`
 
 ### Scope
 
@@ -309,7 +309,7 @@ Checklist:
 
 Sub-Goal 1 is complete only when:
 
-- `corepack pnpm run qa:desktop:drag` exists and runs locally.
+- `pnpm run qa:desktop:drag` exists and runs locally.
 - The test has produced a meaningful red baseline or intentional broken-path failure.
 - The generated report clearly states the evidence tier.
 - Full drag `automated-pass` is withheld until OS-level evidence exists.
@@ -387,7 +387,7 @@ Create reusable QA infrastructure for launching, inspecting, interacting with, a
 
 ### Planned Command
 
-`corepack pnpm run qa:desktop:overlay`
+`pnpm run qa:desktop:overlay`
 
 ### Scope
 
@@ -415,7 +415,7 @@ Automate the compact overlay interactions currently covered by manual smoke docs
 
 ### Planned Command
 
-`corepack pnpm run qa:desktop:play`
+`pnpm run qa:desktop:play`
 
 ### Scope
 
@@ -445,7 +445,7 @@ Verify the Ball play mode that expands the transparent overlay to the current mo
 
 ### Planned Command
 
-`corepack pnpm run qa:renderer`
+`pnpm run qa:renderer`
 
 ### Scope
 
@@ -479,7 +479,7 @@ Use the existing browser development bridge to test fast renderer surfaces witho
 
 ### Planned Command
 
-`corepack pnpm run qa:desktop:lifecycle`
+`pnpm run qa:desktop:lifecycle`
 
 ### Scope
 
@@ -505,8 +505,8 @@ Tray menu automation may require a separate OS-level automation path. If the tra
 
 ### Planned Commands
 
-- `corepack pnpm run qa:assets:pets`
-- `corepack pnpm run qa:assets:items`
+- `pnpm run qa:assets:pets`
+- `pnpm run qa:assets:items`
 
 ### Scope
 
@@ -530,7 +530,7 @@ Make pet and item asset validation repeatable and connected to visual evidence.
 
 ### Planned Command
 
-`corepack pnpm run qa`
+`pnpm run qa`
 
 ### Scope
 
@@ -538,12 +538,12 @@ Create a local QA entrypoint that runs the right checks for release-like confide
 
 ### Proposed Stages
 
-1. `corepack pnpm run check`
-2. `corepack pnpm run qa:desktop:launch`
-3. `corepack pnpm run qa:desktop:drag`
-4. `corepack pnpm run qa:desktop:overlay`
-5. `corepack pnpm run qa:desktop:play`
-6. `corepack pnpm run qa:renderer`
+1. `pnpm run check`
+2. `pnpm run qa:desktop:launch`
+3. `pnpm run qa:desktop:drag`
+4. `pnpm run qa:desktop:overlay`
+5. `pnpm run qa:desktop:play`
+6. `pnpm run qa:renderer`
 
 ### Verifiable Success Criteria
 
@@ -633,12 +633,12 @@ The ignored run folder should be used for routine iteration. Only curated eviden
 10. Implement Ball play QA.
 11. Implement renderer QA.
 12. Implement lifecycle/tray QA where feasible.
-13. Add aggregate `corepack pnpm run qa`.
+13. Add aggregate `pnpm run qa`.
 
 ## Current Next Step
 
 Use the QA system as the validation gate for future Deskagotchi work:
 
-- `corepack pnpm run qa`
+- `pnpm run qa`
 
 For native desktop changes, report the exact claim allowed by the relevant `.qa-runs/<runId>/report.md` artifact instead of using unqualified fixed language.

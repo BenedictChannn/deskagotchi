@@ -76,7 +76,7 @@ async function main() {
     );
     assertIncludes(
       closeoutTargetText,
-      "corepack pnpm run qa:v2:closeout",
+      "pnpm run qa:v2:closeout",
       "closeout target command"
     );
     recordPass(checks, "manual acceptance page shows closeout target path");

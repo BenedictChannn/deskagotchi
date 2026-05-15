@@ -46,21 +46,32 @@ tags.
 
 ## Install
 
+Use Node.js `>=22.13 <25`. Install pnpm `11.1.1` once so `pnpm` is on
+your PATH. CI uses `pnpm/action-setup`; locally, use your preferred pnpm
+installer and confirm the pinned version:
+
 ```powershell
-corepack pnpm install
+pnpm --version
 ```
 
-Use `corepack pnpm` on Windows if PowerShell blocks package-manager shims.
+On Windows PowerShell, use `pnpm.cmd` if the local execution policy blocks the
+`pnpm.ps1` shim.
+
+Then install dependencies from the lockfile:
+
+```powershell
+pnpm install --frozen-lockfile
+```
 
 ## Run
 
 ```powershell
-corepack pnpm run dev
+pnpm run dev
 ```
 
 The pet opens as a transparent desktop overlay. Use the tray icon to recover the pet window, open settings, or quit.
 
-During dev, the renderer is pinned to `http://localhost:5187` so browser-based checks do not collide with other Vite apps. With `corepack pnpm run dev` running, open these routes for renderer feedback:
+During dev, the renderer is pinned to `http://localhost:5187` so browser-based checks do not collide with other Vite apps. With `pnpm run dev` running, open these routes for renderer feedback:
 
 ```text
 http://localhost:5187/#/panel/status
@@ -72,7 +83,7 @@ http://localhost:5187/#/
 ## Validate
 
 ```powershell
-corepack pnpm run check
+pnpm run check
 ```
 
 This runs ESLint, TypeScript typechecking, and the Vitest suite.
@@ -80,7 +91,7 @@ This runs ESLint, TypeScript typechecking, and the Vitest suite.
 The pre-commit hook runs the faster gate:
 
 ```powershell
-corepack pnpm run precommit
+pnpm run precommit
 ```
 
 That checks linting and TypeScript before Git accepts a commit.
@@ -88,13 +99,13 @@ That checks linting and TypeScript before Git accepts a commit.
 Validate committed pet packages:
 
 ```powershell
-corepack pnpm run validate:pets
+pnpm run validate:pets
 ```
 
 Run the full local QA gate:
 
 ```powershell
-corepack pnpm run qa
+pnpm run qa
 ```
 
 The QA gate launches Deskagotchi with an isolated profile, exercises desktop
@@ -106,13 +117,13 @@ Verify that deferred Hatch/custom generation has not returned to the
 user-facing V2 surface:
 
 ```powershell
-corepack pnpm run qa:v2:scope
+pnpm run qa:v2:scope
 ```
 
 Smoke-test the visual acceptance and pet animation gallery pages:
 
 ```powershell
-corepack pnpm run qa:v2:visual-page
+pnpm run qa:v2:visual-page
 ```
 
 Current pet and food visual review notes live in:
@@ -124,7 +135,7 @@ docs/qa/v2-visual-review-notes.md
 Run the idle CPU observation separately because it intentionally waits:
 
 ```powershell
-corepack pnpm run qa:desktop:idle
+pnpm run qa:desktop:idle
 ```
 
 Set `DESKAGOTCHI_IDLE_SECONDS=300` for the V2 five-minute idle observation.
@@ -132,7 +143,7 @@ Set `DESKAGOTCHI_IDLE_SECONDS=300` for the V2 five-minute idle observation.
 Run release QA after packaging changes:
 
 ```powershell
-corepack pnpm run qa:release
+pnpm run qa:release
 ```
 
 This rebuilds the Windows installer, checks that packaged resources include the
@@ -143,7 +154,7 @@ the generated uninstaller.
 Generate the V2 closeout report from the latest QA evidence:
 
 ```powershell
-corepack pnpm run qa:v2:audit
+pnpm run qa:v2:audit
 ```
 
 This writes `docs/qa/v2-closeout-report.md`. Use strict check-only mode on a
@@ -151,7 +162,7 @@ release branch so final validation does not rewrite the tracked report while it
 checks the clean worktree gate:
 
 ```powershell
-corepack pnpm run qa:v2:closeout
+pnpm run qa:v2:closeout
 ```
 
 Strict mode exits non-zero until automated evidence, required artifacts, and the
@@ -161,23 +172,23 @@ audit and can still be supplied with `--manual`.
 If the manual checklist JSON is downloaded outside the repo, pass it directly:
 
 ```powershell
-corepack pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json
 ```
 
 Smoke-test the audit's strict-mode behavior without changing the real closeout
 report:
 
 ```powershell
-corepack pnpm run qa:v2:audit:smoke
+pnpm run qa:v2:audit:smoke
 ```
 
 Smoke-test the manual acceptance page export logic and refresh its screenshot:
 
 ```powershell
-corepack pnpm run qa:v2:manual-page:update
+pnpm run qa:v2:manual-page:update
 ```
 
-Routine `corepack pnpm run qa:v2:manual-page` runs without changing tracked
+Routine `pnpm run qa:v2:manual-page` runs without changing tracked
 screenshots and writes `.qa-runs/<run-id>-manual-page/` evidence for the V2
 closeout audit.
 
@@ -192,7 +203,7 @@ only when intentionally refreshing the Markdown closeout report.
 Generate a helper report before filling the manual V2 checklist:
 
 ```powershell
-corepack pnpm run qa:v2:manual-context
+pnpm run qa:v2:manual-context
 ```
 
 This writes `.qa-runs/<run-id>-manual-context/report.md` with the current build,
@@ -210,13 +221,13 @@ regenerating the context and retesting the affected gates.
 Regenerate LCD item icons:
 
 ```powershell
-corepack pnpm run generate:items
+pnpm run generate:items
 ```
 
 Regenerate the V2 visual acceptance page:
 
 ```powershell
-corepack pnpm run generate:visual-qa
+pnpm run generate:visual-qa
 ```
 
 Use the manual V2 checklist for physical acceptance work:
@@ -237,7 +248,7 @@ with the release evidence or pass it to the V2 audit with `--manual`.
 Regenerate the desktop app icons:
 
 ```powershell
-corepack pnpm run generate:icon
+pnpm run generate:icon
 ```
 
 The canonical icon source is `build/icon-source.png`; generated packaging
@@ -247,19 +258,19 @@ outputs are `build/icon.png`, `build/icon.ico`, and `build/icon.icns`. See
 ## Build
 
 ```powershell
-corepack pnpm run build
+pnpm run build
 ```
 
 Build a Windows installer:
 
 ```powershell
-corepack pnpm run package:win
+pnpm run package:win
 ```
 
 Build macOS DMG and zip artifacts on macOS:
 
 ```bash
-corepack pnpm run package:mac
+pnpm run package:mac
 ```
 
 Unsigned Windows builds may trigger SmartScreen warnings until the binary has signing and reputation.
@@ -353,8 +364,8 @@ Preferred flow:
 1. Generate or select an approved base concept with `$imagegen`.
 2. Build the animation rows from that approved concept, keeping a flat chroma-key background until cleanup.
 3. Copy the final `spritesheet.png`, `preview.png`, `icon.png`, and source metadata into `resources/pets/<package-id>/`.
-4. Add any pet-specific foods to `scripts/generate-lcd-item-icons.mjs`, then run `corepack pnpm run generate:items`.
-5. Run `corepack pnpm run validate:pets`, `corepack pnpm run qa:assets:pets`, and `corepack pnpm run qa:assets:items`.
+4. Add any pet-specific foods to `scripts/generate-lcd-item-icons.mjs`, then run `pnpm run generate:items`.
+5. Run `pnpm run validate:pets`, `pnpm run qa:assets:pets`, and `pnpm run qa:assets:items`.
 6. Keep `pet.json` schema-compatible with `src/shared/domain.ts`.
 
 For a fully featured built-in pet, include:

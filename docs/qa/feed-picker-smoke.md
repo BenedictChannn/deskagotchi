@@ -16,9 +16,9 @@ Use this checklist when validating the overlay Feed flow.
 
 ## Runtime Check
 
-1. Run `corepack pnpm run generate:items`.
-2. Run `corepack pnpm run check`.
-3. Start Electron with `corepack pnpm run dev`.
+1. Run `pnpm run generate:items`.
+2. Run `pnpm run check`.
+3. Start Electron with `pnpm run dev`.
 4. Click the pet, choose Feed, switch between Meal and Snack tabs.
 5. Select two different foods and confirm stats change differently.
 6. Confirm the picker closes after selection and the full management panel does

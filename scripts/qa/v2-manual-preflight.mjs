@@ -77,7 +77,7 @@ function main() {
       : "manual evidence is still incomplete; see summarized blockers",
     uncoveredConditions: [
       "this preflight does not execute physical manual gates",
-      "final release closeout still requires a clean worktree and corepack pnpm run qa:v2:closeout"
+      "final release closeout still requires a clean worktree and pnpm run qa:v2:closeout"
     ],
     manualPath,
     closeoutAuditExitCode: audit.status,

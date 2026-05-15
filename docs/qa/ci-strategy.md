@@ -6,10 +6,10 @@ CI can protect portable code paths, but it must not pretend to validate Windows 
 
 These can run in normal CI:
 
-- `corepack pnpm run lint`
-- `corepack pnpm run typecheck`
-- `corepack pnpm run test`
-- `corepack pnpm run validate:pets`
+- `pnpm run lint`
+- `pnpm run typecheck`
+- `pnpm run test`
+- `pnpm run validate:pets`
 - package and asset structure checks
 - renderer route smoke tests when a browser or Electron environment is available
 
