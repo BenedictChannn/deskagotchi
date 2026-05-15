@@ -54,9 +54,6 @@ installer and confirm the pinned version:
 pnpm --version
 ```
 
-On Windows PowerShell, use `pnpm.cmd` if the local execution policy blocks the
-`pnpm.ps1` shim.
-
 Then install dependencies from the lockfile:
 
 ```powershell
