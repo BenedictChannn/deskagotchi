@@ -16,16 +16,29 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(SCRIPT_DIR, "../..");
 const QA_ROOT = path.join(ROOT_DIR, ".qa-runs");
 const RELEASE_DIR = path.join(ROOT_DIR, "release");
-const PACKAGED_EXE = path.join(RELEASE_DIR, "win-unpacked", "Deskagotchi.exe");
-const INSTALLER_EXE = path.join(RELEASE_DIR, "Deskagotchi Setup 0.1.0.exe");
+const UNPACKED_DIR = path.join(RELEASE_DIR, "win-unpacked");
+const PACKAGED_EXE = path.join(UNPACKED_DIR, "Deskagotchi.exe");
+const PACKAGE_VERSION = parsePackageVersion(readJson(path.join(ROOT_DIR, "package.json")));
+const INSTALLER_BASENAME = `Deskagotchi Setup ${PACKAGE_VERSION}.exe`;
+const INSTALLER_EXE = path.join(RELEASE_DIR, INSTALLER_BASENAME);
+const INSTALLER_BLOCKMAP = path.join(RELEASE_DIR, `${INSTALLER_BASENAME}.blockmap`);
+const APP_ASAR = path.join(UNPACKED_DIR, "resources", "app.asar");
+const LOCALES_DIR = path.join(UNPACKED_DIR, "locales");
 const SOURCE_RESOURCE_ROOT = path.join(ROOT_DIR, "resources");
 const PACKAGED_RESOURCE_ROOT = path.join(
-  RELEASE_DIR,
-  "win-unpacked",
+  UNPACKED_DIR,
   "resources",
   "resources"
 );
 const REQUIRED_PET_FILES = ["pet.json", "spritesheet.png", "preview.png", "icon.png"];
+const MEBIBYTE = 1024 * 1024;
+const FOOTPRINT_LIMITS = {
+  installer: 120 * MEBIBYTE,
+  unpackedApp: 360 * MEBIBYTE,
+  appAsar: 35 * MEBIBYTE,
+  packagedResources: 5 * MEBIBYTE,
+  locales: 8 * MEBIBYTE
+};
 
 class ReleaseRun {
   constructor() {
@@ -93,6 +106,7 @@ function main() {
 
   try {
     assertInstallerArtifacts(run);
+    assertReleaseFootprint(run);
     assertPackagedResources(run);
     runPackagedLaunchSmoke(run);
     runPackagedLifecycleSmoke(run);
@@ -116,10 +130,27 @@ function assertInstallerArtifacts(run) {
   assertFile(
     run,
     "installer blockmap exists",
-    path.join(RELEASE_DIR, "Deskagotchi Setup 0.1.0.exe.blockmap"),
+    INSTALLER_BLOCKMAP,
     1_000
   );
   assertFile(run, "latest release metadata exists", path.join(RELEASE_DIR, "latest.yml"), 1);
+}
+
+function assertReleaseFootprint(run) {
+  const footprint = [
+    assertPathSizeAtMost(run, "installer footprint within budget", INSTALLER_EXE, FOOTPRINT_LIMITS.installer),
+    assertPathSizeAtMost(run, "unpacked app footprint within budget", UNPACKED_DIR, FOOTPRINT_LIMITS.unpackedApp),
+    assertPathSizeAtMost(run, "app.asar footprint within budget", APP_ASAR, FOOTPRINT_LIMITS.appAsar),
+    assertPathSizeAtMost(
+      run,
+      "packaged runtime resources footprint within budget",
+      PACKAGED_RESOURCE_ROOT,
+      FOOTPRINT_LIMITS.packagedResources
+    ),
+    assertPathSizeAtMost(run, "Electron locales footprint within budget", LOCALES_DIR, FOOTPRINT_LIMITS.locales)
+  ];
+  writeJson(path.join(run.runDir, "footprint.json"), footprint);
+  run.artifact("footprint.json");
 }
 
 function assertPackagedResources(run) {
@@ -359,6 +390,51 @@ function assertFile(run, name, filePath, minBytes) {
   });
 }
 
+function assertPathSizeAtMost(run, name, targetPath, maxBytes) {
+  if (!fs.existsSync(targetPath)) {
+    run.fail(name, { path: targetPath, reason: "missing" });
+    return {
+      name,
+      path: targetPath,
+      status: "fail",
+      reason: "missing",
+      maxBytes
+    };
+  }
+
+  const bytes = totalPathBytes(targetPath);
+  const details = {
+    path: path.relative(ROOT_DIR, targetPath),
+    bytes,
+    mebibytes: Number((bytes / MEBIBYTE).toFixed(2)),
+    maxBytes,
+    maxMebibytes: Number((maxBytes / MEBIBYTE).toFixed(2))
+  };
+  if (bytes > maxBytes) {
+    run.fail(name, details);
+    return { name, status: "fail", ...details };
+  }
+
+  run.pass(name, details);
+  return { name, status: "pass", ...details };
+}
+
+function totalPathBytes(targetPath) {
+  const stat = fs.statSync(targetPath);
+  if (stat.isFile()) {
+    return stat.size;
+  }
+  if (!stat.isDirectory()) {
+    return 0;
+  }
+
+  let bytes = 0;
+  for (const entry of fs.readdirSync(targetPath, { withFileTypes: true })) {
+    bytes += totalPathBytes(path.join(targetPath, entry.name));
+  }
+  return bytes;
+}
+
 function assertDirectory(run, name, directoryPath) {
   if (fs.existsSync(directoryPath) && fs.statSync(directoryPath).isDirectory()) {
     run.pass(name, { path: path.relative(ROOT_DIR, directoryPath) });
@@ -524,6 +600,14 @@ function readJson(filePath) {
   } catch {
     return null;
   }
+}
+
+function parsePackageVersion(packageJson) {
+  const version = packageJson?.version;
+  if (typeof version === "string" && /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+    return version;
+  }
+  throw new Error("package.json must define a valid semver version for release QA.");
 }
 
 main();

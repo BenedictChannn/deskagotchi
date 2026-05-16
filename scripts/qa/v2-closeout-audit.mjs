@@ -205,10 +205,15 @@ const AUTOMATED_SCENARIOS = [
       "renderer router has no Hatch panel route",
       "management panel has no Hatch tab",
       "overlay has no Hatch action",
-      "README marks Hatch/custom generation deferred for V2",
-      "README archives user-facing Hatch for the V2 release path",
+      "IPC contract exposes no v0.1 custom pet import/export channel",
+      "preload bridge exposes no v0.1 custom pet import/export method",
+      "main process registers no v0.1 custom pet import/export IPC handler",
+      "management panel exposes no v0.1 custom pet import/export action",
+      "README marks custom generation and custom import/export deferred for v0.1",
+      "README archives user-facing Hatch and custom import/export for v0.1",
+      "desktop app docs exclude custom pet import/export from v0.1",
       "V2 roadmap archives custom pet generation",
-      "V2 success criteria exclude user-facing custom generation"
+      "V2 success criteria exclude user-facing custom generation and import/export"
     ]
   }
 ];
@@ -322,9 +327,9 @@ const V2_DELIVERABLES = [
   "Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.",
   "Food and item experience: icon-first feeding, recognizable food assets, and selected-food eating cues.",
   "Care simulation: deterministic, documented, day-scale progression with tested action effects and offline catch-up.",
-  "Deferred custom generation: user-facing Hatch is out of the V2 promise while package safety boundaries remain.",
+  "Deferred custom surfaces: user-facing Hatch and custom pet import/export are out of the v0.1 promise while built-in package validation remains.",
   "Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.",
-  "Package and data safety: package validation, archive safety, atomic saves, backup recovery, and relaunch persistence.",
+  "Package and data safety: package validation, atomic saves, backup recovery, and relaunch persistence.",
   "Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence."
 ];
 
@@ -395,8 +400,8 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
     ]
   },
   {
-    requirement: "Custom generation is deferred from user-facing V2 while package boundaries remain.",
-    evidence: "README, renderer route removal, and V2 scope QA",
+    requirement: "Custom generation and custom pet import/export are deferred from user-facing v0.1.",
+    evidence: "README, renderer route removal, IPC bridge removal, and V2 scope QA",
     automatedKeys: ["v2-scope"],
     artifactPaths: ["README.md", "src/shared/hatch.ts", "src/shared/ipc.ts"]
   },
