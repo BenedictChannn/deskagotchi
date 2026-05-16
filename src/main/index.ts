@@ -331,6 +331,7 @@ function createPetWindow(): void {
       petWindow = new BrowserWindow(petWindowOptions);
 
       petWindow.setMenu(null);
+      configureRendererWebContents(petWindow);
       petWindow.setVisibleOnAllWorkspaces(false);
       petWindow.on("close", (event) => {
         if (!isQuitting) {
@@ -394,6 +395,7 @@ function createPanelWindow(view: PanelView): void {
     }
   });
   panelWindow.setMenu(null);
+  configureRendererWebContents(panelWindow);
   panelWindow.on("close", () => {
     if (!app.isPackaged && !isQuitting) {
       isQuitting = true;
@@ -404,6 +406,46 @@ function createPanelWindow(view: PanelView): void {
     panelWindow = undefined;
   });
   void panelWindow.loadURL(createRendererUrl("panel", view));
+}
+
+/**
+ * Lock renderer windows to the Deskagotchi app surface.
+ *
+ * The app is a desktop companion, not a browser. These guards keep future
+ * renderer mistakes, links, or asset changes from opening windows, navigating
+ * away from the app, embedding webviews, or requesting browser permissions.
+ *
+ * @param window - Renderer-backed Electron window to harden.
+ */
+function configureRendererWebContents(window: BrowserWindow): void {
+  const { webContents } = window;
+  webContents.setWindowOpenHandler(({ url }) => {
+    recordQaEvent({
+      event: "security:window-open-blocked",
+      payload: { url }
+    });
+    return { action: "deny" };
+  });
+  webContents.on("will-navigate", (event, navigationUrl) => {
+    if (!isTrustedRendererUrl(navigationUrl)) {
+      event.preventDefault();
+      recordQaEvent({
+        event: "security:navigation-blocked",
+        payload: { navigationUrl }
+      });
+    }
+  });
+  webContents.on("will-attach-webview", (event) => {
+    event.preventDefault();
+    recordQaEvent({ event: "security:webview-blocked" });
+  });
+  webContents.session.setPermissionRequestHandler((_webContents, permission, callback) => {
+    recordQaEvent({
+      event: "security:permission-denied",
+      payload: { permission }
+    });
+    callback(false);
+  });
 }
 
 /**
@@ -548,19 +590,6 @@ function registerIpcHandlers(): void {
     recordQaEvent(
       parseIpcInput(QaTelemetryInputSchema, input, "QA telemetry event")
     );
-  });
-  ipcMain.handle(IpcChannel.ExportPet, (event, packageId: unknown) => {
-    validateIpcSender(event);
-    return runtime.exportPet(
-      parseIpcInput(PackageIdInputSchema, packageId, "package id")
-    );
-  });
-  ipcMain.handle(IpcChannel.ImportPet, async (event) => {
-    validateIpcSender(event);
-    const snapshot = await runtime.importPet();
-    broadcastSnapshotUpdated();
-    rebuildTray();
-    return snapshot;
   });
 }
 

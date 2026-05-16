@@ -40,8 +40,6 @@ const api: DeskagotchiApi = {
     ipcRenderer.invoke(IpcChannel.SetClickThrough, enabled),
   recordQaEvent: (event: QaTelemetryInput) =>
     ipcRenderer.invoke(IpcChannel.RecordQaEvent, event),
-  exportPet: (packageId: string) => ipcRenderer.invoke(IpcChannel.ExportPet, packageId),
-  importPet: () => ipcRenderer.invoke(IpcChannel.ImportPet),
   onSnapshotUpdated: (callback: () => void) => {
     const listener = (): void => callback();
     ipcRenderer.on(IpcChannel.SnapshotUpdated, listener);

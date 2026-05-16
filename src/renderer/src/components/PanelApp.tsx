@@ -2,9 +2,7 @@ import { useState } from "react";
 import {
   Bath,
   Bone,
-  Download,
   HeartPulse,
-  Import,
   Moon,
   Pill,
   Settings,
@@ -14,7 +12,7 @@ import {
   X
 } from "lucide-react";
 
-import { CareActionType, PetSource, type PetStats } from "@shared/domain";
+import { CareActionType, type PetStats } from "@shared/domain";
 import type {
   DeskagotchiSnapshot,
   RuntimePetPackage,
@@ -231,25 +229,8 @@ function PetSelectorView({
 }: {
   snapshot: DeskagotchiSnapshot;
 }): React.JSX.Element {
-  const [importing, setImporting] = useState(false);
   const switchPet = async (petPackage: RuntimePetPackage): Promise<void> => {
     await window.deskagotchi.switchPet(petPackage.petPackage.packageId);
-  };
-
-  const exportPet = async (petPackage: RuntimePetPackage): Promise<void> => {
-    await window.deskagotchi.exportPet(petPackage.petPackage.packageId);
-  };
-
-  const importPet = async (): Promise<void> => {
-    if (importing) {
-      return;
-    }
-    setImporting(true);
-    try {
-      await window.deskagotchi.importPet();
-    } finally {
-      setImporting(false);
-    }
   };
 
   return (
@@ -259,12 +240,6 @@ function PetSelectorView({
           <h1>Pets</h1>
           <p>Choose who keeps you company on the desktop.</p>
         </div>
-        <CommandButton
-          icon={<Import size={18} />}
-          label={importing ? "Importing" : "Import"}
-          onClick={() => void importPet()}
-          disabled={importing}
-        />
       </header>
       <div className="pet-grid">
         {snapshot.packages.map((petPackage) => (
@@ -284,12 +259,6 @@ function PetSelectorView({
             <button type="button" onClick={() => void switchPet(petPackage)}>
               Switch
             </button>
-            {petPackage.petPackage.source === PetSource.Custom ? (
-              <button type="button" onClick={() => void exportPet(petPackage)}>
-                <Download size={15} />
-                Export
-              </button>
-            ) : null}
           </article>
         ))}
       </div>

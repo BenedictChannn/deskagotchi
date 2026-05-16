@@ -129,8 +129,6 @@ class DevDeskagotchiApi {
       exitPetWindowPlayMode: async () => undefined,
       setClickThrough: async () => undefined,
       recordQaEvent: async () => undefined,
-      exportPet: async () => undefined,
-      importPet: async () => this.createSnapshot(),
       onSnapshotUpdated: (callback) => {
         const listener = (): void => callback();
         window.addEventListener(SNAPSHOT_EVENT, listener);

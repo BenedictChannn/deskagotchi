@@ -28,8 +28,6 @@ export enum IpcChannel {
   ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
   RecordQaEvent = "deskagotchi:recordQaEvent",
-  ExportPet = "deskagotchi:exportPet",
-  ImportPet = "deskagotchi:importPet",
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
 }
 
@@ -116,7 +114,5 @@ export interface DeskagotchiApi {
   exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
   recordQaEvent: (event: QaTelemetryInput) => Promise<void>;
-  exportPet: (packageId: string) => Promise<string | undefined>;
-  importPet: () => Promise<DeskagotchiSnapshot>;
   onSnapshotUpdated: (callback: () => void) => () => void;
 }

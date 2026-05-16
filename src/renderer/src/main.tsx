@@ -3,10 +3,13 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { App } from "./App";
-import { installDevDeskagotchiApi } from "./devDeskagotchiApi";
 import "./styles.css";
 
-installDevDeskagotchiApi();
+if (import.meta.env.DEV) {
+  void import("./devDeskagotchiApi").then(({ installDevDeskagotchiApi }) => {
+    installDevDeskagotchiApi();
+  });
+}
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
