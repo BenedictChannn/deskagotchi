@@ -2,7 +2,7 @@
 
 Deskagotchi is a Windows-first desktop virtual pet companion built with Electron, React, TypeScript, Vite, and a manifest-driven pet package system.
 
-The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, built-in original pets, and local custom pet import/export boundaries.
+The app runs as a small transparent frameless pet window with tray controls, local persistence, deterministic real-time care simulation, and built-in original pets.
 
 ## Current Capabilities
 
@@ -20,19 +20,17 @@ The app runs as a small transparent frameless pet window with tray controls, loc
   - Peanut, an elephant companion
   - Puddles, a duck companion with peas and corn as favorite foods
 - Built-in pets ship with the full MVP animation row set and pet-specific food preferences.
-- Shared package schema for built-in and custom pets.
+- Built-in pets use a manifest-driven package schema.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
-- Hatch/custom pet generation is deferred for V2 while the package validation and import/export boundary stays in place.
-- Custom pet import/export as `.deskagotchi-pet`.
+- Hatch/custom pet generation is deferred for V2 and custom pet import/export is not exposed in v0.1.
 - Settings for always-on-top, startup, sound, reduced motion, low maintenance, and notifications.
 
 ## Desktop App Downloads
 
-V2 release downloads should include Windows and macOS desktop builds:
+v0.1 release downloads should include the Windows desktop build:
 
 - Windows installer: `Deskagotchi Setup <version>.exe`
-- macOS Apple silicon: arm64 DMG or zip artifact
-- macOS Intel: x64 DMG or zip artifact
+- macOS is not published for v0.1 unless a real macOS smoke pass is completed.
 
 See `docs/desktop-app.md` for download, install, first-run, usage,
 troubleshooting, and release-publisher instructions.
@@ -40,9 +38,9 @@ troubleshooting, and release-publisher instructions.
 Use `docs/qa/v2-pr-readiness.md` as the V2 pull request and release artifact
 checklist.
 
-The `Desktop Release Artifacts` GitHub Actions workflow builds Windows and
-macOS artifacts on manual runs and publishes them to GitHub Releases for `v*`
-tags.
+The `Desktop Release Artifacts` GitHub Actions workflow builds the Windows
+installer on manual runs and publishes it to GitHub Releases for matching `v*`
+tags after release smoke passes.
 
 ## Install
 
@@ -110,8 +108,8 @@ and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
 `docs/qa/using-qa.md` for when to run each targeted QA command and how to
 interpret the reports.
 
-Verify that deferred Hatch/custom generation has not returned to the
-user-facing V2 surface:
+Verify that deferred Hatch/custom generation and custom pet import/export have
+not returned to the user-facing v0.1 surface:
 
 ```powershell
 pnpm run qa:v2:scope
@@ -264,7 +262,7 @@ Build a Windows installer:
 pnpm run package:win
 ```
 
-Build macOS DMG and zip artifacts on macOS:
+Build macOS DMG and zip artifacts on macOS for local smoke testing only:
 
 ```bash
 pnpm run package:mac
@@ -272,6 +270,10 @@ pnpm run package:mac
 
 Unsigned Windows builds may trigger SmartScreen warnings until the binary has signing and reputation.
 Unsigned or unnotarized macOS builds may require Finder's Open flow on first launch.
+
+For v0.1, publish release notes that state whether the Windows installer is
+signed or unsigned, include the SHA256 checksum for the attached installer, and
+describe the exact QA scope used for the release candidate.
 
 ## Local Data
 
@@ -281,10 +283,10 @@ The app stores:
 
 - `deskagotchi-save.json`
 - `deskagotchi-save.backup.json`
-- `custom-pets/`
-- `exports/`
+- reserved internal package directories, if created by older development builds
 
-The settings panel displays the resolved local data path.
+The settings panel displays the resolved local data path. Deskagotchi v0.1 does
+not require an account, analytics, telemetry, or remote sync.
 
 ## Pet Package Format
 
@@ -338,10 +340,11 @@ Imported packages are treated as untrusted. Archives are rejected if they contai
 
 ## Deferred Hatch Research
 
-User-facing Hatch/custom pet generation is archived for the V2 release path.
-The earlier prototype proved local package installation mechanics, but a real
-custom pet flow still needs a full generation, approval, QA, packaging,
-moderation, and failure-recovery design before it should be exposed in the app.
+User-facing Hatch/custom pet generation and custom pet import/export are
+archived for the v0.1 release path. Earlier prototype code proved local package
+mechanics, but a real custom pet flow still needs a full generation, approval,
+QA, packaging, moderation, and failure-recovery design before it should be
+exposed in the app.
 
 The image generation replacement path should use the `$imagegen` skill:
 
@@ -384,7 +387,7 @@ For a fully featured built-in pet, include:
 
 ## Architecture
 
-- `src/main/`: Electron main process, tray, windows, persistence, package registry, import/export, and archived Hatch draft research code.
+- `src/main/`: Electron main process, tray, windows, persistence, package registry, and archived Hatch draft research code.
 - `src/preload/`: Typed IPC bridge.
 - `src/renderer/`: Overlay and panel React UI.
 - `src/shared/`: Domain schemas, archived Hatch validation, package validation, IPC types, deterministic simulation.

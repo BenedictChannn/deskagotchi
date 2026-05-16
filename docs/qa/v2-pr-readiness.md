@@ -15,9 +15,10 @@ desktop recovery behavior, and packaged desktop distribution.
   care actions.
 - Built-in original pet roster: Bao, Miso, Mochi, Peanut, and Puddles.
 - Deterministic local care simulation with offline catch-up.
-- Custom pet import/export boundaries through `.deskagotchi-pet` packages.
-- Hatch/custom pet generation remains deferred from the user-facing V2 app.
-- Desktop app downloads should be published for Windows and macOS.
+- Hatch/custom pet generation and custom pet import/export remain deferred from
+  the user-facing v0.1 app.
+- Desktop app downloads should be published for Windows first. macOS downloads
+  require separate macOS smoke evidence before publication.
 
 ## PR Links To Include
 
@@ -32,14 +33,15 @@ desktop recovery behavior, and packaged desktop distribution.
 | Platform | Command | Expected artifact |
 | --- | --- | --- |
 | Windows | `pnpm run package:win` | `release/Deskagotchi Setup <version>.exe` |
-| macOS | `pnpm run package:mac` on macOS | DMG and zip artifacts for x64 and arm64 |
+| macOS | `pnpm run package:mac` on macOS | Local smoke artifacts only unless manually validated |
 
-Attach the Windows installer and both macOS architecture builds to the release
-when they have passed platform smoke testing. Keep release notes explicit about
-unsigned or unnotarized builds.
+Attach the Windows installer to the v0.1 release after release smoke passes.
+Attach macOS artifacts only when they have passed platform smoke testing. Keep
+release notes explicit about unsigned or unnotarized builds.
 
-The `Desktop Release Artifacts` workflow uploads these artifacts for manual
-runs and publishes them to a GitHub Release when a `v*` tag is pushed.
+The `Desktop Release Artifacts` workflow uploads the Windows installer and
+release QA evidence for manual runs and publishes the installer to a GitHub
+Release when a matching `v*` tag is pushed.
 
 ## Validation Before PR
 
@@ -56,13 +58,17 @@ Run `pnpm run package:mac` and a manual macOS launch smoke on macOS before
 publishing macOS downloads. The current automated desktop QA evidence is
 Windows-based.
 
+Publish the release-note draft at `docs/release-notes/v0.1.0.md` and keep the
+download page at `docs/release-notes/v0.1.0-download.html` aligned with the
+exact release candidate.
+
 ## Suggested PR Body
 
 ```markdown
 ## Summary
 - ship the Deskagotchi V2 desktop companion scope
-- add Windows and macOS packaging metadata and app icon assets
-- add a release workflow for Windows and macOS desktop downloads
+- add Windows packaging metadata and app icon assets
+- add a release workflow for Windows desktop downloads
 - document desktop app download, install, usage, troubleshooting, and release artifact flow
 
 ## Validation
@@ -74,6 +80,7 @@ Windows-based.
 
 ## Release Notes
 - Windows installer: attach `Deskagotchi Setup <version>.exe`
-- macOS: attach arm64 and x64 DMG or zip artifacts after macOS smoke testing
-- Unsigned builds may show SmartScreen or macOS first-launch warnings
+- macOS: do not attach artifacts unless macOS smoke testing passes
+- Unsigned builds may show SmartScreen or first-launch warnings
+- Custom pets are not exposed in v0.1
 ```

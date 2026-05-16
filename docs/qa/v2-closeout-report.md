@@ -14,9 +14,9 @@ Deskagotchi V2 has passing automated closeout evidence for the documented Window
 - Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.
 - Food and item experience: icon-first feeding, recognizable food assets, and selected-food eating cues.
 - Care simulation: deterministic, documented, day-scale progression with tested action effects and offline catch-up.
-- Deferred custom generation: user-facing Hatch is out of the V2 promise while package safety boundaries remain.
+- Deferred custom surfaces: user-facing Hatch and custom pet import/export are out of the v0.1 promise while built-in package validation remains.
 - Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.
-- Package and data safety: package validation, archive safety, atomic saves, backup recovery, and relaunch persistence.
+- Package and data safety: package validation, atomic saves, backup recovery, and relaunch persistence.
 - Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence.
 
 ## Automated Evidence
@@ -39,7 +39,7 @@ captures the source commit/freshness checks used by the audit.
 | Built-in pet asset QA | PASS | .qa-runs/2026-05-13T09-44-50-944Z-32608-073d3980-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
 | Food and item asset QA | PASS | .qa-runs/2026-05-13T09-44-53-245Z-11808-4be36973-assets-items/report.md | automated-pass | passed assets-items static asset QA |
 | V2 visual acceptance pages | PASS | .qa-runs/2026-05-13T09-44-55-007Z-30116-c777fdcd-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
-| V2 user-facing scope | PASS | .qa-runs/2026-05-13T09-44-53-918Z-42640-6cae4e1e-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces |
+| V2 user-facing scope | PASS | .qa-runs/2026-05-13T09-44-53-918Z-42640-6cae4e1e-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation and v0.1 custom pet import/export are not exposed through user-facing UI, route, preload, or IPC surfaces |
 
 ## Prompt-To-Artifact Checklist
 
@@ -53,8 +53,8 @@ captures the source commit/freshness checks used by the audit.
 | Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through pnpm run check |  |
 | Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | PASS | pet asset contact sheets and visual acceptance page | manual acceptance is advisory and not required for automated closeout |
 | Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through pnpm run check |  |
-| Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through pnpm run check |  |
-| Custom generation is deferred from user-facing V2 while package boundaries remain. | PASS | README, renderer route removal, and V2 scope QA |  |
+| Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through pnpm run check | custom pet import/export is not exposed in v0.1 |
+| Custom generation and custom pet import/export are deferred from user-facing v0.1. | PASS | README, renderer route removal, IPC bridge removal, and V2 scope QA |  |
 | Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
 | Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
 | Windows packaging includes runtime resources and installer smoke evidence. | PASS | latest release QA report | manual acceptance is advisory and not required for automated closeout |

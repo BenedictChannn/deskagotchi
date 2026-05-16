@@ -54,7 +54,7 @@ Use targeted commands while iterating:
 | `pnpm run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
 | `pnpm run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
 | `pnpm run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
-| `pnpm run qa:v2:scope` | Verifying Hatch/custom generation remains outside the V2 user-facing UI, route, preload, and IPC surfaces. |
+| `pnpm run qa:v2:scope` | Verifying Hatch/custom generation and v0.1 custom pet import/export remain outside the user-facing UI, route, preload, and IPC surfaces. |
 | `pnpm run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
 | `pnpm run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
 
@@ -171,7 +171,7 @@ Before implementation, classify the change:
 | Risk | Examples | Minimum QA |
 | --- | --- | --- |
 | P0 native desktop | Drag, click-through, bounds, tray, always-on-top, startup, persistence. | Relevant `qa:desktop:*` command plus manual acceptance when feel matters. |
-| P1 interaction | Overlay care flows, Ball play, import/export, and in-place transient UI. | Desktop or renderer QA plus screenshots/state evidence. |
+| P1 interaction | Overlay care flows, Ball play, and in-place transient UI. | Desktop or renderer QA plus screenshots/state evidence. |
 | P2 renderer | Panel routes, forms, layout, visual regressions. | `qa:renderer` or focused browser/renderer evidence. |
 | P3 domain | Simulation, validation, package parsing, storage schemas. | Unit or integration tests. |
 

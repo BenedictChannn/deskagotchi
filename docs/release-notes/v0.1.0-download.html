@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi v0.1.0 Download</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0f0c;
+        --panel: #151811;
+        --ink: #f6f2e7;
+        --muted: #b6b0a1;
+        --line: rgba(246, 242, 231, 0.16);
+        --accent: #cfe78f;
+        --accent-ink: #11150d;
+        --warn: #ffd48a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px),
+          radial-gradient(circle at 20% 15%, rgba(207, 231, 143, 0.16), transparent 26%),
+          var(--bg);
+        background-size: 56px 56px, 56px 56px, auto, auto;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .brand img {
+        width: 34px;
+        height: 34px;
+        image-rendering: pixelated;
+      }
+
+      .nav-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 18px;
+        color: var(--ink);
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+        gap: 42px;
+        align-items: center;
+        min-height: 640px;
+        padding: 72px 0 36px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 780px;
+        font-size: clamp(48px, 8vw, 94px);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .hero-copy {
+        margin-top: 20px;
+        max-width: 650px;
+        color: var(--muted);
+        font-size: 19px;
+        line-height: 1.55;
+      }
+
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .release-note {
+        margin-top: 18px;
+        max-width: 620px;
+        color: var(--warn);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .pet-stage {
+        position: relative;
+        min-height: 420px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+          var(--panel);
+        overflow: hidden;
+      }
+
+      .desktop-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #ee665b;
+      }
+
+      .dot:nth-child(2) {
+        background: #efc84a;
+      }
+
+      .dot:nth-child(3) {
+        background: #59c76b;
+      }
+
+      .pet-preview {
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        width: min(62%, 300px);
+        transform: translate(-50%, -50%);
+        image-rendering: pixelated;
+        filter: drop-shadow(0 24px 42px rgba(0, 0, 0, 0.5));
+      }
+
+      .tray {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .section {
+        padding: 28px 0 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        min-height: 170px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(21, 24, 17, 0.86);
+        padding: 18px;
+      }
+
+      .card h2,
+      .card h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      code {
+        color: var(--accent);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      @media (max-width: 860px) {
+        .hero,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+          padding-top: 48px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <div class="brand">
+          <img src="../../resources/pets/bao/icon.png" alt="" />
+          <span>Deskagotchi</span>
+        </div>
+        <div class="nav-actions">
+          <a class="button" href="https://github.com/BenedictChannn/deskagotchi">GitHub</a>
+          <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases/tag/v0.1.0">Download</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <h1>A tiny desktop pet for your Windows workspace.</h1>
+          <p class="hero-copy">
+            Deskagotchi v0.1.0 is a free Windows-first beta with local care
+            simulation, tray recovery, built-in original pets, and no account or
+            remote sync.
+          </p>
+          <div class="cta-row">
+            <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases/tag/v0.1.0">Download for Windows</a>
+            <a class="button" href="v0.1.0.md">Read release notes</a>
+          </div>
+          <p class="release-note">
+            If this build is unsigned, Windows may show SmartScreen or Unknown
+            Publisher warnings. Verify the release source and checksum before
+            running the installer.
+          </p>
+        </div>
+
+        <div class="pet-stage" aria-label="Deskagotchi desktop preview">
+          <div class="desktop-bar">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span>Desktop companion preview</span>
+          </div>
+          <img class="pet-preview" src="../../resources/pets/bao/preview.png" alt="Bao, a built-in Deskagotchi pet" />
+          <div class="tray">Tray recovery | Settings | Quit</div>
+        </div>
+      </section>
+
+      <section class="section grid">
+        <article class="card">
+          <h2>v0.1.0 Scope</h2>
+          <ul>
+            <li>Windows installer.</li>
+            <li>Built-in pets only.</li>
+            <li>Feed, play, clean, sleep, medicine, pet, and status flows.</li>
+            <li>Tray recovery and local save state.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h2>Privacy</h2>
+          <p>
+            Deskagotchi stores normal state locally in Electron's
+            <code>userData</code> directory. v0.1.0 does not require an account,
+            analytics, telemetry, or remote sync.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Known Limits</h2>
+          <ul>
+            <li>No custom pet import/export in v0.1.0.</li>
+            <li>No macOS public download unless separately tested.</li>
+            <li>Unsigned builds may trigger Windows trust warnings.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

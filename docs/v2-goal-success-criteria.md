@@ -11,12 +11,13 @@ desktop behavior.
 
 ## Explicit Non-Goal
 
-User-facing custom pet generation is not part of the V2 promise.
+User-facing custom pet generation and custom pet import/export are not part of
+the v0.1 promise.
 
 Hatch/custom generation remains deferred research until we design the full
 generation, approval, QA, packaging, moderation, and failure-recovery pipeline.
-V2 should preserve safe package validation and import/export boundaries, but it
-should not depend on generated custom pets.
+V2 should preserve safe package validation for built-in pets, but it should not
+depend on generated or imported custom pets.
 
 ## V2 Success Criteria
 
@@ -163,13 +164,8 @@ Success means pet packages and local state are safe enough for local use.
 
 Verifiable criteria:
 
-- Built-in and imported packages use the same package schema.
+- Built-in packages use the shared package schema.
 - Pet state and package metadata remain separate.
-- Unsafe archive paths are rejected.
-- Executable/script payloads are rejected.
-- Oversized entries or zip expansion abuse are rejected.
-- Invalid manifests are rejected before install.
-- Duplicate custom package ids are handled safely.
 - Save files are written atomically.
 - Backup recovery works for corrupted saves.
 - State survives app relaunch.
@@ -177,7 +173,6 @@ Verifiable criteria:
 Evidence required:
 
 - Package validation tests.
-- Runtime import/export tests.
 - Storage tests.
 - `pnpm run validate:pets`
 - `pnpm run test`
