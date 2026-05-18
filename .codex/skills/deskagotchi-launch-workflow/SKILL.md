@@ -41,7 +41,7 @@ Read current files before repeating product or release claims. Prefer current re
 - `docs/launch/deskagotchi-positioning.md` for product context and channel defaults.
 - `README.md` for current capabilities, package manager, deferred features, and architecture.
 - `docs/release-notes/v0.1.0.md` or the target release note file.
-- `docs/release-notes/v0.1.0-download.html` or the target landing/download page when updating public page copy.
+- `site/index.html` or the target landing/download page when updating public page copy.
 - `docs/desktop-app.md` for install, trust, and user-facing download instructions.
 - `docs/release-notes/v0.1.0-video-shot-list.md` when drafting a video or demo flow.
 - `docs/qa/using-qa.md`, `docs/qa/v2-closeout-report.md`, and targeted `.qa-runs/<run-id>/report.md`, `summary.json`, and `metadata.json` artifacts when citing validation. Only use QA runs explicitly tied to the target release, branch, commit, current closeout/release docs, or the current task. Do not mine unrelated historical `.qa-runs`.

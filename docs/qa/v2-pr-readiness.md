@@ -60,8 +60,8 @@ Windows-based.
 
 Publish the release-note draft at `docs/release-notes/v0.1.0.md` and keep the
 public landing page at `site/index.html` aligned with the exact release
-candidate. Keep `docs/release-notes/v0.1.0-download.html` only as a local
-release-note preview or source snapshot when needed.
+candidate. Avoid committing duplicate landing-page snapshots or generated
+release-note HTML unless there is a specific review need.
 
 ## Suggested PR Body
 
