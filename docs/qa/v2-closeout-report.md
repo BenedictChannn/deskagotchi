@@ -1,6 +1,6 @@
 # Deskagotchi V2 Closeout Report
 
-Generated: 2026-05-18T05:42:07.639Z
+Generated: 2026-05-18T12:42:43.005Z
 
 Completion status: **incomplete**
 
@@ -14,7 +14,7 @@ Deskagotchi V2 release closeout is incomplete; see the failing automated or manu
 - Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.
 - Food and item experience: icon-first feeding, recognizable food assets, and selected-food eating cues.
 - Care simulation: deterministic, documented, day-scale progression with tested action effects and offline catch-up.
-- Deferred custom surfaces: user-facing Hatch and custom pet import/export are out of the v0.1 promise while built-in package validation remains.
+- Deferred custom surfaces: user-facing Hatch and custom pet loading/import/export are out of the v0.1 promise while built-in package validation remains.
 - Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.
 - Package and data safety: package validation, atomic saves, backup recovery, and relaunch persistence.
 - Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence.
@@ -27,43 +27,43 @@ captures the source commit/freshness checks used by the audit.
 
 | Area | Status | Latest evidence | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| Launch | PASS | .qa-runs/2026-05-18T05-38-26-004Z-35904-5c0ac088-launch/report.md | automated-pass | passed automated launch QA for tested scope |
-| Drag and current multi-monitor layout | FAIL | .qa-runs/2026-05-15T04-07-43-837Z-46684-f255aa53-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Overlay care interactions | FAIL | .qa-runs/2026-05-15T04-09-54-925Z-43512-fd9d366d-overlay/report.md | automated-pass | passed automated overlay QA for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Ball play mode | FAIL | .qa-runs/2026-05-15T04-11-52-953Z-42760-78a70725-play/report.md | automated-pass | passed automated play QA for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Lifecycle, always-on-top, resume, unlock | FAIL | .qa-runs/2026-05-15T15-25-31-834Z-1708-bf347c3f-release-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, package.json, pnpm-lock.yaml, scripts/qa/release-qa.mjs, scripts/qa/v2-closeout-audit-smoke.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-scope-qa.mjs, src/main/index.ts, src/preload/index.ts, src/renderer/src/components/PanelApp.tsx, src/renderer/src/devDeskagotchiApi.ts, src/renderer/src/global.d.ts, src/renderer/src/main.tsx, src/shared/ipc.ts |
-| Renderer panel routes | FAIL | .qa-runs/2026-05-15T04-16-09-721Z-44316-70e338f6-renderer/report.md | automated-pass | passed automated renderer QA for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Five-minute idle CPU | FAIL | .qa-runs/2026-05-15T04-29-30-906Z-18128-eccb6375-idle/report.md | automated-pass | passed automated idle QA for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Packaged release and installer smoke | FAIL | .qa-runs/2026-05-15T15-22-59-291Z-1708-eb79b418-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, package.json, pnpm-lock.yaml, scripts/qa/release-qa.mjs, scripts/qa/v2-closeout-audit-smoke.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-scope-qa.mjs, src/main/index.ts, src/preload/index.ts, src/renderer/src/components/PanelApp.tsx, src/renderer/src/devDeskagotchiApi.ts, src/renderer/src/global.d.ts, src/renderer/src/main.tsx, src/shared/ipc.ts |
-| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-18T05-25-46-232Z-37936-b2a92ccb-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
-| Built-in pet asset QA | FAIL | .qa-runs/2026-05-15T04-18-23-081Z-41568-ed6b8edc-assets-pets/report.md | automated-pass | passed assets-pets static asset QA<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| Food and item asset QA | FAIL | .qa-runs/2026-05-15T04-18-26-090Z-8540-674aab29-assets-items/report.md | automated-pass | passed assets-items static asset QA<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| V2 visual acceptance pages | FAIL | .qa-runs/2026-05-15T04-18-29-004Z-21748-505c6629-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance<br />QA run was captured with dirty app/source paths: .github/workflows/desktop-release-artifacts.yml, .husky/pre-commit, package.json, plan.md, scripts/qa/desktop-qa.mjs, scripts/qa/package-manager.mjs, scripts/qa/v2-closeout-audit.mjs, scripts/qa/v2-manual-acceptance-page-smoke.mjs, scripts/qa/v2-manual-context.mjs, scripts/qa/v2-manual-preflight.mjs |
-| V2 user-facing scope | PASS | .qa-runs/2026-05-18T05-41-16-585Z-25072-5c818e0d-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation and v0.1 custom pet import/export are not exposed through user-facing UI, route, preload, or IPC surfaces |
+| Launch | PASS | .qa-runs/2026-05-18T12-09-52-911Z-26828-f375709e-launch/report.md | automated-pass | passed automated launch QA for tested scope |
+| Drag and current multi-monitor layout | PASS | .qa-runs/2026-05-18T12-12-24-840Z-31320-9e583de3-drag/report.md | automated-pass | passed automated drag smoke for tested Windows desktop scope; manual feel acceptance still separate<br />notable: OS drag crossed onto negative-coordinate monitor |
+| Overlay care interactions | PASS | .qa-runs/2026-05-18T12-15-18-908Z-38144-136333cf-overlay/report.md | automated-pass | passed automated overlay QA for tested scope |
+| Ball play mode | PASS | .qa-runs/2026-05-18T12-17-59-038Z-23656-9c546302-play/report.md | automated-pass | passed automated play QA for tested scope |
+| Lifecycle, always-on-top, resume, unlock | PASS | .qa-runs/2026-05-18T12-20-41-018Z-32196-048e0b78-lifecycle/report.md | automated-pass | passed automated lifecycle QA for tested scope |
+| Renderer panel routes | PASS | .qa-runs/2026-05-18T12-23-29-462Z-27176-bf1961e7-renderer/report.md | automated-pass | passed automated renderer QA for tested scope |
+| Five-minute idle CPU | PASS | .qa-runs/2026-05-18T12-32-22-926Z-20608-1c4605b7-idle/report.md | automated-pass | passed automated idle QA for tested scope |
+| Packaged release and installer smoke | PASS | .qa-runs/2026-05-18T12-00-15-885Z-28632-34d67541-release/report.md | automated-pass | packaged Windows build passed release smoke for tested scope |
+| Lint, typecheck, and unit tests | PASS | .qa-runs/2026-05-18T12-09-03-463Z-33160-1e10083a-check/report.md | automated-pass | lint, TypeScript checking, and unit tests passed for this checkout |
+| Built-in pet asset QA | PASS | .qa-runs/2026-05-18T12-09-03-454Z-24988-9b8d9532-assets-pets/report.md | automated-pass | passed assets-pets static asset QA |
+| Food and item asset QA | PASS | .qa-runs/2026-05-18T12-09-03-439Z-12388-a957cac5-assets-items/report.md | automated-pass | passed assets-items static asset QA |
+| V2 visual acceptance pages | PASS | .qa-runs/2026-05-18T12-09-29-923Z-12124-d10ec7a0-visual-page/report.md | automated-pass | passed automated visual page smoke for tested browser scope; subjective pet and food recognizability still requires manual acceptance |
+| V2 user-facing scope | PASS | .qa-runs/2026-05-18T12-09-03-453Z-28128-3a87721a-v2-scope/report.md | automated-pass | passed static V2 scope QA: Hatch/custom generation and v0.1 custom pet loading/import/export are not exposed through user-facing UI, route, preload, IPC, or runtime custom-package loading surfaces |
 
 ## Prompt-To-Artifact Checklist
 
 | Requirement | Status | Evidence | Notes |
 | --- | --- | --- | --- |
 | Launch opens the compact transparent pet overlay by default. | PASS | latest launch QA report |  |
-| Normal care actions stay in the overlay and health does not open a stuck panel. | FAIL | latest overlay QA report | missing automated pass: overlay |
-| Feed picker uses icon-first food choices and selected food appears in eating feedback. | MANUAL OPEN | overlay QA plus item contact sheets | missing automated pass: overlay<br />missing automated pass: assets-items<br />missing automated pass: visual-page<br />manual acceptance required for release closeout: manual-open |
-| Ball play expands to the monitor work area and restores the compact overlay. | FAIL | latest play QA report | missing automated pass: play |
-| Pet dragging works by the visible sprite and persists restored bounds. | MANUAL OPEN | latest drag QA report | missing automated pass: drag<br />manual acceptance required for release closeout: manual-open |
+| Normal care actions stay in the overlay and health does not open a stuck panel. | PASS | latest overlay QA report |  |
+| Feed picker uses icon-first food choices and selected food appears in eating feedback. | MANUAL OPEN | overlay QA plus item contact sheets | manual acceptance required for release closeout: manual-open |
+| Ball play expands to the monitor work area and restores the compact overlay. | PASS | latest play QA report |  |
+| Pet dragging works by the visible sprite and persists restored bounds. | MANUAL OPEN | latest drag QA report | manual acceptance required for release closeout: manual-open |
 | Multi-monitor bounds logic covers right, left, stacked, largest-intersection, and fallback layouts. | PASS | src/main/windowBounds.test.ts through pnpm run check |  |
-| Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | MANUAL OPEN | pet asset contact sheets and visual acceptance page | missing automated pass: assets-pets<br />missing automated pass: visual-page<br />manual acceptance required for release closeout: manual-open |
+| Built-in roster and animation assets are ready for Bao, Miso, Mochi, Peanut, and Puddles. | MANUAL OPEN | pet asset contact sheets and visual acceptance page | manual acceptance required for release closeout: manual-open |
 | Care simulation is deterministic, documented, and tested for V2 rules. | PASS | simulation docs and test suite through pnpm run check |  |
 | Package validation and persistence safety remain covered by the checked test suite. | PASS | package, runtime, and storage tests through pnpm run check |  |
-| Custom generation and custom pet import/export are deferred from user-facing v0.1. | PASS | README, renderer route removal, IPC bridge removal, and V2 scope QA |  |
-| Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | FAIL | latest lifecycle QA report | missing automated pass: lifecycle |
-| Low idle CPU has a five-minute automated observation. | FAIL | latest idle QA report | missing automated pass: idle |
-| Windows packaging includes runtime resources and installer smoke evidence. | MANUAL OPEN | latest release QA report | missing automated pass: release<br />manual acceptance required for release closeout: manual-open |
+| Custom generation and custom pet loading/import/export are deferred from user-facing v0.1. | PASS | README, renderer route removal, IPC bridge removal, and V2 scope QA |  |
+| Always-on-top, reset position, resume, unlock, and startup setting safety are covered. | PASS | latest lifecycle QA report |  |
+| Low idle CPU has a five-minute automated observation. | PASS | latest idle QA report |  |
+| Windows packaging includes runtime resources and installer smoke evidence. | MANUAL OPEN | latest release QA report | manual acceptance required for release closeout: manual-open |
 
 ## Workspace State
 
 Status: **PASS**
 
-Commit: `8a4332b`
+Commit: `cdb9893`
 
 Workspace is clean.
 
