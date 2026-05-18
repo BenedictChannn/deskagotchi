@@ -1687,7 +1687,14 @@ while ($frontier.Count -gt 0) {
     $frontier += $child.ProcessId
   }
 }
-$descendants | ConvertTo-Json -Compress
+$liveDescendants = @()
+foreach ($descendant in $descendants) {
+  $process = Get-Process -Id $descendant.ProcessId -ErrorAction SilentlyContinue
+  if ($process -and -not $process.HasExited) {
+    $liveDescendants += $descendant
+  }
+}
+$liveDescendants | ConvertTo-Json -Compress
 `;
   const output = runPowerShell(script, { allowFailure: true }).trim();
   if (output.length === 0) {
