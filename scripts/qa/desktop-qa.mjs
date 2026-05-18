@@ -265,6 +265,7 @@ async function runDragScenario(run, app) {
 
 async function assertDirectOverlayDrag(run, app, page) {
   const beforeDirectDrag = await getOverlayWindowInfo(app);
+  await armVisiblePetHitAreaForOsDrag(page);
   const start = await pointForPetSpriteCenter(page, beforeDirectDrag);
   const end = {
     x: start.x + Math.round(DRAG_DELTA_DIP * beforeDirectDrag.display.scaleFactor),
@@ -399,6 +400,7 @@ async function dragOntoNegativeCoordinateMonitor(run, app, page) {
   await takeDesktopScreenshot(run, "desktop-cross-monitor-before.png");
   run.artifact("desktop-cross-monitor-before.png");
 
+  await armVisiblePetHitAreaForOsDrag(page);
   const start = await pointForPetSpriteCenter(page, staged);
   const end = {
     x: start.x - Math.round(CROSS_MONITOR_DRAG_DIP * staged.display.scaleFactor),
@@ -430,6 +432,11 @@ async function dragOntoNegativeCoordinateMonitor(run, app, page) {
     finalBounds: crossed.bounds
   });
   return undefined;
+}
+
+async function armVisiblePetHitAreaForOsDrag(page) {
+  await page.locator("[data-testid='pet-sprite']").hover();
+  await page.waitForTimeout(150);
 }
 
 async function runOverlayScenario(run, app) {
