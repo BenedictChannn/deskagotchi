@@ -22,6 +22,10 @@ interface PetSpriteProps {
   onClick?: () => void;
   /** Optional pointer-down handler used by the desktop overlay drag controller. */
   onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+  /** Optional pointer-enter handler used by the desktop overlay hit-test controller. */
+  onPointerEnter?: () => void;
+  /** Optional pointer-leave handler used by the desktop overlay hit-test controller. */
+  onPointerLeave?: () => void;
 }
 
 /**
@@ -36,7 +40,9 @@ export function PetSprite({
   interactive = false,
   eatingItem,
   onClick,
-  onPointerDown
+  onPointerDown,
+  onPointerEnter,
+  onPointerLeave
 }: PetSpriteProps): React.JSX.Element {
   const animation = useMemo(
     () => selectAnimation(snapshot),
@@ -72,6 +78,8 @@ export function PetSprite({
       className={interactive ? "pet-sprite pet-sprite--button" : "pet-sprite"}
       onClick={onClick}
       onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       data-testid={interactive ? "pet-sprite" : undefined}
       aria-label={`${snapshot.activeState.nickname} is ${snapshot.activeState.mood}`}
       style={{

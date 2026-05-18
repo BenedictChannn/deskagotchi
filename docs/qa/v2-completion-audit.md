@@ -40,7 +40,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 - Polished built-in pets.
 - Recognizable food and care interactions.
 - Documented deterministic care simulation.
-- User-facing custom generation and custom pet import/export deferred for v0.1.
+- User-facing custom generation and custom pet loading/import/export deferred for v0.1.
 - Verified desktop hardening across launch, drag, lifecycle, multi-monitor,
   always-on-top, sleep/wake, play, packaging, and recovery behavior.
 
@@ -83,7 +83,7 @@ Ship Deskagotchi V2 as a usable Windows-first desktop pet companion with:
 | Food choices are icon-first and selected food renders while eating | Overlay QA and item contact sheets | Final recognizability acceptance still needed. |
 | Deterministic simulation is documented | `docs/simulation/care-simulation-v2.md` | Keep updated with future rule changes. |
 | Offline progression, low-maintenance mode, deadlines, action effects, growth, and storage have tests | `pnpm run check` | None known for current scope. |
-| Hatch/custom surfaces deferred | README, roadmap, `PanelView`, IPC channel surface, `pnpm run qa:v2:scope` | User-facing generation and custom pet import/export have no panel route, preload API, IPC channel, panel tab, or overlay action; archive import/export code is not shipped in the v0.1 runtime. |
+| Hatch/custom surfaces deferred | README, roadmap, `PanelView`, IPC channel surface, `pnpm run qa:v2:scope` | User-facing generation and custom pet loading/import/export have no panel route, preload API, IPC channel, panel tab, overlay action, or runtime custom-package loading path; archive import/export code is not shipped in the v0.1 runtime. |
 | Always-on-top persists across relaunch | Lifecycle QA | None known. |
 | Sleep/wake resume and unlock refresh simulation | Lifecycle QA synthetic `powerMonitor` checks | Real machine sleep/wake manual pass still useful. |
 | Frozen-window/process cleanup | Desktop QA process cleanup checks now run before each desktop summary is finalized | RDP and unusual taskbar behavior untested. |

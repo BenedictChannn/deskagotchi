@@ -113,8 +113,12 @@ jobs:
             exit 1
           fi
 
-          version="${TAG_NAME#v}"
-          notes_source="docs/release-notes/${version}.md"
+          if ! grep -Fq "Completion status: **complete**" docs/qa/v2-closeout-report.md; then
+            echo "Committed closeout report is not complete; run and commit the full release closeout before tagging."
+            exit 1
+          fi
+
+          notes_source="docs/release-notes/${TAG_NAME}.md"
           if [ ! -f "$notes_source" ]; then
             echo "Missing release notes source: $notes_source"
             exit 1
@@ -122,7 +126,7 @@ jobs:
 
           notes_file="$(mktemp)"
           sed "s/{{INSTALLER_SHA256}}/$checksum/g" "$notes_source" > "$notes_file"
-          if grep -Eq "Draft|<fill after|\\{\\{INSTALLER_SHA256\\}\\}|Release Evidence To Fill Before Publish" "$notes_file"; then
+          if grep -Eq "Draft|<fill after|\\{\\{INSTALLER_SHA256\\}\\}|Release Evidence To Fill Before Publish|If this build is unsigned|whether the installer was signed" "$notes_file"; then
             echo "Release notes still contain draft or placeholder text."
             exit 1
           fi

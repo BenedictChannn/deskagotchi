@@ -1,8 +1,10 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 import { vi } from "vitest";
+
+import { PetSource } from "@shared/domain";
 
 import { createAssetUrl, DeskagotchiRuntime } from "./runtime";
 
@@ -31,6 +33,24 @@ describe("runtime simulation safety", () => {
     expect(readOnlySnapshot.activeState.ageHours).toBe(
       progressedSnapshot.activeState.ageHours
     );
+  });
+
+  it("keeps user-data custom packages out of the v0.1 runtime surface", async () => {
+    const userDataDir = await createUserDataWithCustomBao();
+    const runtime = new DeskagotchiRuntime(resourceRoot(), userDataDir);
+    await runtime.initialize(new Date("2026-05-06T00:00:00.000Z"));
+
+    const snapshot = await runtime.getSnapshot();
+    const packageIds = snapshot.packages.map(
+      (runtimePackage) => runtimePackage.petPackage.packageId
+    );
+
+    expect(packageIds).not.toContain("custom-bao");
+    expect(
+      snapshot.packages.every(
+        (runtimePackage) => runtimePackage.petPackage.source === PetSource.BuiltIn
+      )
+    ).toBe(true);
   });
 
   it("applies low-maintenance offline catch-up when the setting is enabled", async () => {
@@ -100,10 +120,35 @@ async function createInitializedRuntime(): Promise<{
   runtime: DeskagotchiRuntime;
   userDataDir: string;
 }> {
-  const userDataDir = await mkdtemp(path.join(os.tmpdir(), "deskagotchi-user-"));
+  const userDataDir = await createUserDataDir();
   const runtime = new DeskagotchiRuntime(resourceRoot(), userDataDir);
   await runtime.initialize(new Date("2026-05-06T00:00:00.000Z"));
   return { runtime, userDataDir };
+}
+
+async function createUserDataWithCustomBao(): Promise<string> {
+  const userDataDir = await createUserDataDir();
+  const customPackageRoot = path.join(userDataDir, "custom-pets", "custom-bao");
+  await mkdir(path.dirname(customPackageRoot), { recursive: true });
+  await cp(path.join(resourceRoot(), "pets", "bao"), customPackageRoot, {
+    recursive: true
+  });
+
+  const manifestPath = path.join(customPackageRoot, "pet.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+    packageId: string;
+    name: string;
+    source: string;
+  };
+  manifest.packageId = "custom-bao";
+  manifest.name = "Custom Bao";
+  manifest.source = "custom";
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  return userDataDir;
+}
+
+async function createUserDataDir(): Promise<string> {
+  return mkdtemp(path.join(os.tmpdir(), "deskagotchi-user-"));
 }
 
 function resourceRoot(): string {

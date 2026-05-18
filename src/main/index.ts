@@ -78,7 +78,6 @@ const UpdateSettingsInputSchema = z
   .object({
     alwaysOnTop: DeskagotchiSaveSchema.shape.settings.shape.alwaysOnTop.optional(),
     launchOnStartup: DeskagotchiSaveSchema.shape.settings.shape.launchOnStartup.optional(),
-    soundEnabled: DeskagotchiSaveSchema.shape.settings.shape.soundEnabled.optional(),
     reducedMotion: DeskagotchiSaveSchema.shape.settings.shape.reducedMotion.optional(),
     lowMaintenanceMode: DeskagotchiSaveSchema.shape.settings.shape.lowMaintenanceMode.optional(),
     notificationsEnabled:
@@ -131,6 +130,7 @@ let playModePreviousBounds: Rectangle | undefined;
 let uiModePreviousBounds: Rectangle | undefined;
 let suppressPetWindowBoundsPersistence = false;
 let petWindowBoundsSuppressionSequence = 0;
+let petWindowClickThroughEnabled = false;
 let petWindowStartupMetadata: Record<string, unknown> = {};
 
 if (!app.requestSingleInstanceLock()) {
@@ -350,6 +350,7 @@ function createPetWindow(): void {
         petWindow = undefined;
         uiModePreviousBounds = undefined;
         playModePreviousBounds = undefined;
+        petWindowClickThroughEnabled = false;
       });
       petWindow.on("moved", () => void persistPetWindowBounds());
       petWindow.on("resize", () => void persistPetWindowBounds());
@@ -587,9 +588,9 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle(IpcChannel.SetClickThrough, (event, enabled: unknown) => {
     validateIpcSender(event);
-    petWindow?.setIgnoreMouseEvents(
+    setPetWindowClickThrough(
       parseIpcInput(BooleanInputSchema, enabled, "click-through flag"),
-      { forward: true }
+      "renderer-request"
     );
   });
   ipcMain.handle(IpcChannel.RecordQaEvent, (event, input: unknown) => {
@@ -944,9 +945,34 @@ function enterPetWindowPlayMode(): void {
       reason: "play-enter"
     }
   });
-  petWindow.setIgnoreMouseEvents(false);
+  setPetWindowClickThrough(false, "play-enter");
   petWindow.show();
   petWindow.moveTop();
+}
+
+/**
+ * Toggle whether transparent overlay pixels pass mouse input through.
+ *
+ * @param enabled - True when compact idle mode should not own transparent pixels.
+ * @param reason - Short QA-visible reason for the state transition.
+ */
+function setPetWindowClickThrough(enabled: boolean, reason: string): void {
+  if (petWindow === undefined || petWindow.isDestroyed()) {
+    return;
+  }
+  petWindow.setIgnoreMouseEvents(enabled, { forward: true });
+  if (petWindowClickThroughEnabled === enabled) {
+    return;
+  }
+  petWindowClickThroughEnabled = enabled;
+  recordQaEvent({
+    event: "window:clickThrough",
+    windowRole: "overlay",
+    payload: {
+      enabled,
+      reason
+    }
+  });
 }
 
 /**

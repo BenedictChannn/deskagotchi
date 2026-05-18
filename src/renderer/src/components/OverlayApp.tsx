@@ -45,6 +45,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     ItemCategory.Meal
   );
   const [eatingCueItem, setEatingCueItem] = useState<ItemCatalogEntry | undefined>();
+  const [petHovering, setPetHovering] = useState(false);
   const hasTrayOverlay = mode.kind === "menu" || mode.kind === "play-picker";
   const hasCardOverlay =
     mode.kind === "health" || mode.kind === "feed" || mode.kind === "care";
@@ -80,17 +81,17 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     setMode({ kind: "compact" });
   };
 
-  const recordQaEvent = (
-    event: string,
-    payload: Record<string, unknown> = {}
-  ): void => {
-    void window.deskagotchi.recordQaEvent({
-      event,
-      source: "renderer",
-      windowRole: playActive ? "play-overlay" : "overlay",
-      payload
-    });
-  };
+  const recordQaEvent = useCallback(
+    (event: string, payload: Record<string, unknown> = {}): void => {
+      void window.deskagotchi.recordQaEvent({
+        event,
+        source: "renderer",
+        windowRole: playActive ? "play-overlay" : "overlay",
+        payload
+      });
+    },
+    [playActive]
+  );
 
   const closePlay = useCallback((): void => {
     setMode({ kind: "compact" });
@@ -141,11 +142,37 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
     return undefined;
   }, [hasCardOverlay, hasTrayOverlay, playActive]);
 
+  useEffect(() => {
+    const clickThroughEnabled =
+      snapshot.save.settings.clickThroughWhenIdle &&
+      mode.kind === "compact" &&
+      !petHovering &&
+      !playActive;
+    void window.deskagotchi
+      .setClickThrough(clickThroughEnabled)
+      .then(() =>
+        recordQaEvent("overlay:click-through-request", {
+          enabled: clickThroughEnabled,
+          mode: mode.kind,
+          petHovering
+        })
+      )
+      .catch(() => undefined);
+    return undefined;
+  }, [
+    mode.kind,
+    petHovering,
+    playActive,
+    recordQaEvent,
+    snapshot.save.settings.clickThroughWhenIdle
+  ]);
+
   const startDrag = (event: React.PointerEvent<HTMLButtonElement>): void => {
     if (event.button !== 0) {
       return;
     }
 
+    setPetHovering(true);
     event.currentTarget.setPointerCapture(event.pointerId);
     recordQaEvent("drag:start", {
       pointer: {
@@ -237,6 +264,7 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       setMode({ kind: "compact" });
     }
     dragState.current = undefined;
+    setPetHovering(currentDrag.target.matches(":hover"));
     void window.deskagotchi.finishPetWindowDrag();
   };
 
@@ -258,6 +286,16 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
       return;
     }
     setMode({ kind: "compact" });
+  };
+
+  const enterPetHitArea = (): void => {
+    setPetHovering(true);
+  };
+
+  const leavePetHitArea = (): void => {
+    if (dragState.current === undefined) {
+      setPetHovering(false);
+    }
   };
 
   const openFeed = (): void => {
@@ -318,6 +356,8 @@ export function OverlayApp({ snapshot }: OverlayAppProps): React.JSX.Element {
             size={petSpriteSize}
             onClick={toggleMenu}
             onPointerDown={startDrag}
+            onPointerEnter={enterPetHitArea}
+            onPointerLeave={leavePetHitArea}
           />
         </section>
       )}

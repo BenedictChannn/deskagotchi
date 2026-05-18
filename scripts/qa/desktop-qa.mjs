@@ -434,6 +434,9 @@ async function dragOntoNegativeCoordinateMonitor(run, app, page) {
 
 async function runOverlayScenario(run, app) {
   const page = await overlayPage(app);
+  await waitForQaEvent(run, "window:clickThrough", { enabled: true });
+  await page.locator("[data-testid='pet-sprite']").hover();
+  await waitForQaEvent(run, "window:clickThrough", { enabled: false });
   await page.locator("[data-testid='pet-sprite']").click();
   await page.waitForSelector("[data-testid='overlay-actions']", { timeout: 5_000 });
   run.pass("overlay menu opened");
@@ -495,6 +498,23 @@ async function runOverlayScenario(run, app) {
   windows.length === 1
     ? run.pass("overlay health did not open a panel window")
     : run.fail("overlay health did not open a panel window", { windowCount: windows.length });
+  const compactClickThroughEventsBeforeClose = countQaEvents(
+    run,
+    "window:clickThrough",
+    { enabled: true }
+  );
+  await page.getByLabel("Close health panel").click();
+  await page.waitForSelector("[data-testid='overlay-health-card']", {
+    state: "hidden",
+    timeout: 5_000
+  });
+  run.pass("health close button closes compact overlay card");
+  await waitForQaEvent(
+    run,
+    "window:clickThrough",
+    { enabled: true },
+    { minCount: compactClickThroughEventsBeforeClose + 1 }
+  );
 }
 
 async function selectFoodAndAssertCue(run, page, foodLocator, label) {
@@ -1220,27 +1240,18 @@ async function waitForPersistedSetting(run, settingName, expectedValue) {
   });
 }
 
-async function waitForQaEvent(run, eventName, expectedPayload = {}) {
+async function waitForQaEvent(run, eventName, expectedPayload = {}, options = {}) {
   const eventsPath = path.join(run.runDir, "events.jsonl");
   const deadline = Date.now() + 5_000;
   while (Date.now() < deadline) {
-    if (fs.existsSync(eventsPath)) {
-      const matchingEvent = fs
-        .readFileSync(eventsPath, "utf8")
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .map((line) => JSON.parse(line))
-        .find((event) => {
-          if (event.event !== eventName) {
-            return false;
-          }
-          return Object.entries(expectedPayload).every(
-            ([key, value]) => event.payload?.[key] === value
-          );
-        });
+    const matchingEvents = readMatchingQaEvents(run, eventName, expectedPayload);
+    const minCount = options.minCount ?? 1;
+    if (matchingEvents.length >= minCount) {
+      const matchingEvent = matchingEvents.at(-1);
       if (matchingEvent !== undefined) {
         run.pass(`QA event ${eventName} recorded`, {
-          payload: matchingEvent.payload
+          payload: matchingEvent.payload,
+          count: matchingEvents.length
         });
         return;
       }
@@ -1249,8 +1260,33 @@ async function waitForQaEvent(run, eventName, expectedPayload = {}) {
   }
   run.fail(`QA event ${eventName} recorded`, {
     expectedPayload,
+    minCount: options.minCount ?? 1,
     eventsPath
   });
+}
+
+function countQaEvents(run, eventName, expectedPayload = {}) {
+  return readMatchingQaEvents(run, eventName, expectedPayload).length;
+}
+
+function readMatchingQaEvents(run, eventName, expectedPayload) {
+  const eventsPath = path.join(run.runDir, "events.jsonl");
+  if (!fs.existsSync(eventsPath)) {
+    return [];
+  }
+  return fs
+    .readFileSync(eventsPath, "utf8")
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter((event) => {
+      if (event.event !== eventName) {
+        return false;
+      }
+      return Object.entries(expectedPayload).every(
+        ([key, value]) => event.payload?.[key] === value
+      );
+    });
 }
 
 function recordQaProcess(run, pid) {

@@ -322,7 +322,7 @@ function loadDevSave(packages: RuntimePetPackage[]): DeskagotchiSave {
       quietHoursEnd: "08:00",
       notificationsEnabled: true,
       notificationCooldownMinutes: 60,
-      clickThroughWhenIdle: false
+      clickThroughWhenIdle: true
     }
   };
 }

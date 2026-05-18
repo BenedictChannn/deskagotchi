@@ -61,7 +61,7 @@ export class DeskagotchiRuntime {
    * Create a runtime bound to packaged resources and Electron user data.
    *
    * @param resourceRoot - Directory containing built-in app resources.
-   * @param userDataDir - Electron userData directory for saves and custom pets.
+   * @param userDataDir - Electron userData directory for saves and local app data.
    */
   constructor(resourceRoot: string, userDataDir: string) {
     this.resourcePetsDir = path.join(resourceRoot, "pets");
@@ -89,7 +89,7 @@ export class DeskagotchiRuntime {
   /**
    * Return the active Electron userData directory.
    *
-   * @returns Absolute path used for saves, custom pets, exports, and temp files.
+   * @returns Absolute path used for saves and local app data.
    */
   getUserDataPath(): string {
     return this.storagePaths.userDataDir;
@@ -276,11 +276,7 @@ export class DeskagotchiRuntime {
       this.resourcePetsDir,
       PetSource.BuiltIn
     );
-    const customPackages = await loadPetPackagesFromDirectory(
-      this.storagePaths.customPetsDir,
-      PetSource.Custom
-    );
-    this.loadedPackages = [...builtInPackages.packages, ...customPackages.packages];
+    this.loadedPackages = builtInPackages.packages;
     if (this.loadedPackages.length === 0) {
       throw new Error("Deskagotchi could not find any valid pet packages.");
     }

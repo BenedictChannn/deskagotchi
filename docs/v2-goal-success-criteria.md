@@ -11,13 +11,13 @@ desktop behavior.
 
 ## Explicit Non-Goal
 
-User-facing custom pet generation and custom pet import/export are not part of
-the v0.1 promise.
+User-facing custom pet generation and custom pet loading/import/export are not
+part of the v0.1 promise.
 
 Hatch/custom generation remains deferred research until we design the full
 generation, approval, QA, packaging, moderation, and failure-recovery pipeline.
 V2 should preserve safe package validation for built-in pets, but it should not
-depend on generated or imported custom pets.
+depend on generated, loaded, or imported custom pets.
 
 ## V2 Success Criteria
 

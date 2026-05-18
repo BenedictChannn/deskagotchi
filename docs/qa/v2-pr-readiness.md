@@ -15,7 +15,7 @@ desktop recovery behavior, and packaged desktop distribution.
   care actions.
 - Built-in original pet roster: Bao, Miso, Mochi, Peanut, and Puddles.
 - Deterministic local care simulation with offline catch-up.
-- Hatch/custom pet generation and custom pet import/export remain deferred from
+- Hatch/custom pet generation and custom pet loading/import/export remain deferred from
   the user-facing v0.1 app.
 - Desktop app downloads should be published for Windows first. macOS downloads
   require separate macOS smoke evidence before publication.

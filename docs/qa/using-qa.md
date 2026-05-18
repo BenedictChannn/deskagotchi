@@ -55,7 +55,7 @@ Use targeted commands while iterating:
 | `pnpm run qa:v2:manual-page:update` | Refreshing the tracked manual acceptance page screenshot after intentional page changes. |
 | `pnpm run qa:v2:manual-preflight` | Summarizing manual acceptance blockers from the closeout audit before trying strict closeout. |
 | `pnpm run qa:v2:manual-preflight:smoke` | Verifying manual preflight fails without manual JSON and passes with complete fixture JSON. |
-| `pnpm run qa:v2:scope` | Verifying Hatch/custom generation and v0.1 custom pet import/export remain outside the user-facing UI, route, preload, and IPC surfaces. |
+| `pnpm run qa:v2:scope` | Verifying Hatch/custom generation and v0.1 custom pet loading/import/export remain outside the user-facing UI, route, preload, IPC, and runtime loading surfaces. |
 | `pnpm run qa:v2:visual-page` | Verifying the visual acceptance and pet animation gallery pages contain the current pets, images, animation cells, and controls. |
 | `pnpm run qa:v2:visual-page:update` | Refreshing the tracked visual acceptance screenshot after intentional page changes. |
 

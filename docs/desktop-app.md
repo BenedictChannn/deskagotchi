@@ -47,10 +47,10 @@ behavior, and unsigned or unnotarized first-run warnings.
 - Drag the visible pet to move it around the desktop.
 - Use the tray/menu bar action to recover the pet if it is hidden or off-screen.
 - Feed, play, clean, sleep, and health actions run in the compact overlay.
-- Use Settings for always-on-top, startup, sound, reduced motion, low
+- Use Settings for always-on-top, startup, reduced motion, low
   maintenance, and notifications.
 - Use the pet selector to switch built-in pets.
-- Custom pet import/export is not exposed in v0.1.
+- Custom pet loading, import, and export are not exposed in v0.1.
 
 Deskagotchi stores data locally in Electron's `userData` directory. The Settings
 panel shows the resolved path. The main files are:

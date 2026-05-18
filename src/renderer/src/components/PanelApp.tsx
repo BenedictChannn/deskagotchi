@@ -296,11 +296,6 @@ function SettingsView({
           onChange={(checked) => void update({ launchOnStartup: checked })}
         />
         <Toggle
-          label="Sound"
-          checked={snapshot.save.settings.soundEnabled}
-          onChange={(checked) => void update({ soundEnabled: checked })}
-        />
-        <Toggle
           label="Reduced motion"
           checked={snapshot.save.settings.reducedMotion}
           onChange={(checked) => void update({ reducedMotion: checked })}

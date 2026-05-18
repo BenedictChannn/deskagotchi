@@ -209,11 +209,11 @@ const AUTOMATED_SCENARIOS = [
       "preload bridge exposes no v0.1 custom pet import/export method",
       "main process registers no v0.1 custom pet import/export IPC handler",
       "management panel exposes no v0.1 custom pet import/export action",
-      "README marks custom generation and custom import/export deferred for v0.1",
-      "README archives user-facing Hatch and custom import/export for v0.1",
-      "desktop app docs exclude custom pet import/export from v0.1",
+      "README marks custom generation and custom loading/import/export deferred for v0.1",
+      "README archives user-facing Hatch and custom loading/import/export for v0.1",
+      "desktop app docs exclude custom pet loading/import/export from v0.1",
       "V2 roadmap archives custom pet generation",
-      "V2 success criteria exclude user-facing custom generation and import/export"
+      "V2 success criteria exclude user-facing custom generation and loading/import/export"
     ]
   }
 ];
@@ -327,7 +327,7 @@ const V2_DELIVERABLES = [
   "Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.",
   "Food and item experience: icon-first feeding, recognizable food assets, and selected-food eating cues.",
   "Care simulation: deterministic, documented, day-scale progression with tested action effects and offline catch-up.",
-  "Deferred custom surfaces: user-facing Hatch and custom pet import/export are out of the v0.1 promise while built-in package validation remains.",
+  "Deferred custom surfaces: user-facing Hatch and custom pet loading/import/export are out of the v0.1 promise while built-in package validation remains.",
   "Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.",
   "Package and data safety: package validation, atomic saves, backup recovery, and relaunch persistence.",
   "Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence."
@@ -400,7 +400,7 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
     ]
   },
   {
-    requirement: "Custom generation and custom pet import/export are deferred from user-facing v0.1.",
+    requirement: "Custom generation and custom pet loading/import/export are deferred from user-facing v0.1.",
     evidence: "README, renderer route removal, IPC bridge removal, and V2 scope QA",
     automatedKeys: ["v2-scope"],
     artifactPaths: ["README.md", "src/shared/hatch.ts", "src/shared/ipc.ts"]

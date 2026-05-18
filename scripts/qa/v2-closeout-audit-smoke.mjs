@@ -229,11 +229,11 @@ const AUTOMATED_FIXTURES = [
       "preload bridge exposes no v0.1 custom pet import/export method",
       "main process registers no v0.1 custom pet import/export IPC handler",
       "management panel exposes no v0.1 custom pet import/export action",
-      "README marks custom generation and custom import/export deferred for v0.1",
-      "README archives user-facing Hatch and custom import/export for v0.1",
-      "desktop app docs exclude custom pet import/export from v0.1",
+      "README marks custom generation and custom loading/import/export deferred for v0.1",
+      "README archives user-facing Hatch and custom loading/import/export for v0.1",
+      "desktop app docs exclude custom pet loading/import/export from v0.1",
       "V2 roadmap archives custom pet generation",
-      "V2 success criteria exclude user-facing custom generation and import/export"
+      "V2 success criteria exclude user-facing custom generation and loading/import/export"
     ]
   }
 ];

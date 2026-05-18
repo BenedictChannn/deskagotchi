@@ -22,8 +22,8 @@ The app runs as a small transparent frameless pet window with tray controls, loc
 - Built-in pets ship with the full MVP animation row set and pet-specific food preferences.
 - Built-in pets use a manifest-driven package schema.
 - Package validation for manifest structure, safe paths, missing assets, unsupported files, and executable payloads.
-- Hatch/custom pet generation is deferred for V2 and custom pet import/export is not exposed in v0.1.
-- Settings for always-on-top, startup, sound, reduced motion, low maintenance, and notifications.
+- Hatch/custom pet generation is deferred for V2; custom pet loading, import, and export are not exposed in v0.1.
+- Settings for always-on-top, startup, reduced motion, low maintenance, and notifications.
 
 ## Desktop App Downloads
 
@@ -113,7 +113,7 @@ and renderer flows, and writes evidence under `.qa-runs/<run-id>/`. See
 `docs/qa/using-qa.md` for when to run each targeted QA command and how to
 interpret the reports.
 
-Verify that deferred Hatch/custom generation and custom pet import/export have
+Verify that deferred Hatch/custom generation and custom pet loading/import/export have
 not returned to the user-facing v0.1 surface:
 
 ```powershell
@@ -347,7 +347,7 @@ Imported packages are treated as untrusted. Archives are rejected if they contai
 
 ## Deferred Hatch Research
 
-User-facing Hatch/custom pet generation and custom pet import/export are
+User-facing Hatch/custom pet generation and custom pet loading/import/export are
 archived for the v0.1 release path. Earlier prototype code proved local package
 mechanics, but a real custom pet flow still needs a full generation, approval,
 QA, packaging, moderation, and failure-recovery design before it should be

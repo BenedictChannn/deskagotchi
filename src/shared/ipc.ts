@@ -88,7 +88,6 @@ export type RendererSettingsUpdate = Pick<
   DeskagotchiSave["settings"],
   | "alwaysOnTop"
   | "launchOnStartup"
-  | "soundEnabled"
   | "reducedMotion"
   | "lowMaintenanceMode"
   | "notificationsEnabled"
