@@ -108,9 +108,9 @@ function main() {
     assertInstallerArtifacts(run);
     assertReleaseFootprint(run);
     assertPackagedResources(run);
+    runInstallerSmoke(run);
     runPackagedLaunchSmoke(run);
     runPackagedLifecycleSmoke(run);
-    runInstallerSmoke(run);
   } catch (error) {
     run.fail("release QA threw", {
       message: error instanceof Error ? error.message : String(error)
@@ -263,7 +263,7 @@ function runInstallerSmoke(run) {
     return;
   }
 
-  const installDir = path.join(run.runDir, "install-target");
+  const installDir = path.join(os.tmpdir(), `deskagotchi-release-install-${process.pid}`);
   fs.rmSync(installDir, { recursive: true, force: true });
   fs.mkdirSync(installDir, { recursive: true });
 
