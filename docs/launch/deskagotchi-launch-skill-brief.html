@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi Launch Skill Brief</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8f3;
+        --paper: #ffffff;
+        --ink: #171a17;
+        --muted: #5e655f;
+        --line: #d8ded5;
+        --green: #2c6e49;
+        --green-soft: #e4f1e9;
+        --blue: #315d86;
+        --blue-soft: #e5eef6;
+        --warn: #8a5b18;
+        --warn-soft: #f4ead6;
+        --rose: #8d3d3d;
+        --rose-soft: #f5dfdf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1160px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
+        gap: 24px;
+        align-items: end;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        font-size: clamp(32px, 6vw, 64px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      a {
+        color: var(--green);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      code {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 0.95em;
+      }
+
+      .eyebrow {
+        margin-bottom: 12px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .stamp {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 16px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .stamp strong {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--ink);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .section {
+        margin-top: 30px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 14px;
+      }
+
+      .section-note {
+        max-width: 680px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .panel h3 {
+        margin-bottom: 8px;
+      }
+
+      .panel p,
+      .panel li {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        margin: 0 6px 6px 0;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: var(--green-soft);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .tag.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .tag.warn {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .tag.rose {
+        background: var(--rose-soft);
+        color: var(--rose);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .step {
+        min-height: 122px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      .step span {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .step strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 15px;
+      }
+
+      .step p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .callout {
+        border-left: 5px solid var(--green);
+        background: var(--green-soft);
+      }
+
+      .warning {
+        border-left: 5px solid var(--warn);
+        background: var(--warn-soft);
+      }
+
+      .danger {
+        border-left: 5px solid var(--rose);
+        background: var(--rose-soft);
+      }
+
+      .file-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .file-row {
+        display: grid;
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .file-row strong {
+        font-size: 14px;
+      }
+
+      .file-row p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 920px) {
+        header,
+        .grid-2,
+        .grid-3,
+        .flow,
+        .file-row {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: clamp(32px, 12vw, 48px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Deskagotchi launch system</p>
+          <h1>Skill workflow plus product positioning</h1>
+          <p class="subtitle">
+            The launch skill now stays procedural: research, hooks, channel fit,
+            recurring posts, truth checks, and measurement. The Deskagotchi
+            voice lives in a separate positioning file so the product framing can
+            change without rewriting the workflow.
+          </p>
+        </div>
+        <aside class="stamp">
+          <strong>Brief status</strong>
+          Generated for the current repo-local skill.<br />
+          Scope: landing page, X, Reddit, GitHub Release, changelog, and demo video.<br />
+          Default stance: fun Windows-first indie desktop pet beta.
+        </aside>
+      </header>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Two Files, Two Jobs</h2>
+          <p class="section-note">
+            Keep launch mechanics and Deskagotchi-specific taste separate.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="panel callout">
+            <h3>Skill: what to do</h3>
+            <p>
+              <a href="../../.codex/skills/deskagotchi-launch-workflow/SKILL.md">
+                <code>.codex/skills/deskagotchi-launch-workflow/SKILL.md</code>
+              </a>
+            </p>
+            <ul>
+              <li>Clarify channel, audience, proof assets, and launch shape.</li>
+              <li>Generate claims, hooks, proof sequences, and channel-native drafts.</li>
+              <li>Run truth, proof, channel-fit, and product-context critique passes.</li>
+              <li>Plan recurring posts and convert replies into follow-up work.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Positioning: what Deskagotchi sounds like</h3>
+            <p>
+              <a href="deskagotchi-positioning.md">
+                <code>docs/launch/deskagotchi-positioning.md</code>
+              </a>
+            </p>
+            <ul>
+              <li>Defines the tiny, warm, nostalgic desktop-pet frame.</li>
+              <li>Sets X, Reddit, landing page, and release-note priorities.</li>
+              <li>Lists safe nostalgia language and IP boundaries.</li>
+              <li>Records trust copy, sample hooks, and recurring content pillars.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Default Framing</h2>
+          <p class="section-note">
+            Small on purpose. Warm, handmade, and honest.
+          </p>
+        </div>
+        <div class="panel">
+          <p>
+            Deskagotchi is a free Windows-first indie desktop pet beta: a tiny
+            virtual companion for people who miss checking on a little digital
+            creature. It should not be framed as productivity software, wellness
+            software, an AI companion, or a serious life-changing product.
+          </p>
+          <div style="margin-top: 14px">
+            <span class="tag">tiny care loop</span>
+            <span class="tag">local-first feel</span>
+            <span class="tag">handmade beta</span>
+            <span class="tag blue">landing page</span>
+            <span class="tag blue">X</span>
+            <span class="tag blue">Reddit with care</span>
+            <span class="tag warn">no trademarked comparison copy</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Operating Loop</h2>
+          <p class="section-note">
+            Use this whenever drafting a launch asset or weekly content batch.
+          </p>
+        </div>
+        <div class="flow">
+          <div class="step">
+            <span>01</span>
+            <strong>Read context</strong>
+            <p>Load positioning, release notes, download page, target QA artifacts, and relevant repo truth.</p>
+          </div>
+          <div class="step">
+            <span>02</span>
+            <strong>Find proof</strong>
+            <p>Use screenshots, clips, installer evidence, QA reports, or visible product behavior.</p>
+          </div>
+          <div class="step">
+            <span>03</span>
+            <strong>Draft variants</strong>
+            <p>Write channel-native landing, X, Reddit, release, or demo-video copy.</p>
+          </div>
+          <div class="step">
+            <span>04</span>
+            <strong>Truth pass</strong>
+            <p>Map claims to evidence, check source state, and remove unsupported claims.</p>
+          </div>
+          <div class="step">
+            <span>05</span>
+            <strong>Follow up</strong>
+            <p>Track replies, downloads, objections, bugs, useful language, and next posts.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Channel Defaults</h2>
+          <p class="section-note">
+            The workflow can handle many surfaces, but these are the practical defaults.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="panel">
+            <h3>Landing/download page</h3>
+            <p>
+              Home base for the product, real demo, download CTA, trust block,
+              platform scope, and known limits.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>X</h3>
+            <p>
+              Short clips, screenshots, pet moments, release notes, build updates,
+              and one concrete behavior or feeling per post.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Reddit</h3>
+            <p>
+              Use only for meaningful milestones or specific critique requests.
+              Tailor posts to nostalgia, Windows/tool, or indie-maker communities.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Trust Gates</h2>
+          <p class="section-note">
+            These checks keep warm copy from becoming inaccurate launch copy.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="panel warning">
+            <h3>Before publishable release copy</h3>
+            <ul>
+              <li>Read the target release notes and download page.</li>
+              <li>Check installer name, signed or unsigned status, and SHA256.</li>
+              <li>Include SmartScreen wording when the build is unsigned.</li>
+              <li>State Windows-first scope and current known limits.</li>
+            </ul>
+          </article>
+          <article class="panel danger">
+            <h3>Before validation claims</h3>
+            <ul>
+              <li>Read the target QA run's <code>report.md</code> plus machine artifacts like <code>summary.json</code>.</li>
+              <li>Check whether evidence came from a dirty worktree.</li>
+              <li>Use narrow wording such as tested scope, not broad "validated" claims.</li>
+              <li>Map every public claim to a source or artifact.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Public Copy Boundaries</h2>
+          <p class="section-note">
+            These rules are where most launch mistakes would happen.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="panel">
+            <h3>Use</h3>
+            <ul>
+              <li>Virtual pet nostalgia.</li>
+              <li>Handheld digital-pet feeling.</li>
+              <li>LCD toy feel.</li>
+              <li>Tiny care loop.</li>
+              <li>No analytics or remote telemetry in normal use.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Avoid</h3>
+            <ul>
+              <li>Trademarked comparison phrases in public copy.</li>
+              <li>Loneliness, mental-health, wellness, or productivity claims.</li>
+              <li>Taskbar-resident wording unless the exact visual supports it.</li>
+              <li>LinkedIn-style corporate positioning.</li>
+              <li>Vote asks, engagement pods, or generic support requests.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Key Files</h2>
+          <p class="section-note">
+            The skill should read these before producing publishable launch copy.
+          </p>
+        </div>
+        <div class="file-list">
+          <div class="file-row">
+            <strong><code>deskagotchi-positioning.md</code></strong>
+            <p>Voice, framing, channel defaults, recurring content pillars, nostalgia boundaries, and trust notes.</p>
+          </div>
+          <div class="file-row">
+            <strong><code>SKILL.md</code></strong>
+            <p>Workflow for hooks, claims, proof sequences, recurring cadence, critique passes, and output contract.</p>
+          </div>
+          <div class="file-row">
+            <strong><code>v0.1.0-download.html</code></strong>
+            <p>Current public landing/download page and trust surface.</p>
+          </div>
+          <div class="file-row">
+            <strong><code>.qa-runs/&lt;target-run-id&gt;</code></strong>
+            <p>Validation evidence only when tied to the target release, branch, commit, or current task. Use report plus machine summaries before any release-candidate claim.</p>
+          </div>
+          <div class="file-row">
+            <strong><code>desktop-release-artifacts.yml</code></strong>
+            <p>Current publish workflow and platform artifact truth.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

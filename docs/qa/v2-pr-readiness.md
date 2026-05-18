@@ -59,8 +59,9 @@ publishing macOS downloads. The current automated desktop QA evidence is
 Windows-based.
 
 Publish the release-note draft at `docs/release-notes/v0.1.0.md` and keep the
-download page at `docs/release-notes/v0.1.0-download.html` aligned with the
-exact release candidate.
+public landing page at `site/index.html` aligned with the exact release
+candidate. Keep `docs/release-notes/v0.1.0-download.html` only as a local
+release-note preview or source snapshot when needed.
 
 ## Suggested PR Body
 

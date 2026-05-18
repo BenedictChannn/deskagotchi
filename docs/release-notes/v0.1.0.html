@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi v0.1.0 Release Notes</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0f0c;
+        --panel: #151811;
+        --ink: #f6f2e7;
+        --muted: #b6b0a1;
+        --line: rgba(246, 242, 231, 0.16);
+        --accent: #cfe78f;
+        --accent-ink: #11150d;
+        --warn: #ffd48a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px),
+          radial-gradient(circle at 20% 15%, rgba(207, 231, 143, 0.16), transparent 26%),
+          var(--bg);
+        background-size: 56px 56px, 56px 56px, auto, auto;
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(920px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 56px;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .brand img {
+        width: 34px;
+        height: 34px;
+        image-rendering: pixelated;
+      }
+
+      .nav-actions,
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 18px;
+        color: var(--ink);
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
+      }
+
+      .hero {
+        padding: 76px 0 34px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 820px;
+        font-size: clamp(44px, 8vw, 86px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        margin-top: 20px;
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 19px;
+        line-height: 1.55;
+      }
+
+      .cta-row {
+        margin-top: 30px;
+      }
+
+      .content {
+        display: grid;
+        gap: 16px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(21, 24, 17, 0.86);
+        padding: 22px;
+      }
+
+      .card h2 {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .card p + p {
+        margin-top: 12px;
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      code,
+      pre {
+        color: var(--accent);
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      pre {
+        margin: 12px 0 0;
+        white-space: pre-wrap;
+      }
+
+      .warning {
+        color: var(--warn);
+      }
+
+      @media (max-width: 640px) {
+        nav {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero {
+          padding-top: 46px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <div class="brand">
+          <img src="assets/pets/bao-icon.png" alt="" />
+          <span>Deskagotchi</span>
+        </div>
+        <div class="nav-actions">
+          <a class="button" href="v0.1.0-download.html">Download page</a>
+          <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases/tag/v0.1.0">GitHub Release</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <h1>Deskagotchi v0.1.0 release notes.</h1>
+        <p class="lede">
+          Deskagotchi v0.1.0 is a Windows-first desktop companion beta. It ships
+          the built-in pet roster, local care simulation, tray recovery,
+          settings, and Windows installer packaging.
+        </p>
+        <div class="cta-row">
+          <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases/tag/v0.1.0">Download for Windows</a>
+          <a class="button" href="v0.1.0-download.html">Back to download page</a>
+        </div>
+      </section>
+
+      <section class="content">
+        <article class="card">
+          <h2>Download</h2>
+          <ul>
+            <li>Windows: <code>Deskagotchi Setup 0.1.0.exe</code></li>
+            <li>macOS: not published for v0.1.0 unless a real macOS smoke pass is completed.</li>
+          </ul>
+          <p>Only download the installer attached to the official GitHub Release.</p>
+        </article>
+
+        <article class="card">
+          <h2>Trust And Signing</h2>
+          <p class="warning">
+            If this build is unsigned, Windows may show SmartScreen or Unknown
+            Publisher warnings. That warning means Windows cannot verify a
+            publisher certificate for the installer; it does not by itself prove
+            the app is unsafe.
+          </p>
+          <p>Before publishing, add the exact installer checksum:</p>
+          <pre>SHA256: &lt;fill after building the final installer&gt;</pre>
+        </article>
+
+        <article class="card">
+          <h2>Privacy And Local Data</h2>
+          <p>
+            Deskagotchi v0.1.0 does not require an account, analytics, remote
+            telemetry in normal use, or remote sync. Normal app state is stored
+            locally in Electron's <code>userData</code> directory. The Settings
+            panel shows the resolved local data path. QA harnesses can write
+            local event logs only when explicit QA mode is enabled.
+          </p>
+          <ul>
+            <li><code>deskagotchi-save.json</code></li>
+            <li><code>deskagotchi-save.backup.json</code></li>
+            <li>reserved package directories, if created by older development builds</li>
+          </ul>
+          <p>
+            Uninstalling the app removes the installed application files. Local
+            user data may remain so users can preserve or manually reset their
+            pet state.
+          </p>
+        </article>
+
+        <article class="card">
+          <h2>v0.1.0 Scope</h2>
+          <p>Included:</p>
+          <ul>
+            <li>transparent desktop pet overlay</li>
+            <li>built-in pets: Bao, Miso, Mochi, Peanut, and Puddles</li>
+            <li>feed, play, clean, sleep, medicine, pet, and health/status flows</li>
+            <li>tray/menu recovery and quit actions</li>
+            <li>always-on-top, startup, reduced motion, low maintenance, and notification settings</li>
+            <li>local save/backup recovery</li>
+          </ul>
+          <p>Not included:</p>
+          <ul>
+            <li>custom pet import/export</li>
+            <li>custom pet generation</li>
+            <li>macOS public downloads without macOS smoke evidence</li>
+            <li>code signing unless release signing is added before publish</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>Release Evidence To Fill Before Publish</h2>
+          <ul>
+            <li><code>pnpm run check</code></li>
+            <li><code>pnpm run qa</code></li>
+            <li>five-minute idle QA</li>
+            <li><code>pnpm run qa:release</code></li>
+            <li><code>pnpm run qa:v2:closeout</code></li>
+            <li>manual acceptance export or explicit deferral for physical checks</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>Known Limitations</h2>
+          <ul>
+            <li>Windows-first v0.1.0 beta.</li>
+            <li>Unsigned builds may trigger SmartScreen.</li>
+            <li>Manual checks are still required for interactive installer UI, startup-on-login, sleep/wake, unusual taskbar placement, and monitor setups.</li>
+            <li>Custom pets are intentionally held for a later release.</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h2>Reporting Issues</h2>
+          <p>When reporting a bug, include:</p>
+          <ul>
+            <li>Deskagotchi version</li>
+            <li>Windows version</li>
+            <li>whether the installer was signed or unsigned</li>
+            <li>what action you were taking</li>
+            <li>whether the issue happens after restarting the app</li>
+            <li>screenshots or screen recording when useful</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

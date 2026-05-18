@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi Marketing Launch Brief</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3f5ee;
+        --paper: #fffdf5;
+        --ink: #171914;
+        --muted: #62675f;
+        --line: #d8dccf;
+        --green: #2e6f4f;
+        --green-soft: #e3f1e7;
+        --blue: #2f5f85;
+        --blue-soft: #e3edf7;
+        --rose: #8d3f4f;
+        --rose-soft: #f6e3e6;
+        --warn: #8a5d17;
+        --warn-soft: #f5ecd8;
+        --paper-deep: #f9f5e8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0 58px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 820px;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      a {
+        color: var(--green);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      code {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 0.95em;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 22px;
+        align-items: end;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin-bottom: 12px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .stamp,
+      .panel,
+      .callout,
+      .decision,
+      .timeline-step,
+      .source-row {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+      }
+
+      .stamp {
+        padding: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .stamp strong {
+        display: block;
+        color: var(--ink);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .section {
+        margin-top: 30px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .section-note {
+        max-width: 680px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .panel,
+      .callout,
+      .decision,
+      .timeline-step {
+        padding: 18px;
+      }
+
+      .panel h3,
+      .decision h3,
+      .timeline-step h3 {
+        margin-bottom: 8px;
+      }
+
+      .panel p,
+      .panel li,
+      .decision p,
+      .decision li,
+      .timeline-step p,
+      .source-row p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .callout {
+        background: var(--paper-deep);
+      }
+
+      .callout p {
+        color: var(--ink);
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .decision span,
+      .timeline-step span {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .decision.primary span,
+      .timeline-step.ready span {
+        color: var(--green);
+      }
+
+      .decision.wait span,
+      .timeline-step.wait span {
+        color: var(--warn);
+      }
+
+      .decision.optional span {
+        color: var(--blue);
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 26px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: var(--green-soft);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .pill.warn {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .pill.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .pill.rose {
+        background: var(--rose-soft);
+        color: var(--rose);
+      }
+
+      .matrix {
+        display: grid;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+
+      .matrix-row {
+        display: grid;
+        grid-template-columns: 180px 1.1fr 1.1fr 180px;
+        min-height: 72px;
+      }
+
+      .matrix-row + .matrix-row {
+        border-top: 1px solid var(--line);
+      }
+
+      .matrix-cell {
+        padding: 12px;
+        border-left: 1px solid var(--line);
+      }
+
+      .matrix-cell:first-child {
+        border-left: 0;
+      }
+
+      .matrix-head {
+        background: var(--green-soft);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .matrix-cell p,
+      .matrix-cell li {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .source-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .source-row {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px;
+        align-items: start;
+      }
+
+      @media (max-width: 980px) {
+        header,
+        .grid-2,
+        .grid-3,
+        .grid-4,
+        .timeline,
+        .source-row {
+          grid-template-columns: 1fr;
+        }
+
+        .matrix {
+          border: 0;
+          background: transparent;
+          gap: 10px;
+        }
+
+        .matrix-row {
+          display: block;
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          overflow: hidden;
+          background: var(--paper);
+        }
+
+        .matrix-cell {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+
+        .matrix-cell:first-child {
+          border-top: 0;
+        }
+
+        .matrix-row.matrix-head {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Deskagotchi marketing launch</p>
+          <h1>Start with proof-led attention, not a hard sell</h1>
+          <p class="subtitle">
+            This brief synthesizes the three launch-strategy reviews into a
+            practical public rollout plan for X, Reddit, short videos, Product
+            Hunt, and Hacker News. It uses the repo launch workflow and
+            positioning doc as the guardrails.
+          </p>
+        </div>
+        <aside class="stamp">
+          <strong>Recommendation</strong>
+          X first, GitHub Pages as the home base, GitHub Releases for the
+          installer, Reddit selectively, short videos as proof assets. Skip
+          LinkedIn unless there is a specific reason to use it.
+        </aside>
+      </header>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Launch Stance</h2>
+          <p class="section-note">
+            Deskagotchi should feel like a small indie desktop pet that brings a
+            little life to Windows. The launch should make people feel the care
+            loop first, then trust the download second.
+          </p>
+        </div>
+        <div class="callout">
+          <p>
+            Use nostalgia as the emotional door: "remember checking on a little
+            digital creature?" Then immediately show the current product: a tiny
+            Windows desktop pet you can feed, play with, clean, drag around, and
+            keep nearby while you work.
+          </p>
+        </div>
+        <div class="pill-list">
+          <span class="pill">Warm</span>
+          <span class="pill">Specific</span>
+          <span class="pill">Founder-led</span>
+          <span class="pill">Demo-first</span>
+          <span class="pill warn">No IP-risk comparison</span>
+          <span class="pill warn">No productivity/wellness promise</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Account Decision</h2>
+          <p class="section-note">
+            Do not split attention too early. A personal founder account has
+            more context, personality, and reply credibility than a cold brand
+            account.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="decision primary">
+            <span>Use first</span>
+            <h3>Founder X account</h3>
+            <p>
+              Make the first two weeks founder-led: demo clips, build notes,
+              small pet moments, and replies. Pin a 10-20 second demo once the
+              release link is live.
+            </p>
+          </article>
+          <article class="decision optional">
+            <span>Reserve lightly</span>
+            <h3>Deskagotchi project handle</h3>
+            <p>
+              Reserve a handle if available, but treat it as a support and
+              release mirror until the project has recurring demand. Keep its
+              purpose distinct from the founder account.
+            </p>
+          </article>
+          <article class="decision wait">
+            <span>Do not do</span>
+            <h3>Coordinated posting</h3>
+            <p>
+              Avoid duplicate posts across multiple accounts, engagement pods,
+              mass replies, hashtag stuffing, or link-only promotion. Keep
+              replies manual and relevant.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>First 30 Days</h2>
+          <p class="section-note">
+            Use a runway: align truth, show the pet, invite critique, then widen
+            the launch only when the release surface is real.
+          </p>
+        </div>
+        <div class="timeline">
+          <article class="timeline-step wait">
+            <span>Days 1-3</span>
+            <h3>Make the public truth real</h3>
+            <p>
+              Publish GitHub Pages, create the GitHub Release, add the final
+              SHA256, confirm signed or unsigned status, and make sure README,
+              release notes, and site agree.
+            </p>
+          </article>
+          <article class="timeline-step ready">
+            <span>Days 4-7</span>
+            <h3>Light awareness posts</h3>
+            <p>
+              Post two or three media-first X updates: the tiny pet on the
+              desktop, the care loop, and one build/trust note. Keep links
+              secondary unless the post is explicitly about the release.
+            </p>
+          </article>
+          <article class="timeline-step ready">
+            <span>Days 8-14</span>
+            <h3>Soft beta and critique</h3>
+            <p>
+              Share with a small group or one maker/community venue. Ask for
+              specific feedback: installer friction, first pet choice, care loop,
+              desktop behavior, or copy clarity.
+            </p>
+          </article>
+          <article class="timeline-step ready">
+            <span>Days 15-30</span>
+            <h3>Wider public push</h3>
+            <p>
+              Publish the public beta thread, one tailored Reddit post if rules
+              allow, and then choose Product Hunt or Show HN only if the app is
+              tryable and you can be present for comments.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Channel Plan</h2>
+          <p class="section-note">
+            Each channel should have a different job. Do not syndicate the same
+            launch text everywhere.
+          </p>
+        </div>
+        <div class="matrix">
+          <div class="matrix-row matrix-head">
+            <div class="matrix-cell">Channel</div>
+            <div class="matrix-cell">Use It For</div>
+            <div class="matrix-cell">Post Shape</div>
+            <div class="matrix-cell">Wait Until</div>
+          </div>
+          <div class="matrix-row">
+            <div class="matrix-cell"><strong>X</strong></div>
+            <div class="matrix-cell">
+              <p>Daily-ish awareness, build notes, short clips, replies, and release posts.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>One clear thought plus a screenshot or clip. Link only when it serves the post.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>Start now for teaser/build posts. Download CTA waits for live release.</p>
+            </div>
+          </div>
+          <div class="matrix-row">
+            <div class="matrix-cell"><strong>Reddit</strong></div>
+            <div class="matrix-cell">
+              <p>Specific feedback in relevant communities, not generic promotion.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>Tailored post: nostalgia feedback, Windows desktop behavior, or maker build story.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>After reading community rules and having a real milestone.</p>
+            </div>
+          </div>
+          <div class="matrix-row">
+            <div class="matrix-cell"><strong>Short video</strong></div>
+            <div class="matrix-cell">
+              <p>Proof that the pet exists, moves, responds, and feels charming on a real desktop.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>9:16 clips for vertical channels, 1:1 or 4:5 for X/Reddit, 16:9 walkthrough for GitHub/site.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>Record from the exact release candidate for public proof.</p>
+            </div>
+          </div>
+          <div class="matrix-row">
+            <div class="matrix-cell"><strong>Product Hunt</strong></div>
+            <div class="matrix-cell">
+              <p>Polished public launch when the page, media, support path, and reply time are ready.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>Clear product page, gallery, maker comment, and request for visits/comments, not upvotes.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>After initial beta feedback improves trust and install flow.</p>
+            </div>
+          </div>
+          <div class="matrix-row">
+            <div class="matrix-cell"><strong>Show HN</strong></div>
+            <div class="matrix-cell">
+              <p>Technical/open-source angle: Windows overlay, local save, release QA, Electron tradeoffs.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>"Show HN: Deskagotchi, a tiny Windows desktop pet" with a tryable app and technical notes.</p>
+            </div>
+            <div class="matrix-cell">
+              <p>Only when users can run it and you can discuss it live.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>X Post Runway</h2>
+          <p class="section-note">
+            Keep the first posts emotional but concrete. The reader should
+            understand the pet before they are asked to download anything.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="panel">
+            <h3>First week sequence</h3>
+            <ol>
+              <li>"I made a tiny desktop pet for Windows." Use a real 10-20 second desktop clip.</li>
+              <li>"For people who miss checking on a little digital creature." Show the care loop.</li>
+              <li>"It lives on the desktop, not in a browser tab." Show drag, tray recovery, and settings.</li>
+              <li>"What would make this feel more alive?" Ask for one specific critique.</li>
+            </ol>
+          </article>
+          <article class="panel">
+            <h3>Profile setup</h3>
+            <ul>
+              <li>Bio: "Building Deskagotchi: a tiny Windows desktop pet beta. Local-first, no account."</li>
+              <li>Header: real desktop screenshot with the pet visible and readable.</li>
+              <li>Avatar: Bao or a clean project icon.</li>
+              <li>Pinned post: demo clip only after the landing page and release link are live.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Video Plan</h2>
+          <p class="section-note">
+            Yes, make short-form videos. They should be proof-led demos, not
+            hype ads. Most of the marketing value comes from showing the first
+            care moment clearly.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="panel">
+            <h3>Primary clip</h3>
+            <p>
+              20-35 seconds, vertical 9:16, captions burned in. Empty desktop,
+              pet appears, feed/play/clean, drag around, tiny release CTA.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Reusable variants</h3>
+            <p>
+              1:1 or 4:5 cuts for X/Reddit, 5-8 second loops for replies, and a
+              45-60 second 16:9 walkthrough for the README/site/GitHub Release.
+            </p>
+          </article>
+          <article class="panel">
+            <h3>Must not imply</h3>
+            <p>
+              No macOS support, signed installer, production-ready security,
+              AI companion, custom pets, wellness outcome, or "validated"
+              release unless exact evidence exists.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Content Concepts</h2>
+        </div>
+        <div class="grid-4">
+          <article class="panel">
+            <h3>Tiny care loop</h3>
+            <p>Hunger drops, snack given, pet mood changes, quick smile. Use it as the emotional anchor.</p>
+          </article>
+          <article class="panel">
+            <h3>Lives on desktop</h3>
+            <p>Show the pet near real windows, dragged to a new spot, then recovered from the tray.</p>
+          </article>
+          <article class="panel">
+            <h3>Meet the crew</h3>
+            <p>Quick cuts of Bao, Miso, Mochi, Peanut, and Puddles with one tiny personality line each.</p>
+          </article>
+          <article class="panel">
+            <h3>Trust note</h3>
+            <p>Installer on GitHub Releases, local save, no account, no analytics or remote telemetry in normal use.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Publish Gates</h2>
+          <p class="section-note">
+            These gates prevent the marketing from outrunning the product truth.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="decision wait">
+            <span>Before download CTA</span>
+            <h3>Release URL must work</h3>
+            <p>
+              Do not send traffic to <code>/releases/tag/v0.1.0</code> until the
+              GitHub Release exists publicly and the installer asset is attached.
+            </p>
+          </article>
+          <article class="decision wait">
+            <span>Before trust claim</span>
+            <h3>Checksum and signing status</h3>
+            <p>
+              Fill the SHA256 from the final release asset and keep unsigned or
+              signed wording exact. Do not reuse a local draft checksum.
+            </p>
+          </article>
+          <article class="decision wait">
+            <span>Before QA claim</span>
+            <h3>Target release evidence</h3>
+            <p>
+              Use only the QA run tied to the release branch, commit, or
+              release-candidate docs. Do not mine unrelated old <code>.qa-runs</code>.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Source Notes</h2>
+          <p class="section-note">
+            Platform-specific advice was checked against current official
+            sources on May 17, 2026.
+          </p>
+        </div>
+        <div class="source-list">
+          <div class="source-row">
+            <strong>X authenticity</strong>
+            <p>
+              Distinct personal/project accounts are acceptable, but X forbids
+              coordinated inauthentic behavior, duplicate content, engagement
+              inflation, bulk replies, irrelevant hashtags, and link-only spam.
+              Source:
+              <a href="https://help.x.com/en/rules-and-policies/authenticity">X Authenticity policy</a>.
+            </p>
+          </div>
+          <div class="source-row">
+            <strong>X profile</strong>
+            <p>
+              X profile setup supports header image, profile image, 160-character
+              bio, website, and pinned post. Source:
+              <a href="https://help.x.com/en/managing-your-account/how-to-customize-your-profile">X profile customization help</a>.
+            </p>
+          </div>
+          <div class="source-row">
+            <strong>Reddit</strong>
+            <p>
+              Reddit warns against repeated or unsolicited mass engagement and
+              recommends posting authentic content in communities where you have
+              a personal interest. Source:
+              <a href="https://support.reddithelp.com/hc/en-us/articles/360043504051-Spam">Reddit spam policy</a>.
+            </p>
+          </div>
+          <div class="source-row">
+            <strong>Product Hunt</strong>
+            <p>
+              Product Hunt is useful for early-adopter distribution and feedback,
+              but it says not to ask directly for upvotes; ask people to visit
+              and comment. Source:
+              <a href="https://www.producthunt.com/launch">Product Hunt Launch Guide</a>.
+            </p>
+          </div>
+          <div class="source-row">
+            <strong>Show HN</strong>
+            <p>
+              Show HN is for something people can try, and the guidelines say not
+              to post if it is not ready for users. Source:
+              <a href="https://news.ycombinator.com/showhn.html">Show HN Guidelines</a>.
+            </p>
+          </div>
+          <div class="source-row">
+            <strong>Short video specs</strong>
+            <p>
+              YouTube Shorts can be up to three minutes when square or vertical,
+              and TikTok's ad specs recommend 9:16 vertical video. Sources:
+              <a href="https://support.google.com/youtube/answer/15424877?hl=en">YouTube Shorts help</a>
+              and
+              <a href="https://ads.tiktok.com/help/article/tiktok-auction-in-feed-ads?lang=enPlayable&amp;redirected=2">TikTok video specs</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

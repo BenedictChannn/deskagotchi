@@ -6,10 +6,14 @@ and settings actions through the tray/menu bar.
 
 ## Download
 
-v0.1 releases should publish a Windows desktop download from the project's
-GitHub Releases page. The `Desktop Release Artifacts` GitHub Actions workflow
-builds the Windows installer for manual runs and attaches it automatically when
-a matching `v*` tag is pushed after release smoke passes.
+v0.1 releases should use GitHub Pages for the public landing page and GitHub
+Releases for the Windows installer. The landing page source lives in
+`site/index.html`; the installer should stay attached to the matching GitHub
+Release instead of being hosted from the website.
+
+The `Desktop Release Artifacts` GitHub Actions workflow builds the Windows
+installer for manual runs and attaches it automatically when a matching `v*` tag
+is pushed after release smoke passes.
 
 | Platform | Download | Use when |
 | --- | --- | --- |
@@ -54,8 +58,10 @@ panel shows the resolved path. The main files are:
 - `deskagotchi-save.backup.json`
 - reserved internal package directories, if created by older development builds
 
-Deskagotchi v0.1 does not require an account, analytics, telemetry, or remote
-sync. Normal pet state stays in the local `userData` directory.
+Deskagotchi v0.1 does not require an account, analytics, remote telemetry in
+normal use, or remote sync. Normal pet state stays in the local `userData`
+directory. QA harnesses can write local event logs only when explicit QA mode is
+enabled.
 
 ## Troubleshooting
 
@@ -101,11 +107,13 @@ to a v0.1 public release without manual macOS smoke evidence.
 ## Release Publisher Checklist
 
 1. Run the release validation for the platform being published.
-2. Attach the Windows installer to the release.
-3. Attach macOS artifacts only when they have passed manual macOS smoke testing.
-4. Keep release notes honest about signing/notarization status and the current
+2. Update `site/index.html` and the release notes so page claims match the exact
+   release candidate.
+3. Attach the Windows installer to the GitHub Release.
+4. Attach macOS artifacts only when they have passed manual macOS smoke testing.
+5. Keep release notes honest about signing/notarization status and the current
    QA scope.
-5. Link this document from the release notes so users know how to install,
+6. Link this document from the release notes so users know how to install,
    recover, and quit the app.
 
 ## GitHub Release Workflow
@@ -118,3 +126,15 @@ The release artifact workflow lives at
 - Matching `v*` tag pushes build the Windows installer and publish it to the
   matching GitHub Release.
 - The tag name must match `package.json` version, for example `v0.1.0`.
+
+## GitHub Pages Workflow
+
+The public landing page workflow lives at `.github/workflows/github-pages.yml`.
+
+- It deploys the static site from `site/`.
+- It runs on manual dispatch and on `main` pushes that touch `site/**` or the
+  Pages workflow.
+- The repository's Pages settings must use GitHub Actions as the source before
+  the first public deploy.
+- The download CTA should link to the GitHub Release asset or release page, not
+  to a checked-in installer.

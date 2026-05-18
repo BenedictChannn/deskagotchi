@@ -27,9 +27,10 @@ The app runs as a small transparent frameless pet window with tray controls, loc
 
 ## Desktop App Downloads
 
-v0.1 release downloads should include the Windows desktop build:
+v0.1 release downloads should keep the public page and installer separate:
 
-- Windows installer: `Deskagotchi Setup <version>.exe`
+- Public landing page: `site/index.html`, deployed with GitHub Pages.
+- Windows installer: `Deskagotchi Setup <version>.exe`, attached to the matching GitHub Release.
 - macOS is not published for v0.1 unless a real macOS smoke pass is completed.
 
 See `docs/desktop-app.md` for download, install, first-run, usage,
@@ -41,6 +42,10 @@ checklist.
 The `Desktop Release Artifacts` GitHub Actions workflow builds the Windows
 installer on manual runs and publishes it to GitHub Releases for matching `v*`
 tags after release smoke passes.
+
+The `GitHub Pages` workflow deploys the static public landing page from
+`site/`. Keep download buttons pointed at GitHub Releases; do not host the
+installer from GitHub Pages.
 
 ## Install
 
@@ -286,7 +291,8 @@ The app stores:
 - reserved internal package directories, if created by older development builds
 
 The settings panel displays the resolved local data path. Deskagotchi v0.1 does
-not require an account, analytics, telemetry, or remote sync.
+not require an account, analytics, remote telemetry in normal use, or remote
+sync. QA runs can write local event logs only when explicit QA mode is enabled.
 
 ## Pet Package Format
 
