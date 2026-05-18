@@ -83,8 +83,19 @@ export interface CareActionRequest {
   itemId?: ItemCatalogEntry["id"];
 }
 
-/** Partial save-settings update accepted over IPC. */
-export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
+/** User-editable settings accepted from renderer controls. */
+export type RendererSettingsUpdate = Pick<
+  DeskagotchiSave["settings"],
+  | "alwaysOnTop"
+  | "launchOnStartup"
+  | "soundEnabled"
+  | "reducedMotion"
+  | "lowMaintenanceMode"
+  | "notificationsEnabled"
+>;
+
+/** Partial user-editable settings update accepted over IPC. */
+export type UpdateSettingsInput = Partial<RendererSettingsUpdate>;
 
 /** Screen-space pointer position used while dragging the native pet window. */
 export interface ScreenPointInput {

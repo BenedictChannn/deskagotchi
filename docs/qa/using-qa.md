@@ -46,8 +46,9 @@ Use targeted commands while iterating:
 | `pnpm run qa:assets:items` | Changing item manifests, item icons, or item QA contact sheets. |
 | `pnpm run qa:release` | Rebuilding the Windows package, checking packaged resources, running packaged launch and lifecycle recovery smoke, then testing silent install, installed launch, and uninstall. |
 | `pnpm run qa:v2:audit` | Creating the V2 closeout report from the latest QA evidence and manual acceptance export. |
-| `pnpm run qa:v2:audit:smoke` | Verifying the V2 audit rejects incomplete manual evidence and accepts complete fixture evidence. |
-| `pnpm run qa:v2:closeout` | Running the strict V2 release gate without rewriting the tracked closeout report. |
+| `pnpm run qa:v2:audit:smoke` | Verifying automated closeout, required-manual release closeout, and manual-evidence fixture behavior. |
+| `pnpm run qa:v2:automated-closeout` | Running the strict automated closeout without requiring manual acceptance or rewriting the tracked report. |
+| `pnpm run qa:v2:closeout` | Running the strict V2 release gate, including required manual acceptance, without rewriting the tracked closeout report. |
 | `pnpm run qa:v2:manual-context` | Collecting the current build, installer candidate, monitor topology, latest QA run IDs, and starter evidence notes before filling the manual checklist. |
 | `pnpm run qa:v2:manual-context:smoke` | Verifying manual-context generation fails when required automated evidence is missing and succeeds with complete fixture evidence. |
 | `pnpm run qa:v2:manual-page` | Verifying the manual acceptance page blocks export pass status until gates and required run context fields are complete; writes `.qa-runs/<run-id>-manual-page/`. |
@@ -75,10 +76,10 @@ For final release validation, use strict check-only mode:
 pnpm run qa:v2:closeout
 ```
 
-Check-only mode runs the same closeout checks but does not rewrite the tracked
-Markdown report, which keeps the clean-worktree gate meaningful. Run without
-`--check-only` only when intentionally refreshing
-`docs/qa/v2-closeout-report.md`.
+Check-only mode runs the release closeout checks but does not rewrite the
+tracked Markdown report, which keeps the clean-worktree gate meaningful. Run
+`pnpm run qa:v2:audit` without `--check-only` only when intentionally
+refreshing `docs/qa/v2-closeout-report.md`.
 
 Manual checklist checkboxes mean tested and passed. If a V2 gate is accepted as
 out of scope, use the checklist deferral controls and include the approver plus
@@ -116,9 +117,9 @@ deferral rule, and clean-worktree closeout flow. If you save the manual export
 inside `docs/qa/`, refresh `docs/qa/v2-closeout-report.md` and commit both
 files before running `pnpm run qa:v2:closeout`.
 
-Strict V2 closeout also requires a clean Git worktree. Use `--allow-dirty` only
-for fixture smoke checks such as `pnpm run qa:v2:audit:smoke`; do not use it
-for release closeout.
+Strict V2 release closeout requires complete manual acceptance evidence and a
+clean Git worktree. Use `--allow-dirty` only for fixture smoke checks such as
+`pnpm run qa:v2:audit:smoke`; do not use it for release closeout.
 
 ## Where Evidence Goes
 

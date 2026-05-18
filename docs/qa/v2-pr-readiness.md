@@ -39,9 +39,10 @@ Attach the Windows installer to the v0.1 release after release smoke passes.
 Attach macOS artifacts only when they have passed platform smoke testing. Keep
 release notes explicit about unsigned or unnotarized builds.
 
-The `Desktop Release Artifacts` workflow uploads the Windows installer and
-release QA evidence for manual runs and publishes the installer to a GitHub
-Release when a matching `v*` tag is pushed.
+The `Desktop Release Artifacts` workflow keeps release QA evidence in the
+workflow run, uploads the Windows installer plus `.sha256` checksum as build
+artifacts, and publishes only those download artifacts to a GitHub Release when
+a matching `v*` tag is pushed.
 
 ## Validation Before PR
 
@@ -53,6 +54,10 @@ $env:DESKAGOTCHI_IDLE_SECONDS='300'; pnpm run qa:desktop:idle
 pnpm run qa:release
 pnpm run qa:v2:closeout
 ```
+
+`pnpm run qa:v2:closeout` is the release gate and requires passing manual
+acceptance evidence. For PR-only automated evidence checks, use
+`pnpm run qa:v2:automated-closeout`.
 
 Run `pnpm run package:mac` and a manual macOS launch smoke on macOS before
 publishing macOS downloads. The current automated desktop QA evidence is

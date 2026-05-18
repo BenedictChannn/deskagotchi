@@ -30,7 +30,8 @@
     "qa:release": "pnpm run package:win && node scripts/qa/release-qa.mjs",
     "qa:v2:audit": "node scripts/qa/v2-closeout-audit.mjs",
     "qa:v2:audit:smoke": "node scripts/qa/v2-closeout-audit-smoke.mjs",
-    "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
+    "qa:v2:automated-closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --check-only",
+    "qa:v2:closeout": "node scripts/qa/v2-closeout-audit.mjs --strict --require-manual --check-only",
     "qa:v2:manual-context": "node scripts/qa/v2-manual-context.mjs",
     "qa:v2:manual-context:smoke": "node scripts/qa/v2-manual-context-smoke.mjs",
     "qa:v2:manual-open": "node scripts/qa/v2-manual-context.mjs --open",
@@ -53,13 +54,11 @@
     "package:mac": "pnpm run build && electron-builder --mac dmg zip --x64 --arm64"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@swc/core": "^1.15.0",
-    "@types/adm-zip": "^0.5.7",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

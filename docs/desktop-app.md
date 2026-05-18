@@ -13,7 +13,8 @@ Release instead of being hosted from the website.
 
 The `Desktop Release Artifacts` GitHub Actions workflow builds the Windows
 installer for manual runs and attaches it automatically when a matching `v*` tag
-is pushed after release smoke passes.
+is pushed after release smoke passes. Tagged releases attach only the Windows
+installer and its `.sha256` checksum file to the public GitHub Release.
 
 | Platform | Download | Use when |
 | --- | --- | --- |
@@ -123,8 +124,9 @@ The release artifact workflow lives at
 
 - Manual runs upload the Windows installer and release QA evidence to the
   workflow run.
-- Matching `v*` tag pushes build the Windows installer and publish it to the
-  matching GitHub Release.
+- Matching `v*` tag pushes build the Windows installer, generate a SHA256
+  checksum, and publish only those release assets to the matching GitHub
+  Release.
 - The tag name must match `package.json` version, for example `v0.1.0`.
 
 ## GitHub Pages Workflow

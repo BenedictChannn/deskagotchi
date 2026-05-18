@@ -2,11 +2,10 @@
  * Runtime service for main-process state, package, and simulation operations.
  */
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import AdmZip from "adm-zip";
-import { app, dialog, Notification } from "electron";
+import { app, Notification } from "electron";
 
 import {
   DeskagotchiSaveSchema,
@@ -23,7 +22,6 @@ import {
 } from "@shared/ipc";
 import { resolveCareItem } from "@shared/careItems";
 import { ItemIconManifestSchema, type ItemIconManifest } from "@shared/itemIcons";
-import { hasBlockingIssues } from "@shared/packageValidation";
 import {
   applyCareAction,
   createInitialPetState,
@@ -33,7 +31,6 @@ import {
 
 import {
   loadPetPackagesFromDirectory,
-  loadPetPackage,
   resolvePackageAssetPath,
   type LoadedPetPackage
 } from "./packageRegistry";
@@ -44,11 +41,8 @@ import {
   writeDeskagotchiSave
 } from "./storage";
 
-const MAX_IMPORTED_PACKAGE_BYTES = 25 * 1024 * 1024;
-const MAX_IMPORTED_PACKAGE_ENTRIES = 128;
-
 /**
- * Coordinates persisted save state, pet packages, simulation progress, and native dialogs.
+ * Coordinates persisted save state, pet packages, simulation progress, and notifications.
  *
  * The main process keeps a single runtime instance so IPC handlers and background
  * timers mutate one in-memory save before persisting it atomically.
@@ -61,7 +55,6 @@ export class DeskagotchiRuntime {
   private itemManifest: ItemIconManifest | undefined;
   private save: DeskagotchiSave | undefined;
   private persistQueue: Promise<void> = Promise.resolve();
-  private importInFlight: Promise<DeskagotchiSnapshot> | undefined;
   private lastNotificationAt = 0;
 
   /**
@@ -278,143 +271,6 @@ export class DeskagotchiRuntime {
     }).show();
   }
 
-  /**
-   * Export an installed custom pet package to a shareable archive.
-   *
-   * @param packageId - Custom package identifier to export.
-   * @returns Archive path, or undefined when the package cannot be exported.
-   */
-  async exportPet(packageId: string): Promise<string | undefined> {
-    const loadedPackage = this.loadedPackages.find(
-      (candidate) => candidate.petPackage.packageId === packageId
-    );
-    if (loadedPackage === undefined || loadedPackage.petPackage.source !== PetSource.Custom) {
-      return undefined;
-    }
-
-    await mkdir(this.storagePaths.exportsDir, { recursive: true });
-    const outputPath = path.join(
-      this.storagePaths.exportsDir,
-      `${loadedPackage.petPackage.packageId}.deskagotchi-pet`
-    );
-    const archive = new AdmZip();
-    archive.addLocalFolder(loadedPackage.packageRoot);
-    archive.writeZip(outputPath);
-    return outputPath;
-  }
-
-  /**
-   * Prompt for and import a custom pet archive.
-   *
-   * @returns Current snapshot when canceled, or a refreshed snapshot after import.
-   * @throws Error when the selected archive violates package safety rules.
-   */
-  async importPet(): Promise<DeskagotchiSnapshot> {
-    if (this.importInFlight !== undefined) {
-      throw new Error("A pet import is already in progress.");
-    }
-    this.importInFlight = this.runImportPet();
-    try {
-      return await this.importInFlight;
-    } finally {
-      this.importInFlight = undefined;
-    }
-  }
-
-  private async runImportPet(): Promise<DeskagotchiSnapshot> {
-    const selection = await dialog.showOpenDialog({
-      title: "Import Deskagotchi Pet Pack",
-      properties: ["openFile"],
-      filters: [{ name: "Deskagotchi Pet", extensions: ["deskagotchi-pet", "zip"] }]
-    });
-    if (selection.canceled || selection.filePaths[0] === undefined) {
-      return this.createSnapshot();
-    }
-
-    await this.importPetPack(selection.filePaths[0]);
-    await this.reloadPackages();
-    return this.createSnapshot();
-  }
-
-  private async importPetPack(filePath: string): Promise<void> {
-    const archiveStat = await stat(filePath);
-    if (archiveStat.size > MAX_IMPORTED_PACKAGE_BYTES) {
-      throw new Error("Imported pet pack exceeds the package size limit.");
-    }
-
-    const archive = new AdmZip(filePath);
-    const packageId = slugify(path.basename(filePath, path.extname(filePath)));
-    const destination = path.join(
-      this.storagePaths.customPetsDir,
-      `${packageId}-${randomUUID().slice(0, 8)}`
-    );
-    await mkdir(destination, { recursive: true });
-
-    try {
-      let entryCount = 0;
-      let cumulativeUncompressedBytes = 0;
-
-      for (const entry of archive.getEntries()) {
-        entryCount += 1;
-        if (entryCount > MAX_IMPORTED_PACKAGE_ENTRIES) {
-          throw new Error("Imported pet pack contains too many entries.");
-        }
-
-        if (entry.isDirectory) {
-          continue;
-        }
-
-        const normalizedEntryName = entry.entryName.replaceAll("\\", "/");
-        if (
-          normalizedEntryName.startsWith("/") ||
-          normalizedEntryName.split("/").includes("..")
-        ) {
-          throw new Error(`Unsafe archive path '${entry.entryName}'.`);
-        }
-        if (entry.header.size > MAX_IMPORTED_PACKAGE_BYTES) {
-          throw new Error(`Archive entry '${entry.entryName}' is too large.`);
-        }
-        cumulativeUncompressedBytes += entry.header.size;
-        if (cumulativeUncompressedBytes > MAX_IMPORTED_PACKAGE_BYTES) {
-          throw new Error("Imported pet pack exceeds the uncompressed size limit.");
-        }
-
-        const extension = path.extname(normalizedEntryName).toLowerCase();
-        if ([".exe", ".cmd", ".bat", ".ps1", ".sh", ".js", ".mjs"].includes(extension)) {
-          throw new Error(`Archive entry '${entry.entryName}' is executable.`);
-        }
-
-        const data = entry.getData();
-        if (data.byteLength > MAX_IMPORTED_PACKAGE_BYTES) {
-          throw new Error(`Archive entry '${entry.entryName}' is too large.`);
-        }
-        const actualUncompressedBytes =
-          cumulativeUncompressedBytes - entry.header.size + data.byteLength;
-        if (actualUncompressedBytes > MAX_IMPORTED_PACKAGE_BYTES) {
-          throw new Error("Imported pet pack exceeds the uncompressed size limit.");
-        }
-        cumulativeUncompressedBytes = actualUncompressedBytes;
-
-        const targetPath = path.join(destination, normalizedEntryName);
-        await mkdir(path.dirname(targetPath), { recursive: true });
-        await writeFile(targetPath, data);
-      }
-
-      const loadedPackage = await loadPetPackage(destination, PetSource.Custom);
-      if (loadedPackage.petPackage === undefined || hasBlockingIssues(loadedPackage.issues)) {
-        throw new Error("Imported pet pack failed validation.");
-      }
-      if (this.hasLoadedPackageId(loadedPackage.petPackage.packageId)) {
-        throw new Error(
-          `Imported pet pack uses existing package id '${loadedPackage.petPackage.packageId}'.`
-        );
-      }
-    } catch (error) {
-      await rm(destination, { recursive: true, force: true });
-      throw error;
-    }
-  }
-
   private async reloadPackages(): Promise<void> {
     const builtInPackages = await loadPetPackagesFromDirectory(
       this.resourcePetsDir,
@@ -517,12 +373,6 @@ export class DeskagotchiRuntime {
       throw new Error(`Unknown pet package '${packageId}'.`);
     }
     return petPackage;
-  }
-
-  private hasLoadedPackageId(packageId: string): boolean {
-    return this.loadedPackages.some(
-      (loadedPackage) => loadedPackage.petPackage.packageId === packageId
-    );
   }
 
   private getActiveState(save: DeskagotchiSave): PetInstanceState {
@@ -675,12 +525,4 @@ export function createAssetUrl(
   }
 
   return `${assetPath}?v=${encodeURIComponent(assetVersion)}`;
-}
-
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72);
 }

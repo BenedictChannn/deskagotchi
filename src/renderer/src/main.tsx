@@ -5,14 +5,17 @@ import ReactDOM from "react-dom/client";
 import { App } from "./App";
 import "./styles.css";
 
-if (import.meta.env.DEV) {
-  void import("./devDeskagotchiApi").then(({ installDevDeskagotchiApi }) => {
-    installDevDeskagotchiApi();
-  });
-}
+void bootstrapRenderer();
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+async function bootstrapRenderer(): Promise<void> {
+  if (import.meta.env.DEV) {
+    const { installDevDeskagotchiApi } = await import("./devDeskagotchiApi");
+    installDevDeskagotchiApi();
+  }
+
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}

@@ -190,12 +190,12 @@ If the export lives outside the repository, pass its absolute path to the
 strict audit command:
 
 ```powershell
-pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json --strict --check-only
+pnpm run qa:v2:audit --manual C:\path\to\v2-manual-acceptance-export.json --strict --require-manual --check-only
 ```
 
 Use the external path only when the manual JSON is stored in another release
-evidence system. The tracked `pnpm run qa:v2:closeout` script only reads the
-default in-repo manual export paths.
+evidence system. The tracked `pnpm run qa:v2:closeout` script requires manual
+evidence and only reads the default in-repo manual export paths.
 
 The strict gate should not pass until the manual JSON is complete and the Git
 worktree is clean.

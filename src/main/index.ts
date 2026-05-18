@@ -64,7 +64,6 @@ const PET_WINDOW_TRAY_HEIGHT = 336;
 const PET_WINDOW_CARD_HEIGHT = 372;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
-const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const CareActionInputSchema = z
   .object({
     type: z.nativeEnum(CareActionType),
@@ -75,8 +74,16 @@ const PanelViewInputSchema = z.nativeEnum(PanelView);
 const BooleanInputSchema = z.boolean();
 const PetWindowUiModeInputSchema = z.nativeEnum(PetWindowUiMode);
 const PackageIdInputSchema = PetPackageSchema.shape.packageId;
-const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
-  .partial()
+const UpdateSettingsInputSchema = z
+  .object({
+    alwaysOnTop: DeskagotchiSaveSchema.shape.settings.shape.alwaysOnTop.optional(),
+    launchOnStartup: DeskagotchiSaveSchema.shape.settings.shape.launchOnStartup.optional(),
+    soundEnabled: DeskagotchiSaveSchema.shape.settings.shape.soundEnabled.optional(),
+    reducedMotion: DeskagotchiSaveSchema.shape.settings.shape.reducedMotion.optional(),
+    lowMaintenanceMode: DeskagotchiSaveSchema.shape.settings.shape.lowMaintenanceMode.optional(),
+    notificationsEnabled:
+      DeskagotchiSaveSchema.shape.settings.shape.notificationsEnabled.optional()
+  })
   .strict();
 const WindowDragDeltaInputSchema = z
   .object({
@@ -610,7 +617,8 @@ function validateIpcSender(event: IpcMainInvokeEvent): void {
  * Check whether a renderer URL is allowed to use the preload IPC bridge.
  *
  * File URLs must resolve to the packaged renderer entrypoint. HTTP(S) URLs are
- * accepted only in unpackaged development and only for loopback hostnames.
+ * accepted only in unpackaged development and only for the configured Vite
+ * renderer origin.
  *
  * @param rawUrl - Renderer frame URL reported by Electron.
  * @returns True when the URL belongs to the Deskagotchi renderer surface.
@@ -631,11 +639,20 @@ function isTrustedRendererUrl(rawUrl: string): boolean {
     );
   }
 
-  return (
-    !app.isPackaged &&
-    (url.protocol === "http:" || url.protocol === "https:") &&
-    LOCAL_DEV_HOSTNAMES.has(url.hostname)
-  );
+  if (app.isPackaged || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    return false;
+  }
+
+  const rendererUrl = process.env.ELECTRON_RENDERER_URL;
+  if (rendererUrl === undefined) {
+    return false;
+  }
+
+  try {
+    return url.origin === new URL(rendererUrl).origin;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -888,7 +905,7 @@ function movePetWindow(delta: WindowDragDeltaInput): void {
       delta.pointer
     );
   }
-  petWindow.setBounds(nextBounds);
+  setPetWindowBoundsWithoutPersistence(nextBounds);
   recordQaEvent({
     event: "window:setBounds",
     windowRole: "overlay",

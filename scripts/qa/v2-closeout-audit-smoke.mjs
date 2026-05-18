@@ -334,6 +334,18 @@ function main() {
       `Expected incomplete manual evidence to remain advisory in strict mode, got ${incompleteRun.status}.`
     );
   }
+  const incompleteReleaseRun = runAudit([
+    "--manual",
+    incompleteManualPath,
+    "--strict",
+    "--require-manual",
+    "--allow-dirty",
+    "--report",
+    path.join(SMOKE_DIR, "report-incomplete-release.md")
+  ]);
+  if (incompleteReleaseRun.status === 0) {
+    throw new Error("Expected incomplete manual evidence to fail release closeout.");
+  }
 
   const missingManualReportPath = path.join(SMOKE_DIR, "report-missing-manual.md");
   const missingManualRun = runAudit([
@@ -578,6 +590,21 @@ function main() {
       `Expected complete manual evidence to pass strict mode, got ${completeRun.status}.`
     );
   }
+  const completeReleaseReportPath = path.join(SMOKE_DIR, "report-complete-release.md");
+  const completeReleaseRun = runAudit([
+    "--manual",
+    completeManualPath,
+    "--strict",
+    "--require-manual",
+    "--allow-dirty",
+    "--report",
+    completeReleaseReportPath
+  ]);
+  if (completeReleaseRun.status !== 0) {
+    throw new Error(
+      `Expected complete manual evidence to pass release closeout, got ${completeReleaseRun.status}.`
+    );
+  }
 
   const completeReport = fs.readFileSync(completeReportPath, "utf8");
   if (!completeReport.includes("Completion status: **complete**")) {
@@ -588,6 +615,10 @@ function main() {
   }
   if (completeReport.includes(IN_PROGRESS_MANUAL_PAGE_RUN_ID)) {
     throw new Error("Complete smoke report used an in-progress manual-page QA run.");
+  }
+  const completeReleaseReport = fs.readFileSync(completeReleaseReportPath, "utf8");
+  if (!completeReleaseReport.includes("Required Manual Acceptance")) {
+    throw new Error("Release closeout report did not mark manual acceptance as required.");
   }
 
   const checkOnlyReportPath = path.join(SMOKE_DIR, "report-check-only.md");
@@ -640,6 +671,8 @@ function main() {
         staleCodeStrictExit: staleCodeRun.status,
         mismatchedBuildStrictExit: mismatchedBuildRun.status,
         mismatchedInstallerStrictExit: mismatchedInstallerRun.status,
+        incompleteReleaseStrictExit: incompleteReleaseRun.status,
+        completeReleaseStrictExit: completeReleaseRun.status,
         completeStrictExit: completeRun.status,
         inProgressManualPageRunSkipped: true,
         checkOnlyStrictExit: checkOnlyRun.status,

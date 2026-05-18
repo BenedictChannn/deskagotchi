@@ -165,9 +165,10 @@ checks the clean worktree gate:
 pnpm run qa:v2:closeout
 ```
 
-Strict mode exits non-zero until automated evidence, required artifacts, and the
-workspace are clean. Manual acceptance evidence is advisory for the current V2
-audit and can still be supplied with `--manual`.
+Strict release closeout exits non-zero until automated evidence, required
+artifacts, a clean workspace, and passing manual acceptance evidence are all
+present. Use `pnpm run qa:v2:automated-closeout` when you only need the
+automated evidence gate.
 
 If the manual checklist JSON is downloaded outside the repo, pass it directly:
 
