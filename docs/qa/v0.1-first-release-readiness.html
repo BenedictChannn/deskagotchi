@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi v0.1 First Release Readiness</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f1e8;
+        --paper: #fffdf6;
+        --ink: #161616;
+        --muted: #64615a;
+        --line: #d8d1c3;
+        --accent: #2f6f5e;
+        --accent-soft: #dfeee7;
+        --warn: #9a5b12;
+        --warn-soft: #f7e8cd;
+        --danger: #a7342d;
+        --danger-soft: #f7d9d5;
+        --ok: #2d6a35;
+        --ok-soft: #dcebdc;
+        --info: #345f8d;
+        --info-soft: #dce8f5;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: end;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 15px;
+        line-height: 1.25;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      code {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 0.95em;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .stamp {
+        min-width: 220px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .stamp strong {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .section-note {
+        max-width: 760px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .status-card,
+      .panel,
+      .task,
+      .decision {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+      }
+
+      .status-card {
+        padding: 14px;
+        min-height: 126px;
+      }
+
+      .status-card span,
+      .task-meta,
+      .eyebrow {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .status-card strong {
+        display: block;
+        font-size: 22px;
+        line-height: 1.15;
+      }
+
+      .status-card p {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 14px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .panel + .panel {
+        margin-top: 14px;
+      }
+
+      .panel h3 {
+        margin-bottom: 8px;
+      }
+
+      .panel p,
+      .panel li {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      ul,
+      ol {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .decision-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .decision {
+        padding: 14px;
+        border-left: 4px solid var(--accent);
+      }
+
+      .decision p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .task-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .task {
+        display: grid;
+        grid-template-columns: 118px 1fr 180px;
+        gap: 14px;
+        align-items: start;
+        padding: 14px;
+      }
+
+      .task h3 {
+        margin-bottom: 6px;
+      }
+
+      .task p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.48;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .p0 {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .p1 {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .p2 {
+        background: var(--info-soft);
+        color: var(--info);
+      }
+
+      .done {
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+
+      .blocked {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .open {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .planned {
+        background: var(--info-soft);
+        color: var(--info);
+      }
+
+      .evidence {
+        border-top: 1px solid var(--line);
+        margin-top: 12px;
+        padding-top: 12px;
+      }
+
+      .evidence a,
+      .evidence code {
+        font-size: 13px;
+      }
+
+      .checklist {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .check {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 10px;
+        align-items: start;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .box {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--muted);
+        border-radius: 3px;
+        margin-top: 2px;
+      }
+
+      .check strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .check span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .footprint {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .footprint th,
+      .footprint td {
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        text-align: left;
+        font-size: 14px;
+      }
+
+      .footprint th {
+        background: #ebe5d9;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .footprint td:last-child {
+        color: var(--muted);
+      }
+
+      .release-call {
+        border: 2px solid var(--accent);
+        background: var(--accent-soft);
+        border-radius: 10px;
+        padding: 18px;
+      }
+
+      .release-call p {
+        margin-top: 8px;
+        color: #24473e;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      @media (max-width: 920px) {
+        header,
+        .split,
+        .decision-grid,
+        .status-grid,
+        .checklist {
+          grid-template-columns: 1fr;
+        }
+
+        .task {
+          grid-template-columns: 1fr;
+        }
+
+        .stamp {
+          min-width: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Deskagotchi release readiness</p>
+          <h1>v0.1 first release consolidation</h1>
+        <p class="subtitle">
+          Current repo state, release risks, and non-feature work to complete
+          before the first public download. This document assumes a
+          Windows-first v0.1 release and keeps custom pet import/export out of
+          the user-facing release scope. It also tracks the public download
+          surface: a simple landing/docs page and optional release video.
+        </p>
+        </div>
+        <aside class="stamp">
+          <strong>Snapshot</strong>
+          Reviewed: 2026-05-15<br />
+          Branch: <code>main</code><br />
+          Commit observed: <code>5d5680c</code><br />
+          Release type: free download
+        </aside>
+      </header>
+
+      <section class="section release-call">
+        <h2>Release stance</h2>
+        <p>
+          Deskagotchi appears close for a Windows-first v0.1 beta-style release,
+          but it should not be presented as broadly release-ready until the
+          final evidence is refreshed on clean <code>main</code>, manual
+          release gates are completed or explicitly deferred, macOS publishing
+          is disabled or tested, and the trust/security notes are made explicit.
+        </p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Current State</h2>
+          <p class="section-note">
+            These are the practical facts to keep in view while deciding what
+            blocks v0.1.
+          </p>
+        </div>
+        <div class="status-grid">
+          <article class="status-card">
+            <span>Automated code gate</span>
+            <strong>Passed</strong>
+            <p><code>corepack pnpm run check</code> passed with 12 test files and 65 tests.</p>
+          </article>
+          <article class="status-card">
+            <span>Dependency audit</span>
+            <strong>No known vulns</strong>
+            <p><code>pnpm audit --prod</code> and dev audit returned no known vulnerabilities.</p>
+          </article>
+          <article class="status-card">
+            <span>Manual closeout</span>
+            <strong>Excluded now</strong>
+            <p><code>qa:v2:closeout</code> still depends on manual acceptance; this pass intentionally excludes it.</p>
+          </article>
+          <article class="status-card">
+            <span>Release QA</span>
+            <strong>Passed</strong>
+            <p><code>corepack pnpm run qa:release</code> passed for the Windows installer on 2026-05-15.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Working Decisions</h2>
+          <p class="section-note">
+            These choices keep the first release smaller and easier to validate.
+          </p>
+        </div>
+        <div class="decision-grid">
+          <article class="decision">
+            <h3>Windows-first v0.1</h3>
+            <p>
+              Publish Windows first. Do not publish macOS artifacts until a real
+              macOS smoke pass covers first launch, app bundle behavior, and
+              unsigned/unnotarized warnings.
+            </p>
+          </article>
+          <article class="decision">
+            <h3>No custom pets in v0.1</h3>
+            <p>
+              Keep built-in package validation internally, but hide or remove
+              user-facing custom pet import/export from v0.1 release surfaces.
+            </p>
+          </article>
+          <article class="decision">
+            <h3>Free unsigned beta unless signing is ready</h3>
+            <p>
+              If code signing is not ready, release notes must clearly say the
+              app is unsigned, show the expected SmartScreen caveat, and include
+              checksums.
+            </p>
+          </article>
+          <article class="decision">
+            <h3>Public page is part of release readiness</h3>
+            <p>
+              The download page and any release video must only show behaviors
+              present in the exact release candidate, with Windows-first scope
+              and no custom-pet promise.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Footprint Snapshot</h2>
+          <p class="section-note">
+            Current local package size is dominated by Electron/Chromium, not by
+            pet assets.
+          </p>
+        </div>
+        <table class="footprint">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Observed size</th>
+              <th>Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Windows installer</td>
+              <td><code>88.20 MiB</code></td>
+              <td>Passes the 120 MiB release footprint budget.</td>
+            </tr>
+            <tr>
+              <td>Installed/unpacked app</td>
+              <td><code>302.31 MiB</code></td>
+              <td>Passes the 360 MiB release footprint budget.</td>
+            </tr>
+            <tr>
+              <td><code>app.asar</code></td>
+              <td><code>3.91 MiB</code></td>
+              <td>Passes the 35 MiB app package budget.</td>
+            </tr>
+            <tr>
+              <td>Compiled app output</td>
+              <td><code>0.94 MiB</code></td>
+              <td>The actual built app is small.</td>
+            </tr>
+            <tr>
+              <td>Runtime resources</td>
+              <td><code>0.45 MiB</code></td>
+              <td>Built-in pets/items are not the footprint problem.</td>
+            </tr>
+            <tr>
+              <td>Electron locales</td>
+              <td><code>0.54 MiB</code></td>
+              <td>Passes the 8 MiB locale budget after English-only packaging.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Release Blockers</h2>
+          <p class="section-note">
+            These should be resolved before calling v0.1 ready for public
+            download.
+          </p>
+        </div>
+        <div class="task-list">
+          <article class="task">
+            <div><span class="pill p0">P0</span></div>
+            <div>
+              <h3>Refresh final evidence on clean <code>main</code></h3>
+              <p>
+                Automated validation has been refreshed in the current working
+                tree. This should be rerun once changes are committed to the
+                exact release candidate.
+              </p>
+              <div class="evidence">
+                <code>corepack pnpm run check</code>,
+                <code>corepack pnpm run qa:v2:scope</code>,
+                <code>corepack pnpm run qa:release</code>,
+                <code>git diff --check</code>
+              </div>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p0">P0</span></div>
+            <div>
+              <h3>Complete or explicitly defer manual acceptance gates</h3>
+              <p>
+                Interactive installer, installed launch, uninstall,
+                startup-on-login, sleep/wake, monitor layouts, SmartScreen, and
+                visual acceptance are still manual release gates.
+              </p>
+              <div class="evidence">
+                See
+                <a href="v2-manual-acceptance-runbook.md">manual acceptance runbook</a>
+                and <a href="v2-closeout-report.md">closeout report</a>.
+              </div>
+            </div>
+            <div><span class="pill open">Excluded Now</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p0">P0</span></div>
+            <div>
+              <h3>Stop accidental macOS publishing for v0.1</h3>
+              <p>
+                Current workflow can publish macOS artifacts on version tags.
+                For v0.1, either disable macOS release assets or require a real
+                macOS smoke pass before attaching them.
+              </p>
+              <div class="evidence">
+                See
+                <a href="../../.github/workflows/desktop-release-artifacts.yml">desktop release workflow</a>
+                and <a href="../desktop-app.md">desktop app docs</a>.
+              </div>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Pre-Release Improvements</h2>
+          <p class="section-note">
+            These do not add product features. They reduce support burden,
+            security risk, and avoidable install weight.
+          </p>
+        </div>
+        <div class="task-list">
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Hide custom pet import/export from v0.1</h3>
+              <p>
+                Remove user-facing import/export actions and docs claims for
+                the first release. Keep internal package validation because
+                built-in pets still use package manifests.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Add release workflow guardrails</h3>
+              <p>
+                Run release smoke before upload, make tag version match
+                <code>package.json</code>, use read-only workflow permissions by
+                default, and grant write permission only to the publish job.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Make unsigned release status explicit</h3>
+              <p>
+                If signing is not in place, release notes should say the build
+                is unsigned, explain SmartScreen, and publish SHA256 checksums
+                for the installer.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Create the public landing/docs page</h3>
+              <p>
+                Build a simple public page with a clear Windows download CTA,
+                GitHub link, install instructions, checksum, privacy/local-data
+                notes, troubleshooting, known limitations, and v0.1 scope.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Record a release-candidate video</h3>
+              <p>
+                If used, record from the exact release candidate. Show only
+                supported Windows v0.1 behavior: pet on desktop, drag, care
+                actions, tray recovery, settings, and local/offline positioning.
+              </p>
+            </div>
+            <div><span class="pill planned">Shot List</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p1">P1</span></div>
+            <div>
+              <h3>Trim packaged size</h3>
+              <p>
+                Restrict Electron locales for an English-only v0.1 and avoid
+                packaging renderer-only production dependencies that are already
+                bundled into the renderer output.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p2">P2</span></div>
+            <div>
+              <h3>Add explicit Electron navigation and permission denial</h3>
+              <p>
+                Deny new windows, unexpected navigation, and renderer permission
+                prompts by default. This protects the desktop shell from future
+                renderer or asset mistakes.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+
+          <article class="task">
+            <div><span class="pill p2">P2</span></div>
+            <div>
+              <h3>Make release QA version-aware</h3>
+              <p>
+                Replace hardcoded <code>Deskagotchi Setup 0.1.0.exe</code> with
+                package-version or exact-artifact discovery so future releases
+                validate the intended installer.
+              </p>
+            </div>
+            <div><span class="pill done">Done</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>User-Trust Docs Checklist</h2>
+          <p class="section-note">
+            A free indie app still needs clear trust documentation. This is how
+            users decide whether to run it.
+          </p>
+        </div>
+        <div class="checklist">
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Exact download instruction</strong>
+              <span>Tell users to download only <code>Deskagotchi Setup &lt;version&gt;.exe</code>.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Unsigned status</strong>
+              <span>Say whether the build is signed, unsigned, or beta-only.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Checksum</strong>
+              <span>Publish SHA256 for the installer attached to the release.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Privacy statement</strong>
+              <span>No account, no analytics, no remote sync, local files only.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Local data path</strong>
+              <span>List save, backup, exports, and reset/uninstall behavior.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Known limitations</strong>
+              <span>Windows-first, unsigned caveat, no custom pets in v0.1, no macOS unless tested.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>QA scope</strong>
+              <span>State which checks passed and which manual gates remain out of scope.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Support path</strong>
+              <span>Tell users where to report bugs and what info to include.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Landing page claim match</strong>
+              <span>Every screenshot, line of copy, and CTA matches the exact v0.1 release scope.</span>
+            </div>
+          </div>
+          <div class="check">
+            <span class="box"></span>
+            <div>
+              <strong>Release video claim match</strong>
+              <span>Any video shows only validated Windows release-candidate behavior.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Public Download Surface</h2>
+          <p class="section-note">
+            The website/video are trust surfaces, not just marketing. They must
+            make the download obvious while keeping claims narrower than the
+            build evidence.
+          </p>
+        </div>
+        <div class="split">
+          <article class="panel">
+            <h3>Landing/docs page content</h3>
+            <ul>
+              <li>Hero shows the real desktop pet experience, not an abstract app promise.</li>
+              <li>Primary CTA downloads the Windows installer only.</li>
+              <li>Secondary CTA links to GitHub source.</li>
+              <li>Install section explains SmartScreen if unsigned.</li>
+              <li>Trust section states no account, no analytics, no remote sync, and local data only.</li>
+              <li>Known limits section says Windows-first, no custom pets in v0.1, and macOS unavailable unless tested.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <h3>Release video guardrails</h3>
+            <ul>
+              <li>Record against the same installer/release candidate users can download.</li>
+              <li>Show launch, desktop pet, drag, feed/play/clean, settings, and tray recovery.</li>
+              <li>Do not show custom pets, macOS, auto-update, signing, or any unshipped behavior.</li>
+              <li>Keep captions factual: free local Windows beta, not a fully polished cross-platform product.</li>
+              <li>Use <a href="../release-notes/v0.1.0-video-shot-list.md">the v0.1.0 video shot list</a> as release evidence if it becomes public.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="split">
+          <article class="panel">
+            <h2>Suggested Completion Order</h2>
+            <ol>
+              <li>Hide custom pet import/export and update release claims.</li>
+              <li>Restrict macOS publishing or require explicit macOS smoke evidence.</li>
+              <li>Add release workflow guardrails and version/tag checks.</li>
+              <li>Trim install footprint with locale and dependency packaging changes.</li>
+              <li>Add Electron navigation/permission denial hardening.</li>
+              <li>Create the public landing/docs page and release-note copy.</li>
+              <li>Record or skip the release video; if recorded, verify every shown behavior against the release candidate.</li>
+              <li>Write v0.1 release notes with checksum, privacy, known limits, and QA scope.</li>
+              <li>Run full final evidence on clean <code>main</code> and complete manual acceptance export.</li>
+            </ol>
+          </article>
+
+          <article class="panel">
+            <h2>Definition of Ready for v0.1</h2>
+            <ul>
+              <li>Windows installer is built from the exact release commit.</li>
+              <li>Automated checks, desktop QA, idle, and release smoke pass on clean <code>main</code>.</li>
+              <li>Manual installer/startup/sleep/monitor checks are passed or explicitly deferred.</li>
+              <li>Release artifacts match the platform scope being advertised.</li>
+              <li>Release notes are honest about unsigned status and known limits.</li>
+              <li>No user-facing custom pet import/export remains in v0.1.</li>
+              <li>Published installer has a checksum and clear download instructions.</li>
+              <li>Public page and video claims match the release candidate exactly.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -28,8 +28,6 @@ export enum IpcChannel {
   ExitPetWindowPlayMode = "deskagotchi:exitPetWindowPlayMode",
   SetClickThrough = "deskagotchi:setClickThrough",
   RecordQaEvent = "deskagotchi:recordQaEvent",
-  ExportPet = "deskagotchi:exportPet",
-  ImportPet = "deskagotchi:importPet",
   SnapshotUpdated = "deskagotchi:snapshotUpdated"
 }
 
@@ -85,8 +83,18 @@ export interface CareActionRequest {
   itemId?: ItemCatalogEntry["id"];
 }
 
-/** Partial save-settings update accepted over IPC. */
-export type UpdateSettingsInput = Partial<DeskagotchiSave["settings"]>;
+/** User-editable settings accepted from renderer controls. */
+export type RendererSettingsUpdate = Pick<
+  DeskagotchiSave["settings"],
+  | "alwaysOnTop"
+  | "launchOnStartup"
+  | "reducedMotion"
+  | "lowMaintenanceMode"
+  | "notificationsEnabled"
+>;
+
+/** Partial user-editable settings update accepted over IPC. */
+export type UpdateSettingsInput = Partial<RendererSettingsUpdate>;
 
 /** Screen-space pointer position used while dragging the native pet window. */
 export interface ScreenPointInput {
@@ -116,7 +124,5 @@ export interface DeskagotchiApi {
   exitPetWindowPlayMode: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
   recordQaEvent: (event: QaTelemetryInput) => Promise<void>;
-  exportPet: (packageId: string) => Promise<string | undefined>;
-  importPet: () => Promise<DeskagotchiSnapshot>;
   onSnapshotUpdated: (callback: () => void) => () => void;
 }

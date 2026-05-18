@@ -64,7 +64,6 @@ const PET_WINDOW_TRAY_HEIGHT = 336;
 const PET_WINDOW_CARD_HEIGHT = 372;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 620;
-const LOCAL_DEV_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const CareActionInputSchema = z
   .object({
     type: z.nativeEnum(CareActionType),
@@ -75,8 +74,15 @@ const PanelViewInputSchema = z.nativeEnum(PanelView);
 const BooleanInputSchema = z.boolean();
 const PetWindowUiModeInputSchema = z.nativeEnum(PetWindowUiMode);
 const PackageIdInputSchema = PetPackageSchema.shape.packageId;
-const UpdateSettingsInputSchema = DeskagotchiSaveSchema.shape.settings
-  .partial()
+const UpdateSettingsInputSchema = z
+  .object({
+    alwaysOnTop: DeskagotchiSaveSchema.shape.settings.shape.alwaysOnTop.optional(),
+    launchOnStartup: DeskagotchiSaveSchema.shape.settings.shape.launchOnStartup.optional(),
+    reducedMotion: DeskagotchiSaveSchema.shape.settings.shape.reducedMotion.optional(),
+    lowMaintenanceMode: DeskagotchiSaveSchema.shape.settings.shape.lowMaintenanceMode.optional(),
+    notificationsEnabled:
+      DeskagotchiSaveSchema.shape.settings.shape.notificationsEnabled.optional()
+  })
   .strict();
 const WindowDragDeltaInputSchema = z
   .object({
@@ -124,6 +130,7 @@ let playModePreviousBounds: Rectangle | undefined;
 let uiModePreviousBounds: Rectangle | undefined;
 let suppressPetWindowBoundsPersistence = false;
 let petWindowBoundsSuppressionSequence = 0;
+let petWindowClickThroughEnabled = false;
 let petWindowStartupMetadata: Record<string, unknown> = {};
 
 if (!app.requestSingleInstanceLock()) {
@@ -331,6 +338,7 @@ function createPetWindow(): void {
       petWindow = new BrowserWindow(petWindowOptions);
 
       petWindow.setMenu(null);
+      configureRendererWebContents(petWindow);
       petWindow.setVisibleOnAllWorkspaces(false);
       petWindow.on("close", (event) => {
         if (!isQuitting) {
@@ -342,6 +350,7 @@ function createPetWindow(): void {
         petWindow = undefined;
         uiModePreviousBounds = undefined;
         playModePreviousBounds = undefined;
+        petWindowClickThroughEnabled = false;
       });
       petWindow.on("moved", () => void persistPetWindowBounds());
       petWindow.on("resize", () => void persistPetWindowBounds());
@@ -394,6 +403,7 @@ function createPanelWindow(view: PanelView): void {
     }
   });
   panelWindow.setMenu(null);
+  configureRendererWebContents(panelWindow);
   panelWindow.on("close", () => {
     if (!app.isPackaged && !isQuitting) {
       isQuitting = true;
@@ -404,6 +414,46 @@ function createPanelWindow(view: PanelView): void {
     panelWindow = undefined;
   });
   void panelWindow.loadURL(createRendererUrl("panel", view));
+}
+
+/**
+ * Lock renderer windows to the Deskagotchi app surface.
+ *
+ * The app is a desktop companion, not a browser. These guards keep future
+ * renderer mistakes, links, or asset changes from opening windows, navigating
+ * away from the app, embedding webviews, or requesting browser permissions.
+ *
+ * @param window - Renderer-backed Electron window to harden.
+ */
+function configureRendererWebContents(window: BrowserWindow): void {
+  const { webContents } = window;
+  webContents.setWindowOpenHandler(({ url }) => {
+    recordQaEvent({
+      event: "security:window-open-blocked",
+      payload: { url }
+    });
+    return { action: "deny" };
+  });
+  webContents.on("will-navigate", (event, navigationUrl) => {
+    if (!isTrustedRendererUrl(navigationUrl)) {
+      event.preventDefault();
+      recordQaEvent({
+        event: "security:navigation-blocked",
+        payload: { navigationUrl }
+      });
+    }
+  });
+  webContents.on("will-attach-webview", (event) => {
+    event.preventDefault();
+    recordQaEvent({ event: "security:webview-blocked" });
+  });
+  webContents.session.setPermissionRequestHandler((_webContents, permission, callback) => {
+    recordQaEvent({
+      event: "security:permission-denied",
+      payload: { permission }
+    });
+    callback(false);
+  });
 }
 
 /**
@@ -538,9 +588,9 @@ function registerIpcHandlers(): void {
   });
   ipcMain.handle(IpcChannel.SetClickThrough, (event, enabled: unknown) => {
     validateIpcSender(event);
-    petWindow?.setIgnoreMouseEvents(
+    setPetWindowClickThrough(
       parseIpcInput(BooleanInputSchema, enabled, "click-through flag"),
-      { forward: true }
+      "renderer-request"
     );
   });
   ipcMain.handle(IpcChannel.RecordQaEvent, (event, input: unknown) => {
@@ -548,19 +598,6 @@ function registerIpcHandlers(): void {
     recordQaEvent(
       parseIpcInput(QaTelemetryInputSchema, input, "QA telemetry event")
     );
-  });
-  ipcMain.handle(IpcChannel.ExportPet, (event, packageId: unknown) => {
-    validateIpcSender(event);
-    return runtime.exportPet(
-      parseIpcInput(PackageIdInputSchema, packageId, "package id")
-    );
-  });
-  ipcMain.handle(IpcChannel.ImportPet, async (event) => {
-    validateIpcSender(event);
-    const snapshot = await runtime.importPet();
-    broadcastSnapshotUpdated();
-    rebuildTray();
-    return snapshot;
   });
 }
 
@@ -581,7 +618,8 @@ function validateIpcSender(event: IpcMainInvokeEvent): void {
  * Check whether a renderer URL is allowed to use the preload IPC bridge.
  *
  * File URLs must resolve to the packaged renderer entrypoint. HTTP(S) URLs are
- * accepted only in unpackaged development and only for loopback hostnames.
+ * accepted only in unpackaged development and only for the configured Vite
+ * renderer origin.
  *
  * @param rawUrl - Renderer frame URL reported by Electron.
  * @returns True when the URL belongs to the Deskagotchi renderer surface.
@@ -602,11 +640,20 @@ function isTrustedRendererUrl(rawUrl: string): boolean {
     );
   }
 
-  return (
-    !app.isPackaged &&
-    (url.protocol === "http:" || url.protocol === "https:") &&
-    LOCAL_DEV_HOSTNAMES.has(url.hostname)
-  );
+  if (app.isPackaged || (url.protocol !== "http:" && url.protocol !== "https:")) {
+    return false;
+  }
+
+  const rendererUrl = process.env.ELECTRON_RENDERER_URL;
+  if (rendererUrl === undefined) {
+    return false;
+  }
+
+  try {
+    return url.origin === new URL(rendererUrl).origin;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -859,7 +906,7 @@ function movePetWindow(delta: WindowDragDeltaInput): void {
       delta.pointer
     );
   }
-  petWindow.setBounds(nextBounds);
+  setPetWindowBoundsWithoutPersistence(nextBounds);
   recordQaEvent({
     event: "window:setBounds",
     windowRole: "overlay",
@@ -898,9 +945,34 @@ function enterPetWindowPlayMode(): void {
       reason: "play-enter"
     }
   });
-  petWindow.setIgnoreMouseEvents(false);
+  setPetWindowClickThrough(false, "play-enter");
   petWindow.show();
   petWindow.moveTop();
+}
+
+/**
+ * Toggle whether transparent overlay pixels pass mouse input through.
+ *
+ * @param enabled - True when compact idle mode should not own transparent pixels.
+ * @param reason - Short QA-visible reason for the state transition.
+ */
+function setPetWindowClickThrough(enabled: boolean, reason: string): void {
+  if (petWindow === undefined || petWindow.isDestroyed()) {
+    return;
+  }
+  petWindow.setIgnoreMouseEvents(enabled, { forward: true });
+  if (petWindowClickThroughEnabled === enabled) {
+    return;
+  }
+  petWindowClickThroughEnabled = enabled;
+  recordQaEvent({
+    event: "window:clickThrough",
+    windowRole: "overlay",
+    payload: {
+      enabled,
+      reason
+    }
+  });
 }
 
 /**

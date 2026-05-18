@@ -6,17 +6,21 @@ and settings actions through the tray/menu bar.
 
 ## Download
 
-V2 releases should publish desktop downloads for both Windows and macOS from the
-project's GitHub Releases page. The `Desktop Release Artifacts` GitHub Actions
-workflow builds these files for manual runs and attaches them automatically when
-a `v*` tag is pushed.
+v0.1 releases should use GitHub Pages for the public landing page and GitHub
+Releases for the Windows installer. The landing page source lives in
+`site/index.html`; the installer should stay attached to the matching GitHub
+Release instead of being hosted from the website.
+
+The `Desktop Release Artifacts` GitHub Actions workflow builds the Windows
+installer for manual runs and attaches it automatically when a matching `v*` tag
+is pushed after release smoke passes. Tagged releases attach only the Windows
+installer and its `.sha256` checksum file to the public GitHub Release.
 
 | Platform | Download | Use when |
 | --- | --- | --- |
 | Windows | `Deskagotchi Setup <version>.exe` | Normal Windows install. |
 | Windows portable QA | `win-unpacked/Deskagotchi.exe` | Local package smoke testing only; prefer the installer for users. |
-| macOS Apple silicon | `Deskagotchi <version> arm64.dmg` or the matching arm64 zip | Macs with Apple silicon. |
-| macOS Intel | `Deskagotchi <version> x64.dmg` or the matching x64 zip | Intel Macs. |
+| macOS | Not published for v0.1 unless a real macOS smoke pass is completed. | Local development/testing only. |
 
 If a platform asset is missing from a release, that platform has not been
 published for that release yet.
@@ -32,38 +36,33 @@ published for that release yet.
 Deskagotchi opens as a compact transparent pet overlay. Use the tray icon to
 show, hide, reset, feed, play, open settings, or quit.
 
-## Install And Run On macOS
+## macOS Status
 
-1. Download the build that matches the Mac architecture:
-   - Apple silicon: arm64.
-   - Intel: x64.
-2. Open the `.dmg` and drag Deskagotchi to Applications, or unzip the matching
-   `.zip` build.
-3. Launch Deskagotchi from Applications.
-4. If macOS blocks an unsigned or unnotarized local build, use Finder's Open
-   action and only continue when the build source is trusted.
-
-The macOS package is prepared for V2 distribution, but the strongest automated
-desktop QA evidence is currently Windows-based. Run a manual macOS smoke before
-publishing a macOS asset.
+macOS packaging can still be built locally on macOS, but v0.1 should not publish
+macOS downloads unless a real Mac smoke pass covers first launch, app bundle
+behavior, and unsigned or unnotarized first-run warnings.
 
 ## Use The App
 
 - Drag the visible pet to move it around the desktop.
 - Use the tray/menu bar action to recover the pet if it is hidden or off-screen.
 - Feed, play, clean, sleep, and health actions run in the compact overlay.
-- Use Settings for always-on-top, startup, sound, reduced motion, low
+- Use Settings for always-on-top, startup, reduced motion, low
   maintenance, and notifications.
 - Use the pet selector to switch built-in pets.
-- Import or export `.deskagotchi-pet` packages from the management panel.
+- Custom pet loading, import, and export are not exposed in v0.1.
 
 Deskagotchi stores data locally in Electron's `userData` directory. The Settings
 panel shows the resolved path. The main files are:
 
 - `deskagotchi-save.json`
 - `deskagotchi-save.backup.json`
-- `custom-pets/`
-- `exports/`
+- reserved internal package directories, if created by older development builds
+
+Deskagotchi v0.1 does not require an account, analytics, remote telemetry in
+normal use, or remote sync. Normal pet state stays in the local `userData`
+directory. QA harnesses can write local event logs only when explicit QA mode is
+enabled.
 
 ## Troubleshooting
 
@@ -102,18 +101,20 @@ pnpm install --frozen-lockfile
 pnpm run package:mac
 ```
 
-macOS builds should be created on macOS. Local V2 macOS builds are unsigned
-unless a signing and notarization workflow is added.
+macOS builds should be created on macOS. Local v0.1 macOS builds are unsigned
+unless a signing and notarization workflow is added. Do not attach macOS assets
+to a v0.1 public release without manual macOS smoke evidence.
 
 ## Release Publisher Checklist
 
 1. Run the release validation for the platform being published.
-2. Attach the Windows installer to the release.
-3. Attach macOS arm64 and x64 DMG or zip artifacts when they have passed manual
-   smoke testing.
-4. Keep release notes honest about signing/notarization status and the current
+2. Update `site/index.html` and the release notes so page claims match the exact
+   release candidate.
+3. Attach the Windows installer to the GitHub Release.
+4. Attach macOS artifacts only when they have passed manual macOS smoke testing.
+5. Keep release notes honest about signing/notarization status and the current
    QA scope.
-5. Link this document from the release notes so users know how to install,
+6. Link this document from the release notes so users know how to install,
    recover, and quit the app.
 
 ## GitHub Release Workflow
@@ -121,8 +122,21 @@ unless a signing and notarization workflow is added.
 The release artifact workflow lives at
 `.github/workflows/desktop-release-artifacts.yml`.
 
-- Manual runs upload Windows and macOS artifacts to the workflow run.
-- `v*` tag pushes build the same artifacts and publish them to the matching
-  GitHub Release.
-- The workflow regenerates icon outputs before packaging, so `build/icon-source.png`
-  must stay committed.
+- Manual runs upload the Windows installer and release QA evidence to the
+  workflow run.
+- Matching `v*` tag pushes build the Windows installer, generate a SHA256
+  checksum, and publish only those release assets to the matching GitHub
+  Release.
+- The tag name must match `package.json` version, for example `v0.1.0`.
+
+## GitHub Pages Workflow
+
+The public landing page workflow lives at `.github/workflows/github-pages.yml`.
+
+- It deploys the static site from `site/`.
+- It runs on manual dispatch and on `main` pushes that touch `site/**` or the
+  Pages workflow.
+- The repository's Pages settings must use GitHub Actions as the source before
+  the first public deploy.
+- The download CTA should link to the GitHub Release asset or release page, not
+  to a checked-in installer.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deskagotchi Launch Workflow"
+  short_description: "Proof-led Deskagotchi launch assets"
+  default_prompt: "Use $deskagotchi-launch-workflow to turn the current Deskagotchi release evidence into a channel-ready launch draft."

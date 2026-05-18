@@ -205,10 +205,15 @@ const AUTOMATED_SCENARIOS = [
       "renderer router has no Hatch panel route",
       "management panel has no Hatch tab",
       "overlay has no Hatch action",
-      "README marks Hatch/custom generation deferred for V2",
-      "README archives user-facing Hatch for the V2 release path",
+      "IPC contract exposes no v0.1 custom pet import/export channel",
+      "preload bridge exposes no v0.1 custom pet import/export method",
+      "main process registers no v0.1 custom pet import/export IPC handler",
+      "management panel exposes no v0.1 custom pet import/export action",
+      "README marks custom generation and custom loading/import/export deferred for v0.1",
+      "README archives user-facing Hatch and custom loading/import/export for v0.1",
+      "desktop app docs exclude custom pet loading/import/export from v0.1",
       "V2 roadmap archives custom pet generation",
-      "V2 success criteria exclude user-facing custom generation"
+      "V2 success criteria exclude user-facing custom generation and loading/import/export"
     ]
   }
 ];
@@ -322,9 +327,9 @@ const V2_DELIVERABLES = [
   "Built-in pet quality: Bao, Miso, Mochi, Peanut, and Puddles with coherent LCD assets and full animation rows.",
   "Food and item experience: icon-first feeding, recognizable food assets, and selected-food eating cues.",
   "Care simulation: deterministic, documented, day-scale progression with tested action effects and offline catch-up.",
-  "Deferred custom generation: user-facing Hatch is out of the V2 promise while package safety boundaries remain.",
+  "Deferred custom surfaces: user-facing Hatch and custom pet loading/import/export are out of the v0.1 promise while built-in package validation remains.",
   "Desktop hardening: launch, drag, recovery, multi-monitor bounds, always-on-top, sleep/wake, play, and cleanup evidence.",
-  "Package and data safety: package validation, archive safety, atomic saves, backup recovery, and relaunch persistence.",
+  "Package and data safety: package validation, atomic saves, backup recovery, and relaunch persistence.",
   "Packaging readiness: Windows build, installer resources, release smoke, and idle CPU automated evidence."
 ];
 
@@ -395,8 +400,8 @@ const PROMPT_TO_ARTIFACT_CHECKLIST = [
     ]
   },
   {
-    requirement: "Custom generation is deferred from user-facing V2 while package boundaries remain.",
-    evidence: "README, renderer route removal, and V2 scope QA",
+    requirement: "Custom generation and custom pet loading/import/export are deferred from user-facing v0.1.",
+    evidence: "README, renderer route removal, IPC bridge removal, and V2 scope QA",
     automatedKeys: ["v2-scope"],
     artifactPaths: ["README.md", "src/shared/hatch.ts", "src/shared/ipc.ts"]
   },
@@ -427,8 +432,12 @@ function main() {
 
   const automatedPassed = scenarioResults.every((result) => result.status === "pass");
   const artifactsPassed = artifactResults.every((result) => result.status === "pass");
+  const manualPassed = manualResult.status === "pass";
   const workspacePassed = workspaceResult.status === "pass";
-  const completionStatus = automatedPassed && artifactsPassed && workspacePassed
+  const completionStatus = automatedPassed &&
+    artifactsPassed &&
+    workspacePassed &&
+    (!ARGS.requireManual || manualPassed)
     ? "complete"
     : "incomplete";
 
@@ -439,7 +448,13 @@ function main() {
     artifactResults,
     manualResult,
     workspaceResult,
-    checklistResults: auditPromptChecklist(scenarioResults, artifactResults, manualResult)
+    requireManual: ARGS.requireManual,
+    checklistResults: auditPromptChecklist(
+      scenarioResults,
+      artifactResults,
+      manualResult,
+      ARGS.requireManual
+    )
   });
 
   if (ARGS.checkOnly) {
@@ -460,6 +475,7 @@ function parseArgs(args) {
   const parsed = {
     allowDirty: false,
     checkOnly: false,
+    requireManual: false,
     strict: false,
     manualPath: null,
     reportPath: path.join("docs", "qa", "v2-closeout-report.md")
@@ -469,6 +485,10 @@ function parseArgs(args) {
     const arg = args[index];
     if (arg === "--strict") {
       parsed.strict = true;
+      continue;
+    }
+    if (arg === "--require-manual") {
+      parsed.requireManual = true;
       continue;
     }
     if (arg === "--allow-dirty") {
@@ -720,7 +740,12 @@ function runGit(args) {
   };
 }
 
-function auditPromptChecklist(scenarioResults, artifactResults, manualResult) {
+function auditPromptChecklist(
+  scenarioResults,
+  artifactResults,
+  manualResult,
+  requireManual
+) {
   return PROMPT_TO_ARTIFACT_CHECKLIST.map((item) => {
     const automatedFailures = (item.automatedKeys ?? [])
       .filter((key) => !scenarioPassed(scenarioResults, key))
@@ -736,12 +761,21 @@ function auditPromptChecklist(scenarioResults, artifactResults, manualResult) {
       ...artifactLabelFailures,
       ...artifactPathFailures
     ];
+    const manualFailures = item.manualRequired === true && manualResult.status !== "pass"
+      ? [`manual acceptance required for release closeout: ${manualResult.status}`]
+      : [];
+    const blockingFailures = [
+      ...failures,
+      ...(requireManual ? manualFailures : [])
+    ];
 
-    if (failures.length > 0) {
+    if (blockingFailures.length > 0) {
       return {
         ...item,
-        status: "fail",
-        notes: failures
+        status: item.manualRequired === true && manualResult.status !== "pass"
+          ? "manual-open"
+          : "fail",
+        notes: blockingFailures
       };
     }
 
@@ -750,7 +784,7 @@ function auditPromptChecklist(scenarioResults, artifactResults, manualResult) {
       status: "pass",
       notes:
         item.manualRequired === true && manualResult.status !== "pass"
-          ? ["manual acceptance is advisory and not required for automated closeout"]
+          ? ["manual acceptance is advisory for automated closeout; release closeout requires it"]
           : []
     };
   });
@@ -1281,6 +1315,7 @@ function renderReport({
   artifactResults,
   manualResult,
   workspaceResult,
+  requireManual,
   checklistResults
 }) {
   const scenarioRows = scenarioResults
@@ -1325,8 +1360,18 @@ function renderReport({
     ? `\n- ...and ${workspaceResult.dirtyEntries.length - 40} more entries`
     : "";
   const allowedClaim = completionStatus === "complete"
-    ? "Deskagotchi V2 has passing automated closeout evidence for the documented Windows scope."
-    : "Deskagotchi V2 automated closeout is incomplete; see the failing evidence rows below.";
+    ? requireManual
+      ? "Deskagotchi V2 has passing automated and manual closeout evidence for the documented Windows scope."
+      : "Deskagotchi V2 has passing automated closeout evidence for the documented Windows scope."
+    : requireManual
+      ? "Deskagotchi V2 release closeout is incomplete; see the failing automated or manual evidence rows below."
+      : "Deskagotchi V2 automated closeout is incomplete; see the failing evidence rows below.";
+  const manualHeading = requireManual
+    ? "Required Manual Acceptance"
+    : "Optional Manual Acceptance";
+  const strictModeSummary = requireManual
+    ? "Strict release mode exits non-zero until automated evidence, required artifacts, manual acceptance, and the workspace are all passing."
+    : "Strict automated mode exits non-zero until automated evidence, required artifacts, and the workspace are clean. Manual acceptance is reported but advisory unless `--require-manual` is used.";
 
   return `# Deskagotchi V2 Closeout Report
 
@@ -1376,7 +1421,7 @@ ${dirtyRows}${dirtyOverflow}
 | --- | --- | --- |
 ${artifactRows}
 
-## Optional Manual Acceptance
+## ${manualHeading}
 
 Status: **${manualResult.status}**
 
@@ -1388,10 +1433,16 @@ ${manualRows}
 
 ## Strict Mode
 
-Run this audit with strict mode when preparing a release branch:
+Run the release closeout gate before publishing a release:
 
 \`\`\`powershell
 pnpm run qa:v2:closeout
+\`\`\`
+
+Run the automated-only closeout when refreshing non-release evidence summaries:
+
+\`\`\`powershell
+pnpm run qa:v2:automated-closeout
 \`\`\`
 
 Use \`--check-only\` for final release validation so the tracked report does not
@@ -1413,8 +1464,7 @@ pnpm run qa:v2:audit --manual C:\\path\\to\\v2-manual-acceptance-export.json --r
 Use \`--allow-dirty\` only for fixture smoke checks that intentionally run
 against a dirty local tree.
 
-Strict mode exits non-zero until automated evidence, required artifacts, and the
-workspace are clean. Manual acceptance evidence is advisory in this audit.
+${strictModeSummary}
 `;
 }
 

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi Launch Readiness Report</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f6ef;
+        --paper: #fffef8;
+        --ink: #161913;
+        --muted: #62675f;
+        --line: #d8ddcf;
+        --green: #2f6f4e;
+        --green-soft: #e4f2e8;
+        --blue: #315f86;
+        --blue-soft: #e3edf7;
+        --warn: #8b5d17;
+        --warn-soft: #f5ecd8;
+        --danger: #8f3838;
+        --danger-soft: #f5dfdf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      main {
+        width: min(1160px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 22px;
+        align-items: end;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        font-size: clamp(34px, 6vw, 62px);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      a {
+        color: var(--green);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 3px;
+      }
+
+      code {
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+          monospace;
+        font-size: 0.95em;
+      }
+
+      .eyebrow {
+        margin-bottom: 12px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .stamp,
+      .panel,
+      .status,
+      .evidence-row {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 8px;
+      }
+
+      .stamp {
+        padding: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .stamp strong {
+        display: block;
+        color: var(--ink);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .section {
+        margin-top: 30px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .section-note {
+        max-width: 660px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel h3 {
+        margin-bottom: 8px;
+      }
+
+      .panel p,
+      .panel li,
+      .status p,
+      .evidence-row p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .status {
+        min-height: 126px;
+        padding: 16px;
+      }
+
+      .status span {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .done span {
+        color: var(--green);
+      }
+
+      .warn span {
+        color: var(--warn);
+      }
+
+      .pending span {
+        color: var(--blue);
+      }
+
+      .evidence-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .evidence-row {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr) 220px;
+        gap: 12px;
+        padding: 12px;
+        align-items: start;
+      }
+
+      .evidence-row strong {
+        font-size: 14px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        min-height: 26px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: var(--green-soft);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 850;
+      }
+
+      .pill.warn {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+
+      .pill.pending {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      @media (max-width: 900px) {
+        header,
+        .grid-2,
+        .grid-3,
+        .evidence-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Deskagotchi launch readiness</p>
+          <h1>Docs, site, and release-surface pass</h1>
+          <p class="subtitle">
+            This report summarizes the launch-readiness pass that used the
+            repo-local launch workflow and positioning file. It covers the
+            README/docs updates, GitHub Pages setup, public landing page, and
+            remaining release evidence gaps.
+          </p>
+        </div>
+        <aside class="stamp">
+          <strong>Current stance</strong>
+          Public page: GitHub Pages from <code>site/</code><br />
+          Installer: GitHub Releases only<br />
+          Product frame: fun Windows-first indie desktop pet beta
+        </aside>
+      </header>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>What Changed</h2>
+          <p class="section-note">
+            The main change is moving from a docs-only download page to a real
+            static website source while keeping the installer on GitHub Releases.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="status done">
+            <span>Site source</span>
+            <h3><code>site/index.html</code></h3>
+            <p>Created the GitHub Pages source from the current landing page and copied required image assets into <code>site/assets/</code>.</p>
+          </article>
+          <article class="status done">
+            <span>Pages workflow</span>
+            <h3><code>github-pages.yml</code></h3>
+            <p>Added a GitHub Actions workflow that deploys <code>site/</code> to GitHub Pages on manual runs and main-branch site changes.</p>
+          </article>
+          <article class="status done">
+            <span>Trust surface</span>
+            <h3>Landing-page trust block</h3>
+            <p>Added GitHub-hosted installer, unsigned beta caveat, local normal-use privacy, and v0.1 scope limits.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Docs Updated</h2>
+          <p class="section-note">
+            These docs now describe the current public release architecture.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="panel">
+            <h3>README and desktop docs</h3>
+            <ul>
+              <li><code>README.md</code> now states that the landing page lives in <code>site/</code> and the installer remains on GitHub Releases.</li>
+              <li><code>docs/desktop-app.md</code> documents the GitHub Pages workflow and release-publisher checklist.</li>
+              <li>Privacy copy now says no analytics or remote telemetry in normal use, with QA-only local event logs called out.</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Release and readiness docs</h3>
+            <ul>
+              <li><code>docs/release-notes/v0.1.0.md</code> and HTML release notes use the tighter privacy wording.</li>
+              <li><code>docs/qa/v2-pr-readiness.md</code> now treats <code>site/index.html</code> as the public landing page source.</li>
+              <li>The previous release-note download page remains as a local preview/source snapshot.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Claim Map</h2>
+          <p class="section-note">
+            Public launch copy should keep using this claim-to-evidence pattern.
+          </p>
+        </div>
+        <div class="evidence-list">
+          <div class="evidence-row">
+            <strong>Landing page</strong>
+            <p><code>site/index.html</code> is the GitHub Pages source and the single committed landing-page copy.</p>
+            <span class="pill">Implemented</span>
+          </div>
+          <div class="evidence-row">
+            <strong>Installer hosting</strong>
+            <p>The Windows installer remains a GitHub Release asset via <code>.github/workflows/desktop-release-artifacts.yml</code>.</p>
+            <span class="pill">Implemented</span>
+          </div>
+          <div class="evidence-row">
+            <strong>Privacy wording</strong>
+            <p>No account, no analytics, no remote telemetry in normal use, and no remote sync. QA-only local event logs are explicitly scoped.</p>
+            <span class="pill">Updated</span>
+          </div>
+          <div class="evidence-row">
+            <strong>Release validation</strong>
+            <p>Final publish claims still need target QA run evidence tied to the release branch/commit, including source-state checks.</p>
+            <span class="pill warn">Still needed</span>
+          </div>
+          <div class="evidence-row">
+            <strong>Checksum/signing</strong>
+            <p>The public page and release notes are prepared for unsigned-build caveats, but the final SHA256 and signed/unsigned status must be filled from the final installer.</p>
+            <span class="pill warn">Still needed</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Validation</h2>
+          <p class="section-note">
+            Checks performed during this pass.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="status done">
+            <span>Skill validation</span>
+            <h3>Passed</h3>
+            <p><code>quick_validate.py</code> passed for the repo-local launch workflow skill.</p>
+          </article>
+          <article class="status done">
+            <span>Static render</span>
+            <h3>Passed</h3>
+            <p>Served <code>site/</code> on localhost and loaded the page plus required pet/item image assets.</p>
+          </article>
+          <article class="status pending">
+            <span>Not run</span>
+            <h3>Release QA</h3>
+            <p>No new installer or release-candidate QA was run in this docs/site pass.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Remaining Before Public Share</h2>
+        </div>
+        <div class="panel">
+          <ul>
+            <li>Build the final Windows installer from the exact release commit.</li>
+            <li>Run the target release QA and use only that run for validation claims.</li>
+            <li>Compute and publish the installer SHA256.</li>
+            <li>Confirm signed or unsigned status and keep SmartScreen copy aligned.</li>
+            <li>Enable GitHub Pages with GitHub Actions as the source before the first deploy.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,2343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deskagotchi</title>
+    <link rel="icon" href="assets/pets/bao-icon.png" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #030403;
+        --bg-soft: #070905;
+        --ink: #fff9e8;
+        --muted: #c9c2b2;
+        --subtle: #8f8878;
+        --line: rgba(255, 249, 232, 0.14);
+        --line-strong: rgba(215, 255, 63, 0.46);
+        --surface: rgba(13, 16, 10, 0.84);
+        --surface-strong: rgba(18, 22, 14, 0.95);
+        --accent: #d7ff3f;
+        --accent-ink: #111606;
+        --amber: #ffd875;
+        --header-height: 72px;
+        --shadow: rgba(0, 0, 0, 0.54);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-padding-top: var(--header-height);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 78% 18%, rgba(215, 255, 63, 0.14), transparent 24%),
+          radial-gradient(circle at 28% 78%, rgba(255, 216, 117, 0.08), transparent 22%),
+          linear-gradient(180deg, #050604 0%, var(--bg) 44%, #010201 100%);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          linear-gradient(rgba(255, 249, 232, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 249, 232, 0.026) 1px, transparent 1px);
+        background-size: 72px 72px;
+        content: "";
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 86%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      img {
+        max-width: 100%;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .container {
+        width: min(1180px, calc(100vw - 40px));
+        margin: 0 auto;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid rgba(255, 249, 232, 0.09);
+        background: rgba(3, 4, 3, 0.78);
+        backdrop-filter: blur(18px);
+      }
+
+      .header-inner {
+        display: flex;
+        min-height: var(--header-height);
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+        font-size: 21px;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-decoration: none;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        image-rendering: pixelated;
+      }
+
+      .nav-links,
+      .nav-actions,
+      .cta-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-links {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      .nav-links a {
+        padding: 10px 6px;
+        text-decoration: none;
+        transition: color 160ms ease;
+      }
+
+      .nav-links a:hover {
+        color: var(--ink);
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 249, 232, 0.02);
+        color: var(--ink);
+        padding: 0 18px;
+        font-size: 15px;
+        font-weight: 780;
+        letter-spacing: 0;
+        text-decoration: none;
+        transition:
+          background 160ms ease,
+          border-color 160ms ease,
+          color 160ms ease,
+          transform 160ms ease;
+      }
+
+      .button:hover {
+        border-color: var(--line-strong);
+        background: rgba(215, 255, 63, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+
+      .button.primary:hover {
+        background: #e5ff70;
+        color: var(--accent-ink);
+      }
+
+      .button svg {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+      }
+
+      .hero {
+        border-bottom: 1px solid rgba(255, 249, 232, 0.09);
+        overflow: hidden;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.98fr) minmax(420px, 1.02fr);
+        gap: clamp(32px, 5vw, 68px);
+        align-items: center;
+        min-height: min(760px, calc(100svh - var(--header-height)));
+        padding: clamp(52px, 6vw, 84px) 0 clamp(52px, 6vw, 74px);
+      }
+
+      .hero-copy,
+      .hero-visual,
+      .feature,
+      .pet-card,
+      .final-inner > * {
+        min-width: 0;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      h1 {
+        margin-top: 18px;
+        max-width: 660px;
+        font-size: clamp(56px, 5.8vw, 84px);
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 0.88;
+      }
+
+      .accent-text {
+        color: var(--accent);
+      }
+
+      .hero-subhead {
+        max-width: 520px;
+        margin-top: 24px;
+        color: var(--ink);
+        font-size: clamp(27px, 3.2vw, 40px);
+        font-weight: 800;
+        line-height: 1.13;
+      }
+
+      .hero-lede {
+        max-width: 520px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1.55;
+      }
+
+      .cta-row {
+        flex-wrap: wrap;
+        margin-top: 34px;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        margin-top: 18px;
+        color: var(--subtle);
+        font-size: 14px;
+      }
+
+      .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .meta-item::before {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        content: "";
+      }
+
+      .hero-visual {
+        position: relative;
+        animation: rise-in 420ms ease both 120ms;
+      }
+
+      .desktop-shot {
+        position: relative;
+        min-height: 540px;
+        overflow: hidden;
+        border: 1px solid rgba(215, 255, 63, 0.22);
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at 86% 36%, rgba(45, 99, 180, 0.38), transparent 30%),
+          radial-gradient(circle at 32% 30%, rgba(215, 255, 63, 0.14), transparent 24%),
+          linear-gradient(145deg, #09100c 0%, #030604 44%, #0b1119 100%);
+        box-shadow: 0 38px 110px var(--shadow);
+      }
+
+      .desktop-shot::before,
+      .desktop-shot::after {
+        position: absolute;
+        content: "";
+      }
+
+      .desktop-shot::before {
+        inset: 0;
+        background:
+          radial-gradient(circle at 80% 50%, transparent 0 14%, rgba(94, 152, 255, 0.18) 14.3% 14.8%, transparent 15.1%),
+          radial-gradient(circle at 88% 58%, transparent 0 18%, rgba(94, 152, 255, 0.16) 18.3% 18.8%, transparent 19.1%),
+          linear-gradient(90deg, rgba(255, 249, 232, 0.04), transparent 40%);
+      }
+
+      .desktop-shot::after {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 74px;
+        border-top: 1px solid rgba(255, 249, 232, 0.1);
+        background: rgba(3, 4, 3, 0.72);
+        backdrop-filter: blur(16px);
+      }
+
+      .hero-pet {
+        position: absolute;
+        left: 50%;
+        bottom: 206px;
+        z-index: 2;
+        width: min(220px, 38%);
+        transform: translateX(-50%);
+        image-rendering: pixelated;
+        filter: drop-shadow(0 32px 28px rgba(0, 0, 0, 0.5));
+        animation: pet-breathe 3.8s ease-in-out infinite;
+      }
+
+      .preview-actions {
+        position: absolute;
+        left: 50%;
+        bottom: 92px;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: repeat(3, 42px);
+        gap: 8px;
+        justify-content: center;
+        transform: translateX(-50%);
+      }
+
+      .preview-action {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 2px solid rgba(18, 55, 22, 0.78);
+        border-radius: 8px;
+        background: #f7f8e7;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+      }
+
+      .quick-icon {
+        width: 26px;
+        height: 26px;
+        background-image: url("assets/items/lcd-core-items.png");
+        background-repeat: no-repeat;
+        background-size: 156px 182px;
+        image-rendering: pixelated;
+      }
+
+      .quick-icon.bowl {
+        background-position: 0 0;
+      }
+
+      .quick-icon.ball {
+        background-position: -26px -26px;
+      }
+
+      .quick-icon.sponge {
+        background-position: -78px -52px;
+      }
+
+      .quick-icon.crescent {
+        background-position: -26px -78px;
+      }
+
+      .quick-icon.capsule {
+        background-position: -130px -26px;
+      }
+
+      .quick-icon.meter {
+        background-position: -130px -78px;
+      }
+
+      .taskbar {
+        position: absolute;
+        right: 24px;
+        bottom: 18px;
+        z-index: 3;
+        display: flex;
+        min-height: 42px;
+        align-items: center;
+        gap: 18px;
+        color: #f7f0dd;
+        font-size: 14px;
+      }
+
+      .taskbar img {
+        width: 30px;
+        height: 30px;
+        image-rendering: pixelated;
+      }
+
+      .taskbar svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .caption-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin: 34px auto 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .caption-line::before,
+      .caption-line::after {
+        width: min(170px, 18vw);
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(215, 255, 63, 0.5));
+        content: "";
+      }
+
+      .caption-line::after {
+        background: linear-gradient(90deg, rgba(215, 255, 63, 0.5), transparent);
+      }
+
+      .section {
+        padding: clamp(70px, 9vw, 108px) 0;
+      }
+
+      .section-header {
+        max-width: 680px;
+        margin: 0 auto 48px;
+        text-align: center;
+      }
+
+      .section-header h2 {
+        font-size: clamp(34px, 4.8vw, 58px);
+        font-weight: 880;
+        letter-spacing: 0;
+        line-height: 1;
+      }
+
+      .section-header p {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .feature {
+        min-height: 430px;
+        padding: 36px min(3vw, 38px);
+      }
+
+      .feature + .feature {
+        border-left: 1px solid var(--line);
+      }
+
+      .feature-icon {
+        display: inline-flex;
+        width: 46px;
+        height: 46px;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+      }
+
+      .feature-icon svg {
+        width: 42px;
+        height: 42px;
+        stroke-width: 1.8;
+      }
+
+      .feature h3 {
+        margin-top: 22px;
+        color: var(--ink);
+        font-size: clamp(24px, 2.7vw, 34px);
+        line-height: 1.05;
+      }
+
+      .feature p {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.58;
+      }
+
+      .feature-visual {
+        position: relative;
+        display: flex;
+        min-height: 158px;
+        align-items: flex-end;
+        justify-content: center;
+        margin-top: 34px;
+      }
+
+      .lamp {
+        position: absolute;
+        top: 0;
+        left: calc(50% - 39px);
+        width: 78px;
+        height: 44px;
+        border-radius: 44px 44px 8px 8px;
+        background: linear-gradient(180deg, #292b25, #0b0c09);
+      }
+
+      .lamp::after {
+        position: absolute;
+        left: 50%;
+        bottom: -88px;
+        width: 140px;
+        height: 118px;
+        background: radial-gradient(circle, rgba(255, 216, 117, 0.34), transparent 64%);
+        content: "";
+        transform: translateX(-50%);
+      }
+
+      .pet-small {
+        position: relative;
+        z-index: 1;
+        width: 100px;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.35));
+      }
+
+      .food-bowl {
+        position: relative;
+        z-index: 1;
+        width: 70px;
+        height: 28px;
+        margin-left: 18px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 34% 32%, #f1a554 0 12%, transparent 13%),
+          radial-gradient(circle at 56% 29%, #f2bf5f 0 14%, transparent 15%),
+          radial-gradient(circle at 68% 42%, #e79243 0 10%, transparent 11%),
+          #504234;
+        box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.25);
+      }
+
+      .mini-tray {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        border: 1px solid rgba(255, 249, 232, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 249, 232, 0.035);
+        padding: 18px 22px;
+      }
+
+      .mini-tray img {
+        width: 38px;
+        height: 38px;
+        image-rendering: pixelated;
+      }
+
+      .mini-tray svg {
+        width: 22px;
+        height: 22px;
+        color: var(--ink);
+      }
+
+      .mini-pets {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .mini-pet-tile {
+        display: grid;
+        aspect-ratio: 1;
+        min-height: 0;
+        overflow: hidden;
+        place-items: center;
+        border: 1px solid rgba(215, 255, 63, 0.2);
+        border-radius: 10px;
+        background: #050705;
+      }
+
+      .mini-pet-tile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .pets {
+        border-top: 1px solid rgba(255, 249, 232, 0.09);
+        border-bottom: 1px solid rgba(255, 249, 232, 0.09);
+        background:
+          radial-gradient(circle at 23% 40%, rgba(215, 255, 63, 0.08), transparent 24%),
+          linear-gradient(180deg, rgba(215, 255, 63, 0.025), transparent 42%),
+          rgba(3, 4, 3, 0.36);
+      }
+
+      .pet-showcase {
+        display: grid;
+        grid-template-columns: minmax(340px, 0.95fr) minmax(0, 1.05fr);
+        gap: clamp(32px, 5vw, 72px);
+        align-items: center;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: clamp(24px, 4vw, 42px) 0;
+      }
+
+      .pet-display {
+        position: relative;
+        display: grid;
+        min-height: 470px;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid rgba(215, 255, 63, 0.22);
+        border-radius: 16px;
+        background:
+          radial-gradient(circle at 50% 56%, rgba(215, 255, 63, 0.32), transparent 38%),
+          linear-gradient(145deg, rgba(13, 21, 11, 0.95), rgba(3, 5, 4, 0.98));
+        box-shadow: 0 36px 90px rgba(0, 0, 0, 0.34);
+      }
+
+      .pet-display::before,
+      .pet-display::after {
+        position: absolute;
+        content: "";
+      }
+
+      .pet-display::before {
+        width: 64%;
+        aspect-ratio: 1;
+        border: 1px solid rgba(215, 255, 63, 0.18);
+        border-radius: 50%;
+        box-shadow:
+          0 0 34px rgba(215, 255, 63, 0.12),
+          inset 0 0 28px rgba(215, 255, 63, 0.08);
+        transform: translateY(44px) rotateX(66deg);
+      }
+
+      .pet-display::after {
+        inset: 0;
+        background:
+          linear-gradient(rgba(215, 255, 63, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(215, 255, 63, 0.04) 1px, transparent 1px);
+        background-size: 34px 34px;
+        mask-image: radial-gradient(circle at 50% 50%, black, transparent 72%);
+      }
+
+      .pet-display-name {
+        position: absolute;
+        top: 22px;
+        left: 22px;
+        z-index: 2;
+        color: var(--accent);
+        font-size: 15px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .pet-display img {
+        position: relative;
+        z-index: 1;
+        width: clamp(240px, 25vw, 360px);
+        image-rendering: pixelated;
+        filter:
+          drop-shadow(0 34px 34px rgba(0, 0, 0, 0.42))
+          brightness(1.32)
+          contrast(1.1);
+        transition:
+          opacity 160ms ease,
+          transform 180ms ease;
+      }
+
+      .pet-display img.pet-portrait {
+        aspect-ratio: 1;
+        width: min(78%, 390px);
+        border-radius: 14px;
+        image-rendering: auto;
+        object-fit: cover;
+        filter: drop-shadow(0 34px 34px rgba(0, 0, 0, 0.38));
+      }
+
+      .pet-profile {
+        display: grid;
+        gap: 24px;
+      }
+
+      .pet-profile h3 {
+        color: var(--accent);
+        font-size: clamp(48px, 5.5vw, 76px);
+        line-height: 0.92;
+      }
+
+      .pet-species {
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 760;
+      }
+
+      .pet-story {
+        max-width: 560px;
+        min-height: 5em;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.62;
+      }
+
+      .pet-facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .pet-fact {
+        border-top: 1px solid rgba(215, 255, 63, 0.22);
+        padding-top: 12px;
+      }
+
+      .pet-fact span {
+        display: block;
+        color: var(--subtle);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .pet-fact strong {
+        display: block;
+        min-height: 2.7em;
+        margin-top: 5px;
+        color: var(--ink);
+        font-size: 17px;
+        line-height: 1.35;
+      }
+
+      .food-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        min-height: 44px;
+      }
+
+      .profile-subhead {
+        margin-bottom: 10px;
+        color: var(--subtle);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .food-pill {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid rgba(255, 249, 232, 0.12);
+        border-radius: 8px;
+        background: rgba(255, 249, 232, 0.045);
+        padding: 6px 12px 6px 8px;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 720;
+      }
+
+      .food-icon {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background-image: url("assets/items/lcd-core-items.png");
+        background-repeat: no-repeat;
+        background-size: 180px 210px;
+        image-rendering: pixelated;
+      }
+
+      .food-icon.bowl { background-position: 0 0; }
+      .food-icon.chicken { background-position: -90px -150px; }
+      .food-icon.fish { background-position: -90px -120px; }
+      .food-icon.milk { background-position: -120px -120px; }
+      .food-icon.banana { background-position: -150px -120px; }
+      .food-icon.mango { background-position: -150px -150px; }
+      .food-icon.leafy { background-position: 0 -150px; }
+      .food-icon.sugarcane { background-position: -30px -150px; }
+      .food-icon.peas { background-position: 0 -180px; }
+      .food-icon.corn { background-position: -30px -180px; }
+
+      .stat-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: 128px minmax(0, 1fr) 58px;
+        gap: 12px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .stat-track {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 249, 232, 0.12);
+      }
+
+      .stat-fill {
+        display: block;
+        width: var(--value);
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+        box-shadow: 0 0 18px rgba(215, 255, 63, 0.22);
+        transition: width 220ms ease;
+      }
+
+      .pet-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .pet-card {
+        display: grid;
+        min-height: 190px;
+        justify-items: center;
+        gap: 10px;
+        border: 1px solid rgba(255, 249, 232, 0.14);
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at 50% 34%, rgba(215, 255, 63, 0.1), transparent 52%),
+          rgba(255, 249, 232, 0.025);
+        padding: 16px 10px;
+        color: var(--ink);
+        font: inherit;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 160ms ease,
+          background 160ms ease,
+          transform 160ms ease;
+      }
+
+      .pet-card:hover,
+      .pet-card:focus-visible {
+        border-color: var(--line-strong);
+        transform: translateY(-3px);
+      }
+
+      .pet-card.is-active {
+        border-color: var(--accent);
+        background:
+          radial-gradient(circle at 50% 34%, rgba(215, 255, 63, 0.22), transparent 54%),
+          rgba(215, 255, 63, 0.06);
+        box-shadow: 0 0 0 1px rgba(215, 255, 63, 0.28);
+      }
+
+      .pet-card img {
+        width: clamp(96px, 10vw, 150px);
+        image-rendering: pixelated;
+        filter:
+          drop-shadow(0 18px 20px rgba(0, 0, 0, 0.36))
+          brightness(1.28)
+          contrast(1.1);
+      }
+
+      .pet-card img.pet-card__portrait {
+        aspect-ratio: 1;
+        width: clamp(116px, 11vw, 162px);
+        border-radius: 10px;
+        image-rendering: auto;
+        object-fit: cover;
+        filter: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.34));
+      }
+
+      .pet-card strong {
+        color: var(--accent);
+        font-size: 18px;
+      }
+
+      .pet-card span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .final-cta {
+        padding: clamp(56px, 7vw, 88px) 0;
+      }
+
+      .final-inner {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 26px;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 28px 0;
+      }
+
+      .final-mark {
+        display: inline-flex;
+        width: 66px;
+        height: 66px;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+      }
+
+      .final-mark svg {
+        width: 58px;
+        height: 58px;
+      }
+
+      .final-inner h2 {
+        font-size: clamp(28px, 4vw, 48px);
+        line-height: 1;
+      }
+
+      .final-inner p {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+
+      .footer-note {
+        padding-bottom: 36px;
+        color: var(--subtle);
+        text-align: center;
+        font-size: 14px;
+      }
+
+      @keyframes rise-in {
+        from {
+          transform: translateY(18px);
+        }
+
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pet-breathe {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        50% {
+          transform: translateX(-50%) translateY(-5px) scale(1.015);
+        }
+      }
+
+      @media (min-width: 981px) {
+        .section {
+          display: grid;
+          min-height: calc(100svh - var(--header-height));
+          align-items: center;
+          padding: clamp(28px, 4svh, 50px) 0;
+        }
+
+        .section-header {
+          margin-bottom: clamp(20px, 3svh, 34px);
+        }
+
+        .section-header h2 {
+          font-size: clamp(34px, 4.2vw, 52px);
+        }
+
+        .section-header p {
+          font-size: 16px;
+        }
+
+        .feature {
+          min-height: clamp(310px, 42svh, 390px);
+          padding: clamp(24px, 3svh, 32px) min(2.5vw, 34px);
+        }
+
+        .feature h3 {
+          font-size: clamp(24px, 2.4vw, 30px);
+        }
+
+        .feature-visual {
+          min-height: clamp(120px, 18svh, 150px);
+          margin-top: clamp(22px, 3svh, 30px);
+        }
+
+        .pets .section-header {
+          margin-bottom: clamp(14px, 2.2svh, 22px);
+        }
+
+        .pet-showcase {
+          grid-template-columns: minmax(290px, 0.78fr) minmax(0, 1.22fr);
+          gap: clamp(24px, 4vw, 58px);
+          padding: clamp(12px, 2svh, 20px) 0;
+        }
+
+        .pet-display {
+          width: 100%;
+          height: clamp(270px, 36svh, 340px);
+          min-height: 0;
+        }
+
+        .pet-display img.pet-portrait {
+          width: min(74%, 302px);
+        }
+
+        .pet-profile {
+          gap: clamp(10px, 1.5svh, 16px);
+          align-content: center;
+        }
+
+        .pet-profile h3 {
+          font-size: clamp(40px, 4vw, 56px);
+        }
+
+        .pet-species {
+          font-size: 16px;
+        }
+
+        .pet-story {
+          max-width: none;
+          min-height: 4.3em;
+          font-size: 15px;
+          line-height: 1.42;
+        }
+
+        .pet-facts {
+          gap: 10px;
+        }
+
+        .pet-fact {
+          padding-top: 10px;
+        }
+
+        .pet-fact strong {
+          min-height: 2.6em;
+          font-size: 14px;
+          line-height: 1.3;
+        }
+
+        .profile-subhead {
+          margin-bottom: 8px;
+        }
+
+        .food-pill {
+          min-height: 38px;
+          padding: 4px 10px 4px 8px;
+          font-size: 13px;
+        }
+
+        .stat-list {
+          gap: 8px;
+        }
+
+        .stat-row {
+          grid-template-columns: 112px minmax(120px, 1fr) 50px;
+          gap: 10px;
+          font-size: 13px;
+        }
+
+        .pet-selector-grid {
+          gap: 12px;
+          margin-top: clamp(12px, 2svh, 18px);
+        }
+
+        .pet-card {
+          min-height: clamp(124px, 19svh, 150px);
+          gap: 6px;
+          padding: 10px 8px;
+        }
+
+        .pet-card img.pet-card__portrait {
+          width: clamp(92px, 8vw, 118px);
+        }
+
+        .pet-card strong {
+          font-size: 17px;
+        }
+      }
+
+      @media (min-width: 981px) and (max-height: 960px) {
+        .section {
+          padding: clamp(18px, 2.5svh, 28px) 0;
+        }
+
+        .pets .section-header {
+          margin-bottom: 12px;
+        }
+
+        .pets .section-header h2 {
+          font-size: clamp(38px, 4vw, 48px);
+        }
+
+        .pets .section-header p {
+          margin-top: 8px;
+          font-size: 15px;
+        }
+
+        .pet-showcase {
+          grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
+          gap: clamp(24px, 3vw, 44px);
+          padding: 10px 0;
+        }
+
+        .pet-display {
+          height: clamp(220px, 30svh, 280px);
+        }
+
+        .pet-display-name {
+          top: 18px;
+          left: 18px;
+          font-size: 13px;
+        }
+
+        .pet-display img.pet-portrait {
+          width: min(68%, 260px);
+        }
+
+        .pet-profile {
+          grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+          min-height: 195px;
+          gap: 10px 24px;
+          align-items: start;
+          align-content: start;
+        }
+
+        .pet-profile > div:first-child {
+          grid-column: 1;
+          grid-row: 1;
+        }
+
+        .pet-profile h3 {
+          font-size: clamp(38px, 3.6vw, 46px);
+        }
+
+        .pet-species {
+          font-size: 14px;
+        }
+
+        .pet-story {
+          grid-column: 1;
+          grid-row: 2;
+          min-height: 3.1em;
+          font-size: 14px;
+          line-height: 1.36;
+        }
+
+        .pet-facts {
+          grid-column: 1;
+          grid-row: 3;
+          gap: 8px;
+        }
+
+        .pet-fact {
+          padding-top: 8px;
+        }
+
+        .pet-fact span {
+          font-size: 10px;
+        }
+
+        .pet-fact strong {
+          min-height: 2.25em;
+          font-size: 12px;
+          line-height: 1.24;
+        }
+
+        .pet-profile > div:nth-of-type(3) {
+          grid-column: 2;
+          grid-row: 1;
+        }
+
+        .pet-profile > div:nth-of-type(4) {
+          grid-column: 2;
+          grid-row: 2 / span 2;
+        }
+
+        .profile-subhead {
+          margin-bottom: 6px;
+          font-size: 10px;
+        }
+
+        .food-list {
+          min-height: 34px;
+          gap: 8px;
+        }
+
+        .food-pill {
+          min-height: 34px;
+          padding: 4px 10px 4px 7px;
+          font-size: 12px;
+        }
+
+        .food-icon {
+          width: 24px;
+          height: 24px;
+          background-size: 144px 168px;
+        }
+
+        .food-icon.chicken { background-position: -72px -120px; }
+        .food-icon.fish { background-position: -72px -96px; }
+        .food-icon.milk { background-position: -96px -96px; }
+        .food-icon.banana { background-position: -120px -96px; }
+        .food-icon.mango { background-position: -120px -120px; }
+        .food-icon.leafy { background-position: 0 -120px; }
+        .food-icon.sugarcane { background-position: -24px -120px; }
+        .food-icon.peas { background-position: 0 -144px; }
+        .food-icon.corn { background-position: -24px -144px; }
+
+        .stat-list {
+          gap: 6px;
+        }
+
+        .stat-row {
+          grid-template-columns: 90px minmax(130px, 1fr) 44px;
+          gap: 9px;
+          font-size: 12px;
+        }
+
+        .stat-track {
+          height: 6px;
+        }
+
+        .pet-selector-grid {
+          gap: 10px;
+          margin-top: 10px;
+        }
+
+        .pet-card {
+          min-height: 112px;
+          gap: 4px;
+          padding: 8px;
+        }
+
+        .pet-card img.pet-card__portrait {
+          width: clamp(70px, 7vw, 92px);
+        }
+
+        .pet-card strong {
+          font-size: 15px;
+        }
+
+        .pet-card span {
+          font-size: 11px;
+        }
+      }
+
+      @media (min-width: 981px) and (max-height: 760px) {
+        .section {
+          padding: 22px 0;
+        }
+
+        .section-header {
+          margin-bottom: 16px;
+        }
+
+        .section-header h2 {
+          font-size: 42px;
+        }
+
+        .section-header p {
+          margin-top: 8px;
+          font-size: 15px;
+        }
+
+        .pet-showcase {
+          gap: 28px;
+          padding: 10px 0;
+        }
+
+        .pet-display {
+          height: 260px;
+        }
+
+        .pet-profile {
+          gap: 9px;
+        }
+
+        .pet-story {
+          min-height: 4em;
+          font-size: 14px;
+        }
+
+        .pet-fact strong {
+          min-height: 2.5em;
+          font-size: 13px;
+        }
+
+        .food-pill {
+          min-height: 34px;
+        }
+
+        .stat-list {
+          gap: 6px;
+        }
+
+        .pet-card {
+          min-height: 122px;
+        }
+
+        .pet-card img.pet-card__portrait {
+          width: 88px;
+        }
+      }
+
+      @media (min-width: 641px) and (max-height: 560px) {
+        :root {
+          --header-height: 40px;
+        }
+
+        .container {
+          width: min(1180px, calc(100vw - 42px));
+        }
+
+        .header-inner {
+          gap: 14px;
+        }
+
+        .brand {
+          gap: 8px;
+          font-size: 14px;
+        }
+
+        .brand-mark {
+          width: 20px;
+          height: 20px;
+        }
+
+        .nav-links {
+          display: flex;
+          gap: 8px;
+          font-size: 10px;
+        }
+
+        .nav-links a {
+          padding: 6px 2px;
+        }
+
+        .button {
+          min-height: 28px;
+          gap: 6px;
+          padding: 0 10px;
+          font-size: 10px;
+        }
+
+        .button svg {
+          width: 13px;
+          height: 13px;
+        }
+
+        .section {
+          display: block;
+          min-height: 0;
+          padding: 14px 0 18px;
+        }
+
+        .section-header {
+          max-width: none;
+          margin-bottom: 8px;
+        }
+
+        .section-header h2 {
+          font-size: 26px;
+          line-height: 0.95;
+        }
+
+        .section-header p {
+          margin-top: 4px;
+          font-size: 11px;
+          line-height: 1.25;
+        }
+
+        .pet-showcase {
+          grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+          gap: 16px;
+          padding: 8px 0;
+        }
+
+        .pet-display {
+          height: 144px;
+          min-height: 0;
+          border-radius: 8px;
+        }
+
+        .pet-display-name {
+          top: 12px;
+          left: 12px;
+          font-size: 10px;
+        }
+
+        .pet-display img.pet-portrait {
+          width: min(58%, 150px);
+          border-radius: 8px;
+        }
+
+        .pet-profile {
+          grid-template-columns: minmax(0, 0.9fr) minmax(210px, 1.1fr);
+          min-height: 145px;
+          gap: 5px;
+          gap: 5px 12px;
+          align-items: start;
+        }
+
+        .pet-profile > div:first-child {
+          grid-column: 1;
+          grid-row: 1;
+        }
+
+        .pet-profile h3 {
+          font-size: 30px;
+          line-height: 0.9;
+        }
+
+        .pet-species {
+          font-size: 11px;
+        }
+
+        .pet-story {
+          grid-column: 1;
+          grid-row: 2;
+          min-height: 2.6em;
+          font-size: 10px;
+          line-height: 1.3;
+        }
+
+        .pet-facts {
+          grid-column: 1;
+          grid-row: 3;
+          gap: 8px;
+        }
+
+        .pet-profile > div:nth-of-type(3) {
+          grid-column: 2;
+          grid-row: 1;
+        }
+
+        .pet-profile > div:nth-of-type(4) {
+          grid-column: 2;
+          grid-row: 2 / span 2;
+        }
+
+        .pet-fact {
+          padding-top: 6px;
+        }
+
+        .pet-fact span,
+        .profile-subhead {
+          font-size: 9px;
+          letter-spacing: 0.05em;
+        }
+
+        .pet-fact strong {
+          min-height: 1.25em;
+          margin-top: 2px;
+          font-size: 9px;
+          line-height: 1.2;
+        }
+
+        .profile-subhead {
+          margin-bottom: 4px;
+        }
+
+        .food-list {
+          min-height: 26px;
+          gap: 6px;
+        }
+
+        .food-pill {
+          min-height: 24px;
+          gap: 5px;
+          padding: 2px 7px 2px 5px;
+          font-size: 9px;
+        }
+
+        .food-icon {
+          width: 18px;
+          height: 18px;
+          background-size: 108px 126px;
+        }
+
+        .food-icon.chicken { background-position: -54px -90px; }
+        .food-icon.fish { background-position: -54px -72px; }
+        .food-icon.milk { background-position: -72px -72px; }
+        .food-icon.banana { background-position: -90px -72px; }
+        .food-icon.mango { background-position: -90px -90px; }
+        .food-icon.leafy { background-position: 0 -90px; }
+        .food-icon.sugarcane { background-position: -18px -90px; }
+        .food-icon.peas { background-position: 0 -108px; }
+        .food-icon.corn { background-position: -18px -108px; }
+
+        .stat-list {
+          gap: 3px;
+        }
+
+        .stat-row {
+          grid-template-columns: 56px minmax(90px, 1fr) 32px;
+          gap: 7px;
+          font-size: 9px;
+        }
+
+        .stat-track {
+          height: 5px;
+        }
+
+        .pet-selector-grid {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 8px;
+          margin-top: 8px;
+        }
+
+        .pet-card {
+          min-height: 70px;
+          gap: 2px;
+          border-radius: 8px;
+          padding: 6px 6px 5px;
+        }
+
+        .pet-card img.pet-card__portrait {
+          width: clamp(42px, 7vw, 54px);
+          border-radius: 6px;
+        }
+
+        .pet-card strong {
+          font-size: 10px;
+        }
+
+        .pet-card span {
+          font-size: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero-grid {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+
+        .hero-copy {
+          max-width: 720px;
+        }
+
+        .desktop-shot {
+          min-height: 510px;
+        }
+
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .feature {
+          min-height: 0;
+        }
+
+        .feature + .feature {
+          border-top: 1px solid var(--line);
+          border-left: 0;
+        }
+
+        .pet-showcase {
+          grid-template-columns: 1fr;
+        }
+
+        .pet-selector-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .final-inner {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .final-inner .cta-row {
+          grid-column: 1 / -1;
+          margin-top: 0;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          width: min(1180px, calc(100vw - 28px));
+        }
+
+        .header-inner {
+          min-height: 86px;
+          align-items: flex-start;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .nav-actions,
+        .cta-row,
+        .button {
+          width: 100%;
+        }
+
+        .button {
+          padding: 0 14px;
+        }
+
+        h1 {
+          font-size: clamp(46px, 13.5vw, 56px);
+        }
+
+        .hero-subhead {
+          font-size: 25px;
+        }
+
+        .hero-lede {
+          font-size: 18px;
+        }
+
+        .hero-grid {
+          padding-top: 48px;
+        }
+
+        .desktop-shot {
+          min-height: 430px;
+          border-radius: 12px;
+        }
+
+        .hero-pet {
+          left: 50%;
+          bottom: 194px;
+          width: 40%;
+        }
+
+        .preview-actions {
+          bottom: 92px;
+          grid-template-columns: repeat(3, 38px);
+          gap: 6px;
+        }
+
+        .preview-action {
+          width: 38px;
+          height: 38px;
+        }
+
+        .quick-icon {
+          width: 24px;
+          height: 24px;
+          background-size: 144px 168px;
+        }
+
+        .quick-icon.ball {
+          background-position: -24px -24px;
+        }
+
+        .quick-icon.sponge {
+          background-position: -72px -48px;
+        }
+
+        .quick-icon.crescent {
+          background-position: -24px -72px;
+        }
+
+        .quick-icon.capsule {
+          background-position: -120px -24px;
+        }
+
+        .quick-icon.meter {
+          background-position: -120px -72px;
+        }
+
+        .taskbar {
+          right: 14px;
+          bottom: 16px;
+          gap: 12px;
+        }
+
+        .caption-line::before,
+        .caption-line::after {
+          width: 12vw;
+        }
+
+        .section-header {
+          margin-bottom: 34px;
+          text-align: left;
+        }
+
+        .feature {
+          padding: 30px 0;
+        }
+
+        .mini-pets {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .mini-pet-tile img {
+          width: 100%;
+        }
+
+        .pet-display {
+          min-height: 390px;
+        }
+
+        .pet-display img {
+          width: min(260px, 70vw);
+        }
+
+        .pet-display img.pet-portrait {
+          width: min(312px, 86vw);
+        }
+
+        .pet-profile h3 {
+          font-size: 48px;
+        }
+
+        .pet-facts {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-row {
+          grid-template-columns: 104px minmax(0, 1fr) 46px;
+          gap: 9px;
+        }
+
+        .pet-selector-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 24px 10px;
+        }
+
+        .pet-card img {
+          width: min(126px, 36vw);
+        }
+
+        .pet-card img.pet-card__portrait {
+          width: min(150px, 40vw);
+        }
+
+        .final-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .final-mark {
+          width: 54px;
+          height: 54px;
+        }
+      }
+
+      @media (min-width: 641px) and (max-height: 560px) {
+        .nav-links {
+          display: flex;
+        }
+
+        .pet-showcase {
+          grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+        }
+
+        .pet-selector-grid {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#hero-title">
+          <img class="brand-mark" src="assets/pets/bao-icon.png" alt="" />
+          <span>Deskagotchi</span>
+        </a>
+        <nav class="nav-links" aria-label="Page sections">
+          <a href="#features">Features</a>
+          <a href="#trust">Trust</a>
+          <a href="#pets">Pets</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="button" href="https://github.com/BenedictChannn/deskagotchi" aria-label="Star Deskagotchi on GitHub">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <path d="m12 3 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.3l-5.6 2.9L7.5 14 2.9 9.6l6.3-.9L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+            </svg>
+            Star on GitHub
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="M8.6 11.2c1.1-2.3 5.7-2.3 6.8 0l2.2 4.5c.8 1.6-.3 3.3-2 3.3H8.4c-1.7 0-2.8-1.8-2-3.3l2.2-4.5Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+                <path d="M5.6 9.6c.8 0 1.5-.9 1.5-2s-.7-2-1.5-2-1.5.9-1.5 2 .7 2 1.5 2Zm12.8 0c.8 0 1.5-.9 1.5-2s-.7-2-1.5-2-1.5.9-1.5 2 .7 2 1.5 2Z" stroke="currentColor" stroke-width="2" />
+              </svg>
+              v0.1 beta
+            </div>
+            <h1 id="hero-title">Deska<span class="accent-text">gotchi</span></h1>
+            <p class="hero-subhead">A tiny desktop pet that lives on your Windows desktop.</p>
+            <p class="hero-lede">Feed it. Play with it. Keep a little digital creature close while you work.</p>
+            <div class="cta-row">
+              <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 5.2 11 4v7H4V5.2Zm9-1.6 7-1.2V11h-7V3.6ZM4 13h7v7l-7-1.2V13Zm9 0h7v8.6l-7-1.2V13Z" fill="currentColor" />
+                </svg>
+                Download from GitHub Releases
+              </a>
+              <a class="button" href="https://github.com/BenedictChannn/deskagotchi" aria-label="Star Deskagotchi on GitHub">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                  <path d="m12 3 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.3l-5.6 2.9L7.5 14 2.9 9.6l6.3-.9L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+                Star on GitHub
+              </a>
+            </div>
+            <div class="meta-row" aria-label="Release highlights">
+              <span class="meta-item">Free Windows beta</span>
+              <span class="meta-item">GitHub Release download</span>
+              <span class="meta-item">Local save</span>
+              <span class="meta-item">Built-in pets</span>
+            </div>
+          </div>
+
+          <div class="hero-visual" aria-label="Deskagotchi desktop preview">
+            <div class="desktop-shot">
+              <img class="hero-pet" src="assets/pets/bao-display.png" alt="Bao, a built-in Deskagotchi pet" />
+              <div class="preview-actions" aria-label="Pet quick actions">
+                <span class="preview-action" aria-label="Feed">
+                  <span class="quick-icon bowl" aria-hidden="true"></span>
+                </span>
+                <span class="preview-action" aria-label="Play">
+                  <span class="quick-icon ball" aria-hidden="true"></span>
+                </span>
+                <span class="preview-action" aria-label="Clean">
+                  <span class="quick-icon sponge" aria-hidden="true"></span>
+                </span>
+                <span class="preview-action" aria-label="Sleep">
+                  <span class="quick-icon crescent" aria-hidden="true"></span>
+                </span>
+                <span class="preview-action" aria-label="Medicine">
+                  <span class="quick-icon capsule" aria-hidden="true"></span>
+                </span>
+                <span class="preview-action" aria-label="Health">
+                  <span class="quick-icon meter" aria-hidden="true"></span>
+                </span>
+              </div>
+              <div class="taskbar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+                <img src="assets/pets/bao-icon.png" alt="" />
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M4 10v4h4l5 4V6L8 10H4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+                  <path d="M16 9c1 1.2 1 4.8 0 6m3-9c2.6 3.2 2.6 8.8 0 12" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
+                </svg>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
+                </svg>
+                <span>12:34 PM</span>
+              </div>
+            </div>
+            <p class="caption-line">Keep a little company while you work.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="features" aria-labelledby="features-title">
+        <div class="container">
+          <div class="section-header">
+            <h2 id="features-title">Everything you need</h2>
+            <p>Just the core loop: care for your pet, recover it from the tray, and pick a companion for your desk.</p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20.8 9.4c0 5.2-8.8 10-8.8 10s-8.8-4.8-8.8-10A5 5 0 0 1 12 6a5 5 0 0 1 8.8 3.4Z" stroke="currentColor" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>Local care</h3>
+              <p>Feed, play, clean, and check in. Your pet state stays on your machine.</p>
+              <div class="feature-visual" aria-hidden="true">
+                <span class="lamp"></span>
+                <img class="pet-small" src="assets/pets/bao-display.png" alt="" />
+                <span class="food-bowl"></span>
+              </div>
+            </article>
+
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M5 8h14v10H5zM8 8V5h8v3M8 18v2m8-2v2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>Tray recovery</h3>
+              <p>Hide the window, move monitors, or close the app. Your pet stays reachable from the tray.</p>
+              <div class="feature-visual" aria-hidden="true">
+                <div class="mini-tray">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                  </svg>
+                  <img src="assets/pets/bao-icon.png" alt="" />
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 10v4h4l5 4V6L8 10H4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01" stroke="currentColor" stroke-linecap="round" stroke-width="2" />
+                  </svg>
+                </div>
+              </div>
+            </article>
+
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M8.6 11.2c1.1-2.3 5.7-2.3 6.8 0l2.2 4.5c.8 1.6-.3 3.3-2 3.3H8.4c-1.7 0-2.8-1.8-2-3.3l2.2-4.5ZM5.6 9.6c.8 0 1.5-.9 1.5-2s-.7-2-1.5-2-1.5.9-1.5 2 .7 2 1.5 2Zm12.8 0c.8 0 1.5-.9 1.5-2s-.7-2-1.5-2-1.5.9-1.5 2 .7 2 1.5 2Z" stroke="currentColor" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>Built-in pets</h3>
+              <p>Start with Bao, Miso, Mochi, Peanut, or Puddles. Pick the one that fits your desk.</p>
+              <div class="feature-visual" aria-hidden="true">
+                <div class="mini-pets">
+                  <span class="mini-pet-tile"><img src="assets/pets/bao-portrait.png" alt="" /></span>
+                  <span class="mini-pet-tile"><img src="assets/pets/miso-portrait.png" alt="" /></span>
+                  <span class="mini-pet-tile"><img src="assets/pets/mochi-portrait.png" alt="" /></span>
+                  <span class="mini-pet-tile"><img src="assets/pets/peanut-portrait.png" alt="" /></span>
+                  <span class="mini-pet-tile"><img src="assets/pets/puddles-portrait.png" alt="" /></span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="trust" aria-labelledby="trust-title">
+        <div class="container">
+          <div class="section-header">
+            <h2 id="trust-title">Small, local, and honest about the beta.</h2>
+            <p>Deskagotchi is a Windows-first indie beta. The landing page links to GitHub Releases for the installer; the app itself keeps normal pet state on your machine.</p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>GitHub-hosted installer</h3>
+              <p>Download the Windows installer only from the official GitHub Release. The release notes should include the exact installer checksum before public sharing.</p>
+            </article>
+
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6l-7-3Z" stroke="currentColor" stroke-linejoin="round" />
+                  <path d="M9 12h6" stroke="currentColor" stroke-linecap="round" />
+                </svg>
+              </span>
+              <h3>Unsigned beta caveat</h3>
+              <p>If the v0.1 build is unsigned, Windows may show SmartScreen or Unknown Publisher warnings. Verify the GitHub Release source before running it.</p>
+            </article>
+
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M5 6h14v12H5zM8 9h8M8 12h5M8 15h3" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>Local in normal use</h3>
+              <p>No account, no analytics, no remote telemetry, and no remote sync in normal use. Pet state is stored locally and the Settings panel shows the data path.</p>
+            </article>
+
+            <article class="feature">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M7 7h10v10H7zM4 4h16v16H4z" stroke="currentColor" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <h3>v0.1 scope</h3>
+              <p>Windows first. Built-in pets only. Custom pet generation and import/export are intentionally held for a later release.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section pets" id="pets" aria-labelledby="pets-title">
+        <div class="container">
+          <div class="section-header">
+            <h2 id="pets-title">Meet the crew</h2>
+            <p>Click a companion to see their story, favorite foods, play style, and care profile.</p>
+          </div>
+
+          <div class="pet-showcase" aria-live="polite">
+            <div class="pet-display">
+              <span class="pet-display-name" data-pet-name> Bao </span>
+              <img class="pet-portrait" data-pet-image src="assets/pets/bao-portrait.png" alt="Bao" />
+            </div>
+
+            <article class="pet-profile" aria-labelledby="pet-profile-name">
+              <div>
+                <h3 id="pet-profile-name" data-pet-title>Bao</h3>
+                <p class="pet-species" data-pet-species>Shih tzu desk companion</p>
+              </div>
+              <p class="pet-story" data-pet-story>
+                Bao keeps gentle watch on your desktop. Calm, snack-curious, and
+                quick to ask for a check-in when the day gets long.
+              </p>
+              <div class="pet-facts">
+                <div class="pet-fact">
+                  <span>Personality</span>
+                  <strong data-pet-personality>Sweet, calm, snack-curious</strong>
+                </div>
+                <div class="pet-fact">
+                  <span>Play style</span>
+                  <strong data-pet-play>Chase</strong>
+                </div>
+                <div class="pet-fact">
+                  <span>Also likes</span>
+                  <strong data-pet-liked>Apple Slice</strong>
+                </div>
+              </div>
+              <div>
+                <p class="profile-subhead">Favorite foods</p>
+                <div class="food-list" data-pet-foods>
+                  <span class="food-pill"><span class="food-icon bowl" aria-hidden="true"></span>Kibble Bowl</span>
+                  <span class="food-pill"><span class="food-icon chicken" aria-hidden="true"></span>Chicken Bite</span>
+                </div>
+              </div>
+              <div>
+                <p class="profile-subhead">Care profile</p>
+                <div class="stat-list" data-pet-stats>
+                  <div class="stat-row">
+                    <span>Bond gain</span>
+                    <span class="stat-track"><span class="stat-fill" style="--value: 80%"></span></span>
+                    <strong>+10%</strong>
+                  </div>
+                  <div class="stat-row">
+                    <span>Hunger pace</span>
+                    <span class="stat-track"><span class="stat-fill" style="--value: 50%"></span></span>
+                    <strong>1.00x</strong>
+                  </div>
+                  <div class="stat-row">
+                    <span>Energy pace</span>
+                    <span class="stat-track"><span class="stat-fill" style="--value: 50%"></span></span>
+                    <strong>1.00x</strong>
+                  </div>
+                  <div class="stat-row">
+                    <span>Clean pace</span>
+                    <span class="stat-track"><span class="stat-fill" style="--value: 60%"></span></span>
+                    <strong>1.05x</strong>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="pet-selector-grid" aria-label="Built-in Deskagotchi pets">
+            <button class="pet-card is-active" type="button" data-pet="bao" aria-pressed="true">
+              <img class="pet-card__portrait" src="assets/pets/bao-portrait.png" alt="" />
+              <strong>Bao</strong>
+              <span>Shih tzu</span>
+            </button>
+            <button class="pet-card" type="button" data-pet="miso" aria-pressed="false">
+              <img class="pet-card__portrait" src="assets/pets/miso-portrait.png" alt="" />
+              <strong>Miso</strong>
+              <span>Cat</span>
+            </button>
+            <button class="pet-card" type="button" data-pet="mochi" aria-pressed="false">
+              <img class="pet-card__portrait" src="assets/pets/mochi-portrait.png" alt="" />
+              <strong>Mochi</strong>
+              <span>Monkey</span>
+            </button>
+            <button class="pet-card" type="button" data-pet="peanut" aria-pressed="false">
+              <img class="pet-card__portrait" src="assets/pets/peanut-portrait.png" alt="" />
+              <strong>Peanut</strong>
+              <span>Elephant</span>
+            </button>
+            <button class="pet-card" type="button" data-pet="puddles" aria-pressed="false">
+              <img class="pet-card__portrait" src="assets/pets/puddles-portrait.png" alt="" />
+              <strong>Puddles</strong>
+              <span>Duck</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta" aria-labelledby="final-title">
+        <div class="container final-inner">
+          <span class="final-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21s-8.8-5-8.8-11.4A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 8.8 3.6C20.8 16 12 21 12 21Z" />
+            </svg>
+          </span>
+          <div>
+            <h2 id="final-title">Ready for a tiny companion?</h2>
+            <p>Download Deskagotchi and bring a little life to your desktop.</p>
+          </div>
+          <div class="cta-row">
+            <a class="button primary" href="https://github.com/BenedictChannn/deskagotchi/releases">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="M4 5.2 11 4v7H4V5.2Zm9-1.6 7-1.2V11h-7V3.6ZM4 13h7v7l-7-1.2V13Zm9 0h7v8.6l-7-1.2V13Z" fill="currentColor" />
+              </svg>
+              Download from GitHub Releases
+            </a>
+            <a class="button" href="https://github.com/BenedictChannn/deskagotchi" aria-label="Star Deskagotchi on GitHub">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                <path d="m12 3 2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.3l-5.6 2.9L7.5 14 2.9 9.6l6.3-.9L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="2" />
+              </svg>
+              Star on GitHub
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <div class="container">Made with care for your desk.</div>
+    </footer>
+
+    <script>
+      const petProfiles = {
+        bao: {
+          name: "Bao",
+          species: "Shih tzu desk companion",
+          personality: "Sweet, calm, snack-curious",
+          story:
+            "Bao keeps gentle watch on your desktop. Calm, snack-curious, and quick to ask for a check-in when the day gets long.",
+          image: "assets/pets/bao-portrait.png",
+          alt: "Bao, a fluffy shih tzu Deskagotchi pet",
+          play: "Chase",
+          liked: "Apple Slice",
+          foods: [
+            { label: "Kibble Bowl", icon: "bowl" },
+            { label: "Chicken Bite", icon: "chicken" }
+          ],
+          care: {
+            affectionGainMultiplier: 1.1,
+            hungerDecayMultiplier: 1,
+            energyDecayMultiplier: 1,
+            cleanlinessDecayMultiplier: 1.05
+          }
+        },
+        miso: {
+          name: "Miso",
+          species: "Cat-like desk companion",
+          personality: "Curious, cozy, alert",
+          story:
+            "Miso patrols quiet corners of your desk, alert to tiny rituals and happiest when fishy snacks appear.",
+          image: "assets/pets/miso-portrait.png",
+          alt: "Miso, a cat-like Deskagotchi pet",
+          play: "Chase",
+          liked: "Chicken Bite",
+          foods: [
+            { label: "Fish Bite", icon: "fish" },
+            { label: "Milk", icon: "milk" }
+          ],
+          care: {
+            affectionGainMultiplier: 1.15,
+            hungerDecayMultiplier: 1,
+            energyDecayMultiplier: 0.95,
+            cleanlinessDecayMultiplier: 0.9
+          }
+        },
+        mochi: {
+          name: "Mochi",
+          species: "Monkey-like desk companion",
+          personality: "Playful, curious, energetic",
+          story:
+            "Mochi turns breaks into tiny chase games, bouncing between focus sprints with extra snack energy.",
+          image: "assets/pets/mochi-portrait.png",
+          alt: "Mochi, a monkey-like Deskagotchi pet",
+          play: "Chase",
+          liked: "Melon Slice",
+          foods: [
+            { label: "Banana", icon: "banana" },
+            { label: "Mango Cube", icon: "mango" }
+          ],
+          care: {
+            affectionGainMultiplier: 1.1,
+            hungerDecayMultiplier: 1.05,
+            energyDecayMultiplier: 1.05,
+            cleanlinessDecayMultiplier: 1
+          }
+        },
+        peanut: {
+          name: "Peanut",
+          species: "Elephant-like desk companion",
+          personality: "Gentle, playful, patient",
+          story:
+            "Peanut is patient and steady, happiest with leafy snacks and a slow check-in between tasks.",
+          image: "assets/pets/peanut-portrait.png",
+          alt: "Peanut, an elephant-like Deskagotchi pet",
+          play: "Chase",
+          liked: "Banana, Melon Slice",
+          foods: [
+            { label: "Leafy Bundle", icon: "leafy" },
+            { label: "Sugarcane", icon: "sugarcane" }
+          ],
+          care: {
+            affectionGainMultiplier: 1.1,
+            hungerDecayMultiplier: 0.95,
+            energyDecayMultiplier: 0.9,
+            cleanlinessDecayMultiplier: 1
+          }
+        },
+        puddles: {
+          name: "Puddles",
+          species: "Duck desk companion",
+          personality: "Cheerful, waddly, tidy",
+          story:
+            "Puddles waddles into the corner of your screen with strong snack opinions and a rhythm-game streak.",
+          image: "assets/pets/puddles-portrait.png",
+          alt: "Puddles, a duck Deskagotchi pet",
+          play: "Rhythm",
+          liked: "Leafy Bundle, Melon Slice",
+          foods: [
+            { label: "Peas", icon: "peas" },
+            { label: "Corn Kernels", icon: "corn" }
+          ],
+          care: {
+            affectionGainMultiplier: 1.05,
+            hungerDecayMultiplier: 1,
+            energyDecayMultiplier: 0.95,
+            cleanlinessDecayMultiplier: 1.1
+          }
+        }
+      };
+
+      function clampStat(value) {
+        return Math.max(12, Math.min(100, Math.round(value)));
+      }
+
+      function pacePercent(multiplier) {
+        return clampStat(((multiplier - 0.85) / 0.3) * 88 + 8);
+      }
+
+      function bondPercent(multiplier) {
+        return clampStat(((multiplier - 1) / 0.15) * 48 + 52);
+      }
+
+      function formatMultiplier(value) {
+        return `${value.toFixed(2)}x`;
+      }
+
+      function buildStats(profile) {
+        const care = profile.care;
+        return [
+          {
+            label: "Bond gain",
+            value: `+${Math.round((care.affectionGainMultiplier - 1) * 100)}%`,
+            percent: bondPercent(care.affectionGainMultiplier)
+          },
+          {
+            label: "Hunger pace",
+            value: formatMultiplier(care.hungerDecayMultiplier),
+            percent: pacePercent(care.hungerDecayMultiplier)
+          },
+          {
+            label: "Energy pace",
+            value: formatMultiplier(care.energyDecayMultiplier),
+            percent: pacePercent(care.energyDecayMultiplier)
+          },
+          {
+            label: "Clean pace",
+            value: formatMultiplier(care.cleanlinessDecayMultiplier),
+            percent: pacePercent(care.cleanlinessDecayMultiplier)
+          }
+        ];
+      }
+
+      function renderPetProfile(petId) {
+        const profile = petProfiles[petId] ?? petProfiles.bao;
+        const petImage = document.querySelector("[data-pet-image]");
+        document.querySelector("[data-pet-name]").textContent = profile.name;
+        document.querySelector("[data-pet-title]").textContent = profile.name;
+        document.querySelector("[data-pet-species]").textContent = profile.species;
+        document.querySelector("[data-pet-story]").textContent = profile.story;
+        document.querySelector("[data-pet-personality]").textContent = profile.personality;
+        document.querySelector("[data-pet-play]").textContent = profile.play;
+        document.querySelector("[data-pet-liked]").textContent = profile.liked;
+        petImage.src = profile.image;
+        petImage.alt = profile.alt;
+
+        document.querySelector("[data-pet-foods]").innerHTML = profile.foods
+          .map(
+            (food) =>
+              `<span class="food-pill"><span class="food-icon ${food.icon}" aria-hidden="true"></span>${food.label}</span>`
+          )
+          .join("");
+
+        document.querySelector("[data-pet-stats]").innerHTML = buildStats(profile)
+          .map(
+            (stat) => `
+              <div class="stat-row">
+                <span>${stat.label}</span>
+                <span class="stat-track"><span class="stat-fill" style="--value: ${stat.percent}%"></span></span>
+                <strong>${stat.value}</strong>
+              </div>
+            `
+          )
+          .join("");
+
+        document.querySelectorAll("[data-pet]").forEach((button) => {
+          const isActive = button.dataset.pet === petId;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        });
+      }
+
+      document.querySelectorAll("[data-pet]").forEach((button) => {
+        button.addEventListener("click", () => renderPetProfile(button.dataset.pet));
+      });
+    </script>
+  </body>
+</html>

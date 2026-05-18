@@ -3,13 +3,19 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import { App } from "./App";
-import { installDevDeskagotchiApi } from "./devDeskagotchiApi";
 import "./styles.css";
 
-installDevDeskagotchiApi();
+void bootstrapRenderer();
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+async function bootstrapRenderer(): Promise<void> {
+  if (import.meta.env.DEV) {
+    const { installDevDeskagotchiApi } = await import("./devDeskagotchiApi");
+    installDevDeskagotchiApi();
+  }
+
+  ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}

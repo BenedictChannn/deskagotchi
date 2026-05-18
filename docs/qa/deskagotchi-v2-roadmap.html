@@ -461,7 +461,7 @@
           <article class="panel">
             <h3>Pet packages</h3>
             <ul>
-              <li>Built-in and custom pets use the same schema.</li>
+              <li>Built-in pets use the package schema; custom pet surfaces are archived for a future release.</li>
               <li>Packages include manifest, spritesheet, preview, icon, growth stages, animations, personality, care modifiers, and foods.</li>
               <li>Import rejects unsafe paths, oversized entries, executable files, duplicate ids, invalid manifests, and missing assets.</li>
             </ul>
@@ -471,7 +471,7 @@
             <ul>
               <li>Full panel accepts name, description, concept, personality, colors, accessory, and theme.</li>
               <li>Local placeholder package creation is schema validated before install.</li>
-              <li>Import and export support `.deskagotchi-pet` packages.</li>
+              <li>Custom pet import/export is archived for a future release.</li>
               <li>User-facing custom pet generation is not part of the V2 critical path.</li>
             </ul>
           </article>
@@ -657,7 +657,7 @@
             <h3>Product definition</h3>
             <ul>
               <li>Transparent always-on-top pet overlay is the primary app.</li>
-              <li>Full panel is only for management: settings, pet switch, import/export, and future archived Hatch experiments.</li>
+              <li>Full panel is only for management: settings, pet switch, and future archived Hatch experiments.</li>
               <li>All normal care happens inside the compact overlay.</li>
               <li>Built-in pets are original, cute, and cohesive.</li>
             </ul>
@@ -783,7 +783,7 @@
               <h3>Archive Hatch and protect the package boundary</h3>
               <p>
                 Keep the custom pet generation prototype out of the V2 promise.
-                Preserve safe import/export and package validation, document the
+                Preserve safe package validation, document the
                 open design questions, and revisit Hatch after the core pet loop
                 is good enough to justify generated assets.
               </p>
@@ -851,7 +851,7 @@
             </tr>
             <tr>
               <td>Hatch archive</td>
-              <td>Remove Hatch from the V2 user promise, keep custom generation as an explicit future design discussion, and preserve safe package import/export only.</td>
+              <td>Remove Hatch and custom pet import/export from the V2 user promise, keep custom generation as an explicit future design discussion, and preserve safe package validation only.</td>
               <td>Roadmap says deferred, UI copy does not overpromise, package security tests remain covered.</td>
             </tr>
             <tr>

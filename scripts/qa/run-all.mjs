@@ -17,7 +17,10 @@ const COMMANDS = [
   "qa:assets:pets",
   "qa:assets:items",
   "qa:v2:scope",
-  "qa:v2:visual-page"
+  "qa:v2:manual-context:smoke",
+  "qa:v2:manual-preflight:smoke",
+  "qa:v2:visual-page",
+  "qa:v2:manual-page"
 ];
 
 for (const scriptName of COMMANDS) {

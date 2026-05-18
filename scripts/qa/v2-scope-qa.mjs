@@ -17,6 +17,10 @@ const QA_ROOT = path.join(ROOT_DIR, ".qa-runs");
 const SCENARIO = "v2-scope";
 const FORBIDDEN_HATCH_SURFACE_PATTERN =
   /\b(Hatch|hatch|CreateDraft|createDraft|GeneratePet|generatePet)\b/;
+const FORBIDDEN_CUSTOM_PET_RELEASE_SURFACE_PATTERN =
+  /\b(importPet|exportPet|ImportPet|ExportPet)\b/;
+const FORBIDDEN_CUSTOM_PET_RUNTIME_PATTERN =
+  /\b(PetSource\.Custom|customPetsDir)\b/;
 
 const SURFACE_FILES = [
   ["src/shared/ipc.ts", "IPC contract has no Hatch generation channel"],
@@ -27,16 +31,32 @@ const SURFACE_FILES = [
   ["src/renderer/src/components/OverlayApp.tsx", "overlay has no Hatch action"]
 ];
 
+const CUSTOM_PET_RELEASE_SURFACE_FILES = [
+  ["src/shared/ipc.ts", "IPC contract exposes no v0.1 custom pet import/export channel"],
+  ["src/preload/index.ts", "preload bridge exposes no v0.1 custom pet import/export method"],
+  ["src/main/index.ts", "main process registers no v0.1 custom pet import/export IPC handler"],
+  ["src/renderer/src/components/PanelApp.tsx", "management panel exposes no v0.1 custom pet import/export action"]
+];
+
+const CUSTOM_PET_RUNTIME_FILES = [
+  ["src/main/runtime.ts", "runtime does not load user-data custom pet packages in v0.1"]
+];
+
 const REQUIRED_DOC_SNIPPETS = [
   [
     "README.md",
-    "Hatch/custom pet generation is deferred for V2",
-    "README marks Hatch/custom generation deferred for V2"
+    "Hatch/custom pet generation is deferred for V2; custom pet loading, import, and export are not exposed in v0.1.",
+    "README marks custom generation and custom loading/import/export deferred for v0.1"
   ],
   [
     "README.md",
-    "User-facing Hatch/custom pet generation is archived for the V2 release path.",
-    "README archives user-facing Hatch for the V2 release path"
+    "User-facing Hatch/custom pet generation and custom pet loading/import/export are",
+    "README archives user-facing Hatch and custom loading/import/export for v0.1"
+  ],
+  [
+    "docs/desktop-app.md",
+    "Custom pet loading, import, and export are not exposed in v0.1.",
+    "desktop app docs exclude custom pet loading/import/export from v0.1"
   ],
   [
     "docs/qa/deskagotchi-v2-roadmap.html",
@@ -45,8 +65,8 @@ const REQUIRED_DOC_SNIPPETS = [
   ],
   [
     "docs/v2-goal-success-criteria.md",
-    "User-facing custom pet generation is not part of the V2 promise.",
-    "V2 success criteria exclude user-facing custom generation"
+    "User-facing custom pet generation and custom pet loading/import/export are not",
+    "V2 success criteria exclude user-facing custom generation and loading/import/export"
   ]
 ];
 
@@ -62,6 +82,14 @@ function main() {
     assertNoHatchSurface(run, relativePath, checkName);
   }
 
+  for (const [relativePath, checkName] of CUSTOM_PET_RELEASE_SURFACE_FILES) {
+    assertNoCustomPetReleaseSurface(run, relativePath, checkName);
+  }
+
+  for (const [relativePath, checkName] of CUSTOM_PET_RUNTIME_FILES) {
+    assertNoCustomPetRuntimeSurface(run, relativePath, checkName);
+  }
+
   for (const [relativePath, snippet, checkName] of REQUIRED_DOC_SNIPPETS) {
     assertSnippet(run, relativePath, snippet, checkName);
   }
@@ -70,10 +98,12 @@ function main() {
     { rootDir: ROOT_DIR, qaRunsDir: QA_ROOT, run },
     {
       exactClaimAllowed:
-        "passed static V2 scope QA: Hatch/custom generation is not exposed through user-facing UI, route, preload, or IPC surfaces",
+        "passed static V2 scope QA: Hatch/custom generation and v0.1 custom pet loading/import/export are not exposed through user-facing UI, route, preload, IPC, or runtime custom-package loading surfaces",
       uncoveredConditions: [
         "archived Hatch helper internals are not production custom generation",
-        "future user-facing custom generation requires a separate design and QA gate"
+        "internal package import/export helpers are not exposed through the v0.1 renderer bridge",
+        "the runtime package schema remains shared by built-in pets and future custom pets",
+        "future user-facing custom generation or custom pet loading/import/export requires a separate design and QA gate"
       ]
     }
   );
@@ -86,6 +116,34 @@ function main() {
 function assertNoHatchSurface(run, relativePath, checkName) {
   const source = readProjectFile(relativePath);
   const match = FORBIDDEN_HATCH_SURFACE_PATTERN.exec(source);
+  if (match === null) {
+    recordQaPass(run, checkName, { path: relativePath });
+    return;
+  }
+  recordQaFail(run, checkName, {
+    path: relativePath,
+    matched: match[0],
+    index: match.index
+  });
+}
+
+function assertNoCustomPetReleaseSurface(run, relativePath, checkName) {
+  const source = readProjectFile(relativePath);
+  const match = FORBIDDEN_CUSTOM_PET_RELEASE_SURFACE_PATTERN.exec(source);
+  if (match === null) {
+    recordQaPass(run, checkName, { path: relativePath });
+    return;
+  }
+  recordQaFail(run, checkName, {
+    path: relativePath,
+    matched: match[0],
+    index: match.index
+  });
+}
+
+function assertNoCustomPetRuntimeSurface(run, relativePath, checkName) {
+  const source = readProjectFile(relativePath);
+  const match = FORBIDDEN_CUSTOM_PET_RUNTIME_PATTERN.exec(source);
   if (match === null) {
     recordQaPass(run, checkName, { path: relativePath });
     return;

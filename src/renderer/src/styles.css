@@ -173,7 +173,6 @@ button {
 
 .overlay-health-card {
   -webkit-app-region: no-drag;
-  pointer-events: none;
   position: absolute;
   left: 10px;
   right: 10px;

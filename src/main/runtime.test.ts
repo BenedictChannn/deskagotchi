@@ -1,25 +1,16 @@
-import { mkdtemp, readdir, readFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import AdmZip from "adm-zip";
 import { vi } from "vitest";
 
 import { PetSource } from "@shared/domain";
-import { createTestPetPackage } from "@shared/fixtures";
 
 import { createAssetUrl, DeskagotchiRuntime } from "./runtime";
-
-const electronMocks = vi.hoisted(() => ({
-  showOpenDialog: vi.fn()
-}));
 
 vi.mock("electron", () => ({
   app: {
     getVersion: () => "0.1.0"
-  },
-  dialog: {
-    showOpenDialog: electronMocks.showOpenDialog
   },
   Notification: class {
     show(): void {
@@ -28,105 +19,7 @@ vi.mock("electron", () => ({
   }
 }));
 
-describe("runtime import and simulation safety", () => {
-  beforeEach(() => {
-    electronMocks.showOpenDialog.mockReset();
-  });
-
-  it("removes partial import folders when an archive path is unsafe", async () => {
-    const { runtime, userDataDir } = await createInitializedRuntime();
-    const archivePath = await writeArchive("unsafe-path", (archive) => {
-      archive.addFile("escape.txt", Buffer.from("nope"));
-      const [entry] = archive.getEntries();
-      if (entry !== undefined) {
-        entry.entryName = "../escape.txt";
-      }
-    });
-    electronMocks.showOpenDialog.mockResolvedValueOnce({
-      canceled: false,
-      filePaths: [archivePath]
-    });
-
-    await expect(runtime.importPet()).rejects.toThrow("Unsafe archive path");
-
-    await expectCustomPets(userDataDir, []);
-  });
-
-  it("removes partial import folders when cumulative uncompressed bytes are too large", async () => {
-    const { runtime, userDataDir } = await createInitializedRuntime();
-    const oneMegabyte = Buffer.alloc(1024 * 1024, "a");
-    const archivePath = await writeArchive("too-large-uncompressed", (archive) => {
-      for (let index = 0; index < 26; index += 1) {
-        archive.addFile(`asset-${index}.txt`, oneMegabyte);
-      }
-    });
-    electronMocks.showOpenDialog.mockResolvedValueOnce({
-      canceled: false,
-      filePaths: [archivePath]
-    });
-
-    await expect(runtime.importPet()).rejects.toThrow("uncompressed size limit");
-
-    await expectCustomPets(userDataDir, []);
-  });
-
-  it("removes partial import folders when validation fails", async () => {
-    const { runtime, userDataDir } = await createInitializedRuntime();
-    const archivePath = await writeArchive("invalid-package", (archive) => {
-      archive.addFile("preview.svg", Buffer.from("<svg />"));
-    });
-    electronMocks.showOpenDialog.mockResolvedValueOnce({
-      canceled: false,
-      filePaths: [archivePath]
-    });
-
-    await expect(runtime.importPet()).rejects.toThrow("failed validation");
-
-    await expectCustomPets(userDataDir, []);
-  });
-
-  it("rejects imported custom packages that reuse an existing package id", async () => {
-    const { runtime, userDataDir } = await createInitializedRuntime();
-    const duplicatePackage = createTestPetPackage({
-      packageId: "bao",
-      source: PetSource.Custom,
-      name: "Duplicate Bao"
-    });
-    const archivePath = await writeArchive("duplicate-bao", (archive) => {
-      archive.addFile("pet.json", Buffer.from(JSON.stringify(duplicatePackage)));
-      archive.addFile("spritesheet.svg", Buffer.from("<svg />"));
-      archive.addFile("preview.svg", Buffer.from("<svg />"));
-      archive.addFile("icon.svg", Buffer.from("<svg />"));
-    });
-    electronMocks.showOpenDialog.mockResolvedValueOnce({
-      canceled: false,
-      filePaths: [archivePath]
-    });
-
-    await expect(runtime.importPet()).rejects.toThrow("existing package id");
-
-    await expectCustomPets(userDataDir, []);
-  });
-
-  it("rejects overlapping imports before opening a second file dialog", async () => {
-    const { runtime } = await createInitializedRuntime();
-    let resolveDialog:
-      | ((selection: { canceled: true; filePaths: string[] }) => void)
-      | undefined;
-    electronMocks.showOpenDialog.mockReturnValueOnce(
-      new Promise((resolve) => {
-        resolveDialog = resolve;
-      })
-    );
-
-    const firstImport = runtime.importPet();
-    await expect(runtime.importPet()).rejects.toThrow("already in progress");
-    expect(electronMocks.showOpenDialog).toHaveBeenCalledTimes(1);
-
-    resolveDialog?.({ canceled: true, filePaths: [] });
-    await expect(firstImport).resolves.toBeDefined();
-  });
-
+describe("runtime simulation safety", () => {
   it("keeps snapshot reads separate from simulation progression", async () => {
     const { runtime } = await createInitializedRuntime();
     const initialSnapshot = await runtime.getSnapshot();
@@ -140,6 +33,24 @@ describe("runtime import and simulation safety", () => {
     expect(readOnlySnapshot.activeState.ageHours).toBe(
       progressedSnapshot.activeState.ageHours
     );
+  });
+
+  it("keeps user-data custom packages out of the v0.1 runtime surface", async () => {
+    const userDataDir = await createUserDataWithCustomBao();
+    const runtime = new DeskagotchiRuntime(resourceRoot(), userDataDir);
+    await runtime.initialize(new Date("2026-05-06T00:00:00.000Z"));
+
+    const snapshot = await runtime.getSnapshot();
+    const packageIds = snapshot.packages.map(
+      (runtimePackage) => runtimePackage.petPackage.packageId
+    );
+
+    expect(packageIds).not.toContain("custom-bao");
+    expect(
+      snapshot.packages.every(
+        (runtimePackage) => runtimePackage.petPackage.source === PetSource.BuiltIn
+      )
+    ).toBe(true);
   });
 
   it("applies low-maintenance offline catch-up when the setting is enabled", async () => {
@@ -209,38 +120,35 @@ async function createInitializedRuntime(): Promise<{
   runtime: DeskagotchiRuntime;
   userDataDir: string;
 }> {
-  const userDataDir = await mkdtemp(path.join(os.tmpdir(), "deskagotchi-user-"));
+  const userDataDir = await createUserDataDir();
   const runtime = new DeskagotchiRuntime(resourceRoot(), userDataDir);
   await runtime.initialize(new Date("2026-05-06T00:00:00.000Z"));
   return { runtime, userDataDir };
 }
 
-async function writeArchive(
-  name: string,
-  addEntries: (archive: AdmZip) => void
-): Promise<string> {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), "deskagotchi-archive-"));
-  const archivePath = path.join(tempDir, `${name}.deskagotchi-pet`);
-  const archive = new AdmZip();
-  addEntries(archive);
-  archive.writeZip(archivePath);
-  return archivePath;
+async function createUserDataWithCustomBao(): Promise<string> {
+  const userDataDir = await createUserDataDir();
+  const customPackageRoot = path.join(userDataDir, "custom-pets", "custom-bao");
+  await mkdir(path.dirname(customPackageRoot), { recursive: true });
+  await cp(path.join(resourceRoot(), "pets", "bao"), customPackageRoot, {
+    recursive: true
+  });
+
+  const manifestPath = path.join(customPackageRoot, "pet.json");
+  const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+    packageId: string;
+    name: string;
+    source: string;
+  };
+  manifest.packageId = "custom-bao";
+  manifest.name = "Custom Bao";
+  manifest.source = "custom";
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  return userDataDir;
 }
 
-async function expectCustomPets(
-  userDataDir: string,
-  expectedEntries: string[]
-): Promise<void> {
-  const customPetsDir = path.join(userDataDir, "custom-pets");
-  let entries: string[] = [];
-  try {
-    entries = await readdir(customPetsDir);
-  } catch (error) {
-    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) {
-      throw error;
-    }
-  }
-  expect(entries).toEqual(expectedEntries);
+async function createUserDataDir(): Promise<string> {
+  return mkdtemp(path.join(os.tmpdir(), "deskagotchi-user-"));
 }
 
 function resourceRoot(): string {
