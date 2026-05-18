@@ -267,7 +267,7 @@ function runInstallerSmoke(run) {
   fs.rmSync(installDir, { recursive: true, force: true });
   fs.mkdirSync(installDir, { recursive: true });
 
-  const installResult = spawnSync(INSTALLER_EXE, ["/S", `/D=${installDir}`], {
+  const installResult = spawnSync(INSTALLER_EXE, ["/S", "/currentuser", `/D=${installDir}`], {
     cwd: ROOT_DIR,
     encoding: "utf8",
     timeout: 120_000
